@@ -2,13 +2,16 @@ CFLAGS = -c -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf
 CC = gcc
 LIBS =  -lm
 
-all: main
+all: client server
 
 debug: CFLAGS += -g
-debug: main
+debug: client server
 
-main: main.c
-	${CC} main.c -o main `sdl2-config --cflags --libs` -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf
+client: client_udp.c constants.h objects.h
+	${CC} client_udp.c -o client `sdl2-config --cflags --libs` -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf -lpthread
+
+server: server_udp.c constants.h objects.h
+	${CC} server_udp.c -o server `sdl2-config --cflags --libs` -lSDL2 -lSDL2_mixer -lSDL2_image -lSDL2_ttf -lpthread
 
 clean:
 	rm -f *.o *~
