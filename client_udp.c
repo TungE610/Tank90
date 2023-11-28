@@ -29,42 +29,6 @@ char message[BUFF_SIZE];
 SDL_Texture *tank = NULL;
 SDL_Renderer *renderer;
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
-void *receiveUpdates(void *arg) {
-    int client_sock = *((int *)arg);
-    char buff[BUFF_SIZE];
-
-    while (1) {
-        int bytes_received = recvfrom(client_sock, buff, BUFF_SIZE - 1, 0, NULL, NULL);
-
-        if (bytes_received < 0) {
-            perror("Error receiving updates: ");
-        } else {
-            buff[bytes_received] = '\0';
-            printf("received: %s\n", buff);
-
-            // Handle position update messages here
-            pthread_mutex_lock(&mutex);
-            if (strcmp(buff, "up") == 0) {
-                tankY -= 33;  // Adjust the value as needed
-            } else if (strcmp(buff, "down") == 0) {
-                tankY += 33;  // Adjust the value as needed
-            }
-            pthread_mutex_unlock(&mutex);
-
-            // Render the updated tank position
-            SDL_Rect tankRect;
-            pthread_mutex_lock(&mutex);
-            tankRect = (SDL_Rect){tankX, tankY, tankWidth, tankHeight};
-            pthread_mutex_unlock(&mutex);
-
-            SDL_RenderCopy(renderer, tank, NULL, &tankRect);
-            SDL_RenderPresent(renderer);
-        }
-    }
-}
-
 int main(){
 
 	int client_sock;
@@ -72,6 +36,7 @@ int main(){
 	struct sockaddr_in server_addr;
 	int bytes_sent,bytes_received, sin_size;
 	SDL_Texture *texture = NULL;
+	SDL_Texture *loading = NULL;
 
     TTF_Init();
     sin_size = sizeof(server_addr);
@@ -98,23 +63,23 @@ int main(){
     }
 
     // Step 4: Receive data from the server
-    bytes_received = recvfrom(client_sock, buff, BUFF_SIZE, 0,(struct sockaddr *) &server_addr, &sin_size);    
-    if (bytes_received < 0) {
-        perror("Error: ");
-        close(client_sock);
-        return 0;
-    }
+    // bytes_received = recvfrom(client_sock, buff, BUFF_SIZE, 0,(struct sockaddr *) &server_addr, &sin_size);    
+    // if (bytes_received < 0) {
+    //     perror("Error: ");
+    //     close(client_sock);
+    //     return 0;
+    // }
 
-    buff[bytes_received] = '\0';
-    player_id = atoi(buff);
-    printf("player_id: %d", player_id);
+    // buff[bytes_received] = '\0';
+    // player_id = atoi(buff);
+    // printf("player_id: %d", player_id);
 	
-    pthread_mutex_t mutex;
-    if (pthread_mutex_init(&mutex, NULL) != 0) {
-        perror("Mutex initialization failed");
-        close(client_sock);
-        return 1;
-    }
+    // pthread_mutex_t mutex;
+    // if (pthread_mutex_init(&mutex, NULL) != 0) {
+    //     perror("Mutex initialization failed");
+    //     close(client_sock);
+    //     return 1;
+    // }
 	 //The window we'll be rendering to
     SDL_Window* window = NULL;
     
@@ -159,9 +124,6 @@ int main(){
             int tankwidth = 30;
             int tankheight = 30;
             SDL_Rect tankRect = {220, 245, tankwidth, tankheight};
-
-            pthread_t receiveThread;
-            pthread_create(&receiveThread, NULL, receiveUpdates, (void *)&client_sock);
             
             while( quit == false ){
                 // render menu 
@@ -175,23 +137,40 @@ int main(){
                     } else if (e.type == SDL_KEYDOWN) {
                         switch (e.key.keysym.sym) {
                             case SDLK_DOWN:
-                                tankRect.y += 33; // Adjust the value as needed
-                                snprintf(message, sizeof(message), "up");
+                                if (tankRect.y <= 245) {
+                                    tankRect.y += 33; // Adjust the value as needed
+                                    snprintf(message, sizeof(message), "2 people");
+                                }
                                 break;
                             case SDLK_UP:
-                                tankRect.y -= 33; // Adjust the value as needed
-                                snprintf(message, sizeof(message), "down");
+                                if (tankRect.y >= 278) {
+                                    tankRect.y -= 33; // Adjust the value as needed
+                                    snprintf(message, sizeof(message), "1 person");
+                                }
                                 break;
-                            // Add more cases for other keys as needed
-                        }
-                        bytes_sent = sendto(client_sock, message, strlen(message), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
-                        if (bytes_sent < 0) {
-                            perror("Error sending message: ");
+                            case SDLK_RETURN:
+                                    bytes_sent = sendto(client_sock, message, strlen(message), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
+                                    if (bytes_sent < 0) {
+                                        perror("Error sending message: ");
+                                    }    
+                                    
+                                    loading = IMG_LoadTexture(renderer, "images/loading1.jpg");
+
+                                    // Destroy old textures and surface
+                                    SDL_DestroyTexture(texture);
+                                    SDL_DestroyTexture(tank);
+
+                                    // // Render new text
+                                    // SDL_RenderClear(renderer);
+                                    SDL_RenderCopy(renderer, loading, NULL, NULL);
+                                    SDL_RenderPresent(renderer);
+
+                                    break;                                 
                         }
                 }
                     
                 }
-        
+                SDL_RenderPresent(renderer);
             }
         }
     }
