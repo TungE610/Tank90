@@ -22,6 +22,7 @@ int number_of_players = 0;
 int server_sock;
 
 struct Player players[MAX_PLAYERS];
+struct Room rooms[MAX_PLAYERS];
 
 // Function to handle communication with a client
 void *handleClient(void *arg) {
@@ -32,6 +33,9 @@ void *handleClient(void *arg) {
 
     char buff[BUFF_SIZE];
     int bytes_received, bytes_sent;
+
+    free(arg);
+    pthread_detach(pthread_self());
 
     while (1) {
         // Use MSG_DONTWAIT to make recvfrom non-blocking
@@ -49,10 +53,12 @@ void *handleClient(void *arg) {
         } else if (bytes_received == 0) {
             // Client disconnected
             printf("Client [%s:%d] disconnected.\n", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port));
+            player->is_choosing_game_mode = 0;
             break;
         } else {
             buff[bytes_received] = '\0';
             printf("receive from client: %s\n", buff);
+            player->is_choosing_game_mode = 0;
 
             // Handle the received message (you can implement your logic here)
 
@@ -63,9 +69,18 @@ void *handleClient(void *arg) {
                 player->game_mode = 2;
                 player->is_waiting_other_player = 1;
                 for (int i = 0; i < MAX_PLAYERS; i ++) {
-                    if (players[i].is_waiting_other_player == 1 && players[i].id != player.id ) {
+                    if (players[i].is_waiting_other_player == 1 && players[i].id != player->id ) {
                         players[i].is_waiting_other_player = 0;
                         player->is_waiting_other_player = 0;
+
+                        bytes_sent = sendto(server_sock, "play", strlen("play"), 0, (struct sockaddr *) &player->address, sin_size );
+                        if (bytes_sent < 0)
+                            perror("\nError: ");	
+
+                        bytes_sent = sendto(server_sock, "play", strlen("play"), 0, (struct sockaddr *) &players[i].address, sin_size );
+                        if (bytes_sent < 0)
+                            perror("\nError: ");
+
                         break;
                     }
                 }
@@ -127,8 +142,8 @@ int main() {
 
         pthread_create(&threadIDs[number_of_players], NULL, handleClient, (void *)player);
         // Create a new thread to handle the client
-        pthread_detach(threadIDs[number_of_players]);
             // Increment the number of players (clients)
+        pthread_detach(threadIDs[number_of_players]);
         number_of_players++;
         if (number_of_players >= MAX_CLIENTS) {
             printf("Maximum number of clients reached. No more connections will be accepted.\n");

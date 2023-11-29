@@ -3,10 +3,16 @@
 
 #include <SDL.h>
 
+struct Room {
+    int id;
+    int first_player;
+    int second_player;
+    int status;
+};
+
 struct Player {
     int id;
     SDL_Rect position;
-    SDL_Texture *texture;
     int left, right, up, down;
     int can_jump, y_speed;
     int face, shoot, reloading;

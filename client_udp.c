@@ -37,6 +37,7 @@ int main(){
 	int bytes_sent,bytes_received, sin_size;
 	SDL_Texture *texture = NULL;
 	SDL_Texture *loading = NULL;
+	SDL_Texture *playing = NULL;
 
     TTF_Init();
     sin_size = sizeof(server_addr);
@@ -141,12 +142,14 @@ int main(){
                                     tankRect.y += 33; // Adjust the value as needed
                                     snprintf(message, sizeof(message), "2 people");
                                 }
+                                printf("pressed down\n");
                                 break;
                             case SDLK_UP:
                                 if (tankRect.y >= 278) {
                                     tankRect.y -= 33; // Adjust the value as needed
                                     snprintf(message, sizeof(message), "1 person");
                                 }
+                                printf("pressed up\n");
                                 break;
                             case SDLK_RETURN:
                                     bytes_sent = sendto(client_sock, message, strlen(message), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
@@ -164,13 +167,29 @@ int main(){
                                     // SDL_RenderClear(renderer);
                                     SDL_RenderCopy(renderer, loading, NULL, NULL);
                                     SDL_RenderPresent(renderer);
+                                      bytes_received = recvfrom(client_sock, buff, BUFF_SIZE, 0,(struct sockaddr *) &server_addr, &sin_size);    
+                                    if (bytes_received < 0) {
+                                        perror("Error: ");
+                                        close(client_sock);
+                                        return 0;
+                                    }
 
+                                    buff[bytes_received] = '\0';
+                                    if(strcmp(buff, "play") == 0) {
+                                        playing = IMG_LoadTexture(renderer, "images/playing.png");
+                                        SDL_DestroyTexture(loading);
+
+                                        SDL_RenderCopy(renderer, playing, NULL, NULL);
+                                        SDL_RenderPresent(renderer);
+                                    }
                                     break;                                 
                         }
-                }
+
+                        break;
+                 }
+
                     
                 }
-                SDL_RenderPresent(renderer);
             }
         }
     }
