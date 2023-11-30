@@ -17,7 +17,7 @@
 #include "constants.h"
 
 #define SERV_IP "127.0.0.1"
-#define SERV_PORT 5550
+#define SERV_PORT 5500
 #define BUFF_SIZE 1024
 const int SCREEN_WIDTH = 640;
 const int SCREEN_HEIGHT = 480;
@@ -28,6 +28,7 @@ int tankHeight = 30;
 char message[BUFF_SIZE];
 SDL_Texture *tank = NULL;
 SDL_Renderer *renderer;
+char *SERVER_ADDR = "127.0.0.1";
 
 int main(){
 
@@ -44,24 +45,21 @@ int main(){
     int player_id;
 
     // Step 1: Construct a UDP socket
-    if ((client_sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+    if ((client_sock = socket(AF_INET,SOCK_STREAM,0)) < 0) {
         perror("\nError: ");
         exit(0);
     }
 
     // Step 2: Define the address of the server
-    bzero(&server_addr, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(SERV_PORT);
-    server_addr.sin_addr.s_addr = inet_addr(SERV_IP);
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_port = htons(SERV_PORT);
+	server_addr.sin_addr.s_addr = inet_addr(SERV_IP);
 
-    // Step 3: Send data to the server
-    bytes_sent = sendto(client_sock, "client", strlen("client"), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
-    if (bytes_sent < 0) {
-        perror("Error: ");
-        close(client_sock);
-        return 0;
-    }
+    // Step 3: nonnec to server
+    if(connect(client_sock, (struct sockaddr*)&server_addr, sizeof(struct sockaddr)) < 0){
+		printf("\nError!Can not connect to sever! Client exit imediately! ");
+		return 0;
+	}
 
     // Step 4: Receive data from the server
     // bytes_received = recvfrom(client_sock, buff, BUFF_SIZE, 0,(struct sockaddr *) &server_addr, &sin_size);    
@@ -152,8 +150,7 @@ int main(){
                                 printf("pressed up\n");
                                 break;
                             case SDLK_RETURN:
-                                    bytes_sent = sendto(client_sock, message, strlen(message), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
-                                    if (bytes_sent < 0) {
+                                    bytes_sent = send(client_sock, message, strlen(message), 0);                                    if (bytes_sent < 0) {
                                         perror("Error sending message: ");
                                     }    
                                     
@@ -163,32 +160,28 @@ int main(){
                                     SDL_DestroyTexture(texture);
                                     SDL_DestroyTexture(tank);
 
-                                    // // Render new text
-                                    // SDL_RenderClear(renderer);
+
                                     SDL_RenderCopy(renderer, loading, NULL, NULL);
                                     SDL_RenderPresent(renderer);
-                                      bytes_received = recvfrom(client_sock, buff, BUFF_SIZE, 0,(struct sockaddr *) &server_addr, &sin_size);    
+
+                                    bytes_received = recv(client_sock, buff, BUFF_SIZE, 0);
                                     if (bytes_received < 0) {
                                         perror("Error: ");
-                                        close(client_sock);
-                                        return 0;
                                     }
-
+                                    
                                     buff[bytes_received] = '\0';
-                                    if(strcmp(buff, "play") == 0) {
-                                        playing = IMG_LoadTexture(renderer, "images/playing.png");
+                                    printf("buff: %s", buff);
+                                    if (strcmp(buff, "play") == 0) {
+                                        playing = IMG_LoadTexture(renderer, "images/map.png");
                                         SDL_DestroyTexture(loading);
 
                                         SDL_RenderCopy(renderer, playing, NULL, NULL);
                                         SDL_RenderPresent(renderer);
                                     }
+
                                     break;                                 
                         }
-
-                        break;
-                 }
-
-                    
+                    }
                 }
             }
         }

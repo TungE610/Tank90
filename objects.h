@@ -22,6 +22,7 @@ struct Player {
     int game_mode;
     int is_waiting_other_player;
     struct sockaddr_in address;
+    int socket;
 };
 
 struct Bullet {
