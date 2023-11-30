@@ -13,72 +13,84 @@
 #include <pthread.h>
 #include "constants.h"
 #include "objects.h"
-
-#define PORT 5550
+#include <errno.h>
+#define PORT 5500
 #define BUFF_SIZE 1024
 #define MAX_CLIENTS 10
+#define BACKLOG 20   /* Number of allowed connections */
 
 int number_of_players = 0;
 int server_sock;
 
-// Structure to hold client information
-struct ClientInfo {
-    int socket;
-    struct sockaddr_in address;
-    struct Tank tank;
-};
-
-struct ClientInfo clients[MAX_PLAYERS];
-
-void broadcastTankUpdate(char *key, struct ClientInfo *sender) {
-    printf("check key: %s", key);
-    for (int i = 0; i < 2; i++) {
-        clients[i].socket = server_sock;
-    }
-    for (int i = 0; i < number_of_players; i++) {
-        if (clients[i].socket != sender->socket) {
-            sendto(server_sock, key, strlen(key), 0, (struct sockaddr *)&clients[i].address, sizeof(struct sockaddr_in));
-        }
-    }
-}
+struct Player *players[MAX_PLAYERS];
+struct Room rooms[MAX_PLAYERS];
 
 // Function to handle communication with a client
 void *handleClient(void *arg) {
 	int sin_size = sizeof(struct sockaddr_in);
-    struct ClientInfo *clientInfo = (struct ClientInfo *)arg;
-    int clientSocket = clientInfo->socket;
-    struct sockaddr_in clientAddress = clientInfo->address;
+    struct Player *player = (struct Player *)arg;
+    players[player->id] = player;
+
+    player->is_choosing_game_mode = 1;
+    
+    struct sockaddr_in clientAddress = player->address;
 
     char buff[BUFF_SIZE];
     int bytes_received, bytes_sent;
 
     while (1) {
-		bytes_received = recvfrom(clientSocket, buff, BUFF_SIZE - 1, 0, (struct sockaddr *)&clientAddress, &sin_size);
+        // Use MSG_DONTWAIT to make recvfrom non-blocking
+	    bytes_received = recv(player->socket, buff, BUFF_SIZE, 0); //blocking
 
-        if (bytes_received < 0)
-            perror("\nError: ");
-        else if (bytes_received == 0) {
+        if (bytes_received < 0) {
+            // Check if no data is available
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                // No data available, continue the loop
+                continue;
+            } else {
+                perror("\nError: ");
+                break;
+            }
+        } else if (bytes_received == 0) {
             // Client disconnected
             printf("Client [%s:%d] disconnected.\n", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port));
+            player->is_choosing_game_mode = 0;
             break;
         } else {
             buff[bytes_received] = '\0';
-            printf("[%s:%d]: %s\n", inet_ntoa(clientAddress.sin_addr), ntohs(clientAddress.sin_port), buff);
+            printf("receive from client: %s\n", buff);
+            player->is_choosing_game_mode = 0;
 
+            // Handle the received message (you can implement your logic here)
 
-            if (strcmp(buff, "down") == 0) {
-                clientInfo->tank.y -= 33; // Adjust the value as needed
-            } else if (strcmp(buff, "up") == 0) {
-                clientInfo->tank.y += 33; // Adjust the value as needed
+            // For example, check if the message is "up" or "down"
+            if (strcmp(buff, "1 person") == 0) {
+                player->game_mode = 1;
+            } else if (strcmp(buff, "2 people") == 0) {
+                player->game_mode = 2;
+                player->is_waiting_other_player = 1;
+                for (int i = 0; i < number_of_players; i ++) {
+                    printf("player %d: %d", i, players[i]->is_waiting_other_player);
+                }
+
+                for (int i = 0; i < number_of_players; i ++) {
+                    if (players[i]->is_waiting_other_player == 1 && players[i]->id != player->id ) {
+                        players[i]->is_waiting_other_player = 0;
+                        player->is_waiting_other_player = 0;
+
+                        bytes_sent = send(player->socket, "play", strlen("play"), 0);
+
+                        bytes_sent = send(players[i]->socket, "play", strlen("play"), 0);
+
+                        break;
+                    }
+                }
             }
-            // Process the received message (e.g., handle "up" and "down" messages)
-            broadcastTankUpdate(buff, clientInfo);
         }
     }
 
     // Clean up resources and exit the thread
-    close(clientSocket);
-    free(clientInfo);
+    close(player->socket);
     pthread_exit(NULL);
 }
 
@@ -86,72 +98,61 @@ int main() {
     char buff[BUFF_SIZE];
     int bytes_received, bytes_sent;
     struct sockaddr_in server;
-    struct sockaddr_in client;
+    struct sockaddr_in *client;
     int sin_size;
+    int *client_sock;
 
     // Create an array to store thread IDs for each client
     pthread_t threadIDs[MAX_CLIENTS];
 
     // Step 1: Construct a UDP socket
-    if ((server_sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-        perror("\nError: ");
-        exit(0);
-    }
 
-    printf("server sock: %d", server_sock);
+	if ((server_sock = socket(AF_INET, SOCK_STREAM, 0)) == -1 ){  /* calls socket() */
+		perror("\nError: ");
+		return 0;
+	}
 
     // Step 2: Bind address to socket
-    server.sin_family = AF_INET;
-    server.sin_port = htons(PORT);
-    server.sin_addr.s_addr = INADDR_ANY;
-    bzero(&(server.sin_zero), 8);
+    bzero(&server, sizeof(server));
+	server.sin_family = AF_INET;         
+	server.sin_port = htons(PORT); 
+	server.sin_addr.s_addr = htonl(INADDR_ANY);  /* INADDR_ANY puts your IP address automatically */   
 
-    if (bind(server_sock, (struct sockaddr *)&server, sizeof(struct sockaddr)) == -1) {
-        perror("\nError: ");
-        exit(0);
-    }
+	if(bind(server_sock,(struct sockaddr*)&server, sizeof(server))==-1){ 
+		perror("\nError: ");
+		return 0;
+	}
+
+	if(listen(server_sock, BACKLOG) == -1){  
+		perror("\nError: ");
+		return 0;
+	}
+
 	sin_size = sizeof(struct sockaddr_in);
+	client = malloc(sin_size);
 
     // Step 3: Communicate with clients
     while (1) {
-        struct ClientInfo *clientInfo = (struct ClientInfo *)malloc(sizeof(struct ClientInfo));
+        client_sock = malloc(sizeof(int));
 
+        struct Player *player = (struct Player *)malloc(sizeof(struct Player));
+        player->id = number_of_players;
 		// Receive data from the client
-		clientInfo->socket = server_sock; // The socket is the server socket for UDP
-		bytes_received = recvfrom(server_sock, buff, BUFF_SIZE - 1, 0, (struct sockaddr *)&clientInfo->address, &sin_size);
-
-		if (bytes_received < 0) {
-			perror("\nError receiving data: ");
-			free(clientInfo);
-			continue;
-		}
-
-		char client_ip[INET_ADDRSTRLEN];
-		inet_ntop(AF_INET, &(clientInfo->address.sin_addr), client_ip, INET_ADDRSTRLEN);
-		int client_port = ntohs(clientInfo->address.sin_port);
-
-		char player_id[10];
-		int chars_written = snprintf(player_id, sizeof(player_id), "%d", number_of_players);
-
-		printf("[%s:%d] (%d): %s\n", client_ip, client_port, bytes_received, buff);
-
-		bytes_sent = sendto(server_sock, player_id, strlen(player_id), 0, (struct sockaddr *) &clientInfo->address, sin_size);
-		if (bytes_sent < 0)
+	    if ((*client_sock = accept(server_sock, (struct sockaddr *)client, &sin_size)) ==- 1)
 			perror("\nError: ");
+        
+        player->socket = *client_sock;
 
+		printf("You got a connection from %s\n", inet_ntoa(client->sin_addr) ); /* prints client's IP */
 
-        // Create a new thread to handle the client
-        if (pthread_create(&threadIDs[number_of_players], NULL, handleClient, (void *)clientInfo) != 0) {
-            perror("\nError creating thread: ");
-            close(clientInfo->socket);
-            free(clientInfo);
-        } else {
-            // Increment the number of players (clients)
-            number_of_players++;
-            if (number_of_players >= MAX_CLIENTS) {
-                printf("Maximum number of clients reached. No more connections will be accepted.\n");
-                break;
-            }
+        pthread_create(&threadIDs[number_of_players], NULL, handleClient, (void *)player);
+
+        pthread_detach(threadIDs[number_of_players]);
+
+        number_of_players++;
+        if (number_of_players >= MAX_CLIENTS) {
+            printf("Maximum number of clients reached. No more connections will be accepted.\n");
+            break;
         }
     }
 
