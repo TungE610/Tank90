@@ -118,7 +118,34 @@ int main(){
             //Hack to get window to stay up
             SDL_Event e; bool quit = false;
             IMG_Init(IMG_INIT_PNG);
-            texture = IMG_LoadTexture(renderer, "images/welcome.png");
+            // load first pic
+            TTF_Font *font = TTF_OpenFont("./resources/font/ARCADE.TTF", 5);  // Adjust font size as needed
+            if (font == NULL) {
+                printf("Error loading font: %s\n", TTF_GetError());
+                return 1;
+            }
+
+            // Create a text surface
+            SDL_Color white = {255, 255, 255};  // White text color
+            SDL_Surface *textSurface = TTF_RenderText_Solid(font, "TANK 90", white);
+            if (textSurface == NULL) {
+                printf("Error creating text surface: %s\n", TTF_GetError());
+                TTF_CloseFont(font);
+                return 1;
+            }
+
+            // Create a texture from the text surface
+            SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);      
+            
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 25);  // Black background
+            SDL_RenderClear(renderer);
+
+            // Render the text texture
+            SDL_Rect renderQuad = { x, y, textSurface->w, textSurface->h };
+            SDL_RenderCopy(renderer, textTexture, NULL, &renderQuad);
+
+
+            // load tank icon to choosee
             tank = IMG_LoadTexture(renderer, "images/player_green_up.png");
             int tankwidth = 30;
             int tankheight = 30;
