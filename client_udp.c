@@ -15,6 +15,7 @@
 #include "objects.h"
 #include "client_udp.h"
 #include "constants.h"
+#include "messages.h"
 
 #define SERV_IP "127.0.0.1"
 #define SERV_PORT 5500
@@ -25,10 +26,11 @@ int tankX = 220;
 int tankY = 245;
 int tankWidth = 30;
 int tankHeight = 30;
-char message[BUFF_SIZE];
 SDL_Texture *tank = NULL;
 SDL_Renderer *renderer;
 char *SERVER_ADDR = "127.0.0.1";
+
+void load_login_texture(SDL_Renderer *renderer);
 
 int main(){
 
@@ -39,6 +41,7 @@ int main(){
 	SDL_Texture *texture = NULL;
 	SDL_Texture *loading = NULL;
 	SDL_Texture *playing = NULL;
+    int message = LOGIN_MESSAGE;
 
     TTF_Init();
     sin_size = sizeof(server_addr);
@@ -61,25 +64,6 @@ int main(){
 		return 0;
 	}
 
-    // Step 4: Receive data from the server
-    // bytes_received = recvfrom(client_sock, buff, BUFF_SIZE, 0,(struct sockaddr *) &server_addr, &sin_size);    
-    // if (bytes_received < 0) {
-    //     perror("Error: ");
-    //     close(client_sock);
-    //     return 0;
-    // }
-
-    // buff[bytes_received] = '\0';
-    // player_id = atoi(buff);
-    // printf("player_id: %d", player_id);
-	
-    // pthread_mutex_t mutex;
-    // if (pthread_mutex_init(&mutex, NULL) != 0) {
-    //     perror("Mutex initialization failed");
-    //     close(client_sock);
-    //     return 1;
-    // }
-	 //The window we'll be rendering to
     SDL_Window* window = NULL;
     
     //The surface contained by the window
@@ -119,41 +103,57 @@ int main(){
             SDL_Event e; bool quit = false;
             IMG_Init(IMG_INIT_PNG);
             // load first pic
-            TTF_Font *font = TTF_OpenFont("./resources/font/ARCADE.TTF", 5);  // Adjust font size as needed
-            if (font == NULL) {
+            TTF_Font *welcomeFont = TTF_OpenFont("./resources/font/ARCADE.TTF", 50);  // Adjust font size as needed
+            if (welcomeFont == NULL) {
+                printf("Error loading font: %s\n", TTF_GetError());
+                return 1;
+            }
+
+            TTF_Font *loginFont = TTF_OpenFont("./resources/font/ARCADE.TTF", 20);  // Adjust font size as needed
+            if (loginFont == NULL) {
                 printf("Error loading font: %s\n", TTF_GetError());
                 return 1;
             }
 
             // Create a text surface
             SDL_Color white = {255, 255, 255};  // White text color
-            SDL_Surface *textSurface = TTF_RenderText_Solid(font, "TANK 90", white);
-            if (textSurface == NULL) {
-                printf("Error creating text surface: %s\n", TTF_GetError());
-                TTF_CloseFont(font);
-                return 1;
-            }
+            SDL_Surface *textSurface = TTF_RenderText_Solid(welcomeFont, "TANK 90", white);
+
+            SDL_Surface *loginText = TTF_RenderText_Solid(loginFont, "1. Login", white);
+            SDL_Surface *registerText = TTF_RenderText_Solid(loginFont, "2. Register", white);
 
             // Create a texture from the text surface
             SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);      
+            SDL_Texture *loginTextTexture = SDL_CreateTextureFromSurface(renderer, loginText);      
+            SDL_Texture *registerTextTexture = SDL_CreateTextureFromSurface(renderer, registerText);
             
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 25);  // Black background
             SDL_RenderClear(renderer);
 
             // Render the text texture
-            SDL_Rect renderQuad = { x, y, textSurface->w, textSurface->h };
+            SDL_Rect renderQuad = { 150, 100, textSurface->w, textSurface->h };
             SDL_RenderCopy(renderer, textTexture, NULL, &renderQuad);
 
+            // render login text texture
+            SDL_Rect loginTextRenderQuad = { 220, 180, loginText->w, loginText->h };
+            SDL_RenderCopy(renderer, loginTextTexture, NULL, &loginTextRenderQuad);
+
+            // render login text texture
+            SDL_Rect registerTextRenderQuad = { 220, 230, registerText->w, registerText->h };
+            SDL_RenderCopy(renderer, registerTextTexture, NULL, &registerTextRenderQuad);
 
             // load tank icon to choosee
             tank = IMG_LoadTexture(renderer, "images/player_green_up.png");
             int tankwidth = 30;
             int tankheight = 30;
-            SDL_Rect tankRect = {220, 245, tankwidth, tankheight};
+            SDL_Rect tankRect = {180, 175, tankwidth, tankheight};
             
             while( quit == false ){
                 // render menu 
-                SDL_RenderCopy(renderer, texture, NULL, NULL);
+                SDL_RenderClear(renderer);
+                SDL_RenderCopy(renderer, textTexture, NULL, &renderQuad);
+                SDL_RenderCopy(renderer, loginTextTexture, NULL, &loginTextRenderQuad);
+                SDL_RenderCopy(renderer, registerTextTexture, NULL, &registerTextRenderQuad);
                 SDL_RenderCopy(renderer, tank, NULL, &tankRect);
                 SDL_RenderPresent(renderer);
                 
@@ -163,25 +163,32 @@ int main(){
                     } else if (e.type == SDL_KEYDOWN) {
                         switch (e.key.keysym.sym) {
                             case SDLK_DOWN:
-                                if (tankRect.y <= 245) {
-                                    tankRect.y += 33; // Adjust the value as needed
-                                    snprintf(message, sizeof(message), "2 people");
+                                if (tankRect.y < 225) {
+
+                                    tankRect.y += 50;
+                                    message = REGISTER_MESSAGE;
                                 }
-                                printf("pressed down\n");
+
                                 break;
                             case SDLK_UP:
-                                if (tankRect.y >= 278) {
-                                    tankRect.y -= 33; // Adjust the value as needed
-                                    snprintf(message, sizeof(message), "1 person");
+                                if (tankRect.y > 175) {
+
+                                    tankRect.y -= 50;
+                                    message = LOGIN_MESSAGE;
                                 }
-                                printf("pressed up\n");
+
                                 break;
                             case SDLK_RETURN:
-                                    bytes_sent = send(client_sock, message, strlen(message), 0);                                    if (bytes_sent < 0) {
-                                        perror("Error sending message: ");
-                                    }    
+                                    // bytes_sent = send(client_sock, message, 1, 0);                                    
+                                    // if (bytes_sent < 0) {
+                                    //     perror("Error sending message: ");
+                                    // }    
                                     
-                                    loading = IMG_LoadTexture(renderer, "images/loading1.jpg");
+                                    if (message == LOGIN_MESSAGE) {
+                                        printf("True\n");
+                                        load_login_texture(renderer);
+                                    }
+                                    // loading = IMG_LoadTexture(renderer, "images/loading1.jpg");
 
                                     // Destroy old textures and surface
                                     SDL_DestroyTexture(texture);
@@ -222,4 +229,36 @@ int main(){
 
 	close(client_sock);
 	return 0;
+}
+
+void load_login_texture(SDL_Renderer *renderer) {
+    SDL_Color white = {255, 255, 255};  // White text color
+    TTF_Font *loginFont = TTF_OpenFont("./resources/font/ARCADE.TTF", 50);  // Adjust font size as needed
+    TTF_Font *usernameFont = TTF_OpenFont("./resources/font/ARCADE.TTF", 20);  // Adjust font size as needed
+
+    if (loginFont == NULL || usernameFont == NULL) {
+        printf("Error loading font: %s\n", TTF_GetError());
+    }
+
+    SDL_Surface *loginText = TTF_RenderText_Solid(loginFont, "LOGIN", white);
+    SDL_Surface *usernameText = TTF_RenderText_Solid(usernameFont, "Username: ", white);
+    SDL_Surface *passwordText = TTF_RenderText_Solid(usernameFont, "Password: ", white);
+
+    SDL_Texture *loginTextTexture = SDL_CreateTextureFromSurface(renderer, loginText);  
+    SDL_Texture *usernameTextTexture = SDL_CreateTextureFromSurface(renderer, usernameText); 
+    SDL_Texture *passwordTextTexture = SDL_CreateTextureFromSurface(renderer, passwordText);      
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 25);  // Black background
+    SDL_RenderClear(renderer);
+
+    // Render the text texture
+    SDL_Rect loginRenderQuad = { 195, 100, loginText->w, loginText->h };
+    SDL_Rect usernameRenderQuad = { 120, 200, usernameText->w, usernameText->h };
+    SDL_Rect passwordRenderQuad = { 120, 250, passwordText->w, passwordText->h };
+
+    SDL_RenderCopy(renderer, loginTextTexture, NULL, &loginRenderQuad);
+    SDL_RenderCopy(renderer, usernameTextTexture, NULL, &usernameRenderQuad);
+    SDL_RenderCopy(renderer, passwordTextTexture, NULL, &passwordRenderQuad);
+
+    SDL_Surface usernameInputSurface = TTF_RenderText_Blended_Wrapped()
 }
