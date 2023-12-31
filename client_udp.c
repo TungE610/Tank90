@@ -30,6 +30,93 @@ SDL_Texture *tank = NULL;
 SDL_Renderer *renderer;
 char *SERVER_ADDR = "127.0.0.1";
 
+typedef struct {
+    char text[256];
+    int cursorPosition;
+    SDL_Rect boxRect; // Position and size of the textbox
+    bool hasFocus;
+} Textbox;
+
+enum AppState {
+    MAIN_MENU,
+    LOGIN,
+    GAME_PLAY,
+};
+
+void initTextbox(Textbox *textbox, int x, int y, int w, int h) {
+    textbox->text[0] = '1';
+    textbox->cursorPosition = 0;
+    textbox->boxRect = (SDL_Rect){x, y, w, h};
+    textbox->hasFocus = false;
+}
+
+void handleKeyboardEvent(SDL_Event *e, Textbox *textbox) {
+    if (!textbox->hasFocus) return;
+
+    if (e->type == SDL_KEYDOWN) {
+        if (e->key.keysym.sym == SDLK_BACKSPACE && textbox->cursorPosition > 0) {
+            // Handle backspace
+            textbox->text[--textbox->cursorPosition] = '\0';
+        } else if (e->key.keysym.sym == SDLK_RETURN) {
+            // Handle enter key (submit the form or switch to next field)
+        }
+    } else if (e->type == SDL_TEXTINPUT) {
+        if (textbox->cursorPosition < sizeof(textbox->text) - 1) {
+            // Append new character
+            textbox->text[textbox->cursorPosition++] = e->text.text[0];
+            textbox->text[textbox->cursorPosition] = '\0';
+        }
+    }
+}
+
+void renderTextbox(SDL_Renderer *renderer, TTF_Font *font, Textbox *textbox) {
+    // Draw the textbox border
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White border
+    SDL_RenderDrawRect(renderer, &textbox->boxRect);
+
+    // Render the text inside the textbox only if it has focus
+    if (textbox->hasFocus) {
+        SDL_Color textColor = {255, 255, 255, 255}; // White text
+
+        // Create a surface for the text
+        SDL_Surface *textSurface = TTF_RenderText_Solid(font, textbox->text, textColor);
+        if (textSurface == NULL) {
+            // Handle the error, e.g., log it and return
+            printf("Error rendering text: %s\n", TTF_GetError());
+            return;
+        }
+
+        // Create a texture from the surface
+        SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+        if (textTexture == NULL) {
+            // Handle the error, e.g., log it and return
+            printf("Error creating texture: %s\n", SDL_GetError());
+            SDL_FreeSurface(textSurface); // Free the surface to avoid memory leak
+            return;
+        }
+
+        // Set rendering space and render to screen
+        int textWidth = textSurface->w;
+        int textHeight = textSurface->h;
+        SDL_Rect renderQuad = { textbox->boxRect.x + 5, textbox->boxRect.y + 5, textWidth, textHeight };
+        SDL_RenderCopy(renderer, textTexture, NULL, &renderQuad);
+
+        // Clean up
+        SDL_DestroyTexture(textTexture);
+        SDL_FreeSurface(textSurface);
+    }
+}
+
+
+
+void setFocusOnTextbox(Textbox *textbox, int mouseX, int mouseY) {
+    if (SDL_PointInRect(&(SDL_Point){mouseX, mouseY}, &textbox->boxRect)) {
+        textbox->hasFocus = true;
+    } else {
+        textbox->hasFocus = false;
+    }
+}
+
 void load_login_texture(SDL_Renderer *renderer);
 
 int main(){
@@ -42,6 +129,8 @@ int main(){
 	SDL_Texture *loading = NULL;
 	SDL_Texture *playing = NULL;
     int message = LOGIN_MESSAGE;
+
+    enum AppState state = MAIN_MENU; // Start in the main menu state
 
     TTF_Init();
     sin_size = sizeof(server_addr);
@@ -147,76 +236,127 @@ int main(){
             int tankwidth = 30;
             int tankheight = 30;
             SDL_Rect tankRect = {180, 175, tankwidth, tankheight};
+
+            TTF_Font *loginBigFont = TTF_OpenFont("./resources/font/ARCADE.TTF", 50);  // Adjust font size as needed
+            TTF_Font *usernameFont = TTF_OpenFont("./resources/font/ARCADE.TTF", 20);  // Adjust font size as needed
+
+            if (loginFont == NULL || usernameFont == NULL) {
+                printf("Error loading font: %s\n", TTF_GetError());
+            }
+
+            SDL_Surface *loginBigText = TTF_RenderText_Solid(loginBigFont, "LOGIN", white);
+            SDL_Surface *usernameText = TTF_RenderText_Solid(usernameFont, "Username: ", white);
+            SDL_Surface *passwordText = TTF_RenderText_Solid(usernameFont, "Password: ", white);
+
+            SDL_Texture *loginBigTextTexture = SDL_CreateTextureFromSurface(renderer, loginBigText);  
+            SDL_Texture *usernameTextTexture = SDL_CreateTextureFromSurface(renderer, usernameText); 
+            SDL_Texture *passwordTextTexture = SDL_CreateTextureFromSurface(renderer, passwordText);      
+
+            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 25);  // Black background
+            SDL_RenderClear(renderer);
+
+            // Render the text texture
+            SDL_Rect loginBigTextRenderQuad = { 195, 100, loginBigText->w, loginBigText->h };
+            SDL_Rect usernameRenderQuad = { 120, 200, usernameText->w, usernameText->h };
+            SDL_Rect passwordRenderQuad = { 120, 250, passwordText->w, passwordText->h };
+
+            Textbox usernameTextbox;
+            initTextbox(&usernameTextbox, 320, 200, 200, 30);
             
+            SDL_Color textColor = {255, 255, 255, 255}; // White text
+
+            // Create a surface for the text
+            SDL_Surface *boxTextSurface = TTF_RenderText_Solid(usernameFont, usernameTextbox.text, textColor);
+            if (boxTextSurface == NULL) {
+                // Handle the error, e.g., log it and return
+                printf("Error rendering text: %s\n", TTF_GetError());
+            }
+
+            // Create a texture from the surface
+            SDL_Texture *boxTextTexture = SDL_CreateTextureFromSurface(renderer, boxTextSurface);
+            if (textTexture == NULL) {
+                // Handle the error, e.g., log it and return
+                printf("Error creating texture: %s\n", SDL_GetError());
+                SDL_FreeSurface(boxTextSurface); // Free the surface to avoid memory leak
+            }
+
+            // Set rendering space and render to screen
+            int textWidth = boxTextSurface->w;
+            int textHeight = boxTextSurface->h;
+            SDL_Rect boxRenderQuad = { usernameTextbox.boxRect.x + 5, usernameTextbox.boxRect.y + 5, textWidth, textHeight };
+
             while( quit == false ){
                 // render menu 
                 SDL_RenderClear(renderer);
-                SDL_RenderCopy(renderer, textTexture, NULL, &renderQuad);
-                SDL_RenderCopy(renderer, loginTextTexture, NULL, &loginTextRenderQuad);
-                SDL_RenderCopy(renderer, registerTextTexture, NULL, &registerTextRenderQuad);
-                SDL_RenderCopy(renderer, tank, NULL, &tankRect);
+                if (state == MAIN_MENU) {
+                    SDL_RenderCopy(renderer, textTexture, NULL, &renderQuad);
+                    SDL_RenderCopy(renderer, loginTextTexture, NULL, &loginTextRenderQuad);
+                    SDL_RenderCopy(renderer, registerTextTexture, NULL, &registerTextRenderQuad);
+                    SDL_RenderCopy(renderer, tank, NULL, &tankRect);
+                } else if (state == LOGIN) {
+                    SDL_RenderCopy(renderer, loginBigTextTexture, NULL, &loginBigTextRenderQuad);
+                    SDL_RenderCopy(renderer, usernameTextTexture, NULL, &usernameRenderQuad);
+                    SDL_RenderCopy(renderer, passwordTextTexture, NULL, &passwordRenderQuad);
+                    SDL_RenderCopy(renderer, boxTextTexture, NULL, &boxRenderQuad);
+                }
                 SDL_RenderPresent(renderer);
                 
                 while( SDL_PollEvent( &e ) ){ 
                     if (e.type == SDL_QUIT) {
                         quit = true;
+
                     } else if (e.type == SDL_KEYDOWN) {
-                        switch (e.key.keysym.sym) {
-                            case SDLK_DOWN:
-                                if (tankRect.y < 225) {
+                        switch (state) {
+                            case MAIN_MENU:
+                                switch (e.key.keysym.sym) {
+                                    case SDLK_DOWN:
+                                        if (tankRect.y < 225) {
 
-                                    tankRect.y += 50;
-                                    message = REGISTER_MESSAGE;
+                                            tankRect.y += 50;
+                                            message = REGISTER_MESSAGE;
+                                        }
+                                        break;
+                                    case SDLK_UP:
+                                        if (tankRect.y > 175) {
+
+                                            tankRect.y -= 50;
+                                            message = LOGIN_MESSAGE;
+                                        }
+                                        break;
+                                    case SDLK_RETURN:
+                                        if (message == LOGIN_MESSAGE) {
+                                            state = LOGIN;
+
+                                        } else {
+
+                                        }
+
+                                        break;
                                 }
+                            break;
+                            case LOGIN:
 
-                                break;
-                            case SDLK_UP:
-                                if (tankRect.y > 175) {
+                                // SDL_RenderCopy(renderer, loginBigTextTexture, NULL, &loginBigTextRenderQuad);
+                                // SDL_RenderCopy(renderer, usernameTextTexture, NULL, &usernameRenderQuad);
+                                // SDL_RenderCopy(renderer, passwordTextTexture, NULL, &passwordRenderQuad);
+                                    // Render the textbox
 
-                                    tankRect.y -= 50;
-                                    message = LOGIN_MESSAGE;
+                                // SDL_RenderPresent(renderer);
+
+                                switch (e.key.keysym.sym) {
+                                    case SDLK_DOWN:
+                                        printf("key down\n");
+                                        break;
+                                    case SDLK_UP:
+                                        printf("key up\n");
+                                        break;
                                 }
-
-                                break;
-                            case SDLK_RETURN:
-                                    // bytes_sent = send(client_sock, message, 1, 0);                                    
-                                    // if (bytes_sent < 0) {
-                                    //     perror("Error sending message: ");
-                                    // }    
-                                    
-                                    if (message == LOGIN_MESSAGE) {
-                                        printf("True\n");
-                                        load_login_texture(renderer);
-                                    }
-                                    // loading = IMG_LoadTexture(renderer, "images/loading1.jpg");
-
-                                    // Destroy old textures and surface
-                                    SDL_DestroyTexture(texture);
-                                    SDL_DestroyTexture(tank);
-
-
-                                    SDL_RenderCopy(renderer, loading, NULL, NULL);
-                                    SDL_RenderPresent(renderer);
-
-                                    bytes_received = recv(client_sock, buff, BUFF_SIZE, 0);
-                                    if (bytes_received < 0) {
-                                        perror("Error: ");
-                                    }
-                                    
-                                    buff[bytes_received] = '\0';
-                                    printf("buff: %s", buff);
-                                    if (strcmp(buff, "play") == 0) {
-                                        playing = IMG_LoadTexture(renderer, "images/map.png");
-                                        SDL_DestroyTexture(loading);
-
-                                        SDL_RenderCopy(renderer, playing, NULL, NULL);
-                                        SDL_RenderPresent(renderer);
-                                    }
-
-                                    break;                                 
+                            break;
                         }
                     }
                 }
+
+
             }
         }
     }
@@ -229,36 +369,4 @@ int main(){
 
 	close(client_sock);
 	return 0;
-}
-
-void load_login_texture(SDL_Renderer *renderer) {
-    SDL_Color white = {255, 255, 255};  // White text color
-    TTF_Font *loginFont = TTF_OpenFont("./resources/font/ARCADE.TTF", 50);  // Adjust font size as needed
-    TTF_Font *usernameFont = TTF_OpenFont("./resources/font/ARCADE.TTF", 20);  // Adjust font size as needed
-
-    if (loginFont == NULL || usernameFont == NULL) {
-        printf("Error loading font: %s\n", TTF_GetError());
-    }
-
-    SDL_Surface *loginText = TTF_RenderText_Solid(loginFont, "LOGIN", white);
-    SDL_Surface *usernameText = TTF_RenderText_Solid(usernameFont, "Username: ", white);
-    SDL_Surface *passwordText = TTF_RenderText_Solid(usernameFont, "Password: ", white);
-
-    SDL_Texture *loginTextTexture = SDL_CreateTextureFromSurface(renderer, loginText);  
-    SDL_Texture *usernameTextTexture = SDL_CreateTextureFromSurface(renderer, usernameText); 
-    SDL_Texture *passwordTextTexture = SDL_CreateTextureFromSurface(renderer, passwordText);      
-
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 25);  // Black background
-    SDL_RenderClear(renderer);
-
-    // Render the text texture
-    SDL_Rect loginRenderQuad = { 195, 100, loginText->w, loginText->h };
-    SDL_Rect usernameRenderQuad = { 120, 200, usernameText->w, usernameText->h };
-    SDL_Rect passwordRenderQuad = { 120, 250, passwordText->w, passwordText->h };
-
-    SDL_RenderCopy(renderer, loginTextTexture, NULL, &loginRenderQuad);
-    SDL_RenderCopy(renderer, usernameTextTexture, NULL, &usernameRenderQuad);
-    SDL_RenderCopy(renderer, passwordTextTexture, NULL, &passwordRenderQuad);
-
-    SDL_Surface usernameInputSurface = TTF_RenderText_Blended_Wrapped()
 }
