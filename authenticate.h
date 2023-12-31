@@ -8,6 +8,7 @@ typedef struct
 	char password[20];
 	int status;
 	int logged;
+	int id;
 } ListElementType;
 
 #include "linkedlist.h"
@@ -25,21 +26,21 @@ void searchUser(singleLinkedList *list);
 	readDatatoList: read data from file to list
 */
 void readDatatoList(singleLinkedList *list) {
-	ListElementType element;
-	deleteSingleList(list); 									// clear list
+    ListElementType element;
+    deleteSingleList(list);  // Clear the list
 
-	FILE *fp = fopen("account.txt", "r");
+    FILE *fp = fopen("account.txt", "r");
 
-	if (fp == NULL) {
-		perror("Data file not found");
-		return;
-	}
+    if (fp == NULL) {
+        perror("Error opening account file");
+        return;
+    }
 
-	while (fscanf(fp, "%s %s %d %d", element.username, element.password, &element.status, &element.logged) == 4) { // 4 is number of value successfully assign
-		insertEnd(list, element);
-	}
+    while (fscanf(fp, "%s %s %d %d %d", element.username, element.password, &element.status, &element.logged, &element.id) == 5) {
+        insertEnd(list, element);
+    }
 
-	fclose(fp);
+    fclose(fp);
 }
 
 /*
@@ -196,8 +197,8 @@ void rewriteFile(singleLinkedList *list) {
 		return;
 	}
 
-	while (list->cur != NULL) {										// traverse till end to rewrite
-		fprintf(fp, "%s %s %d %d\n", list->cur->element.username, list->cur->element.password, list->cur->element.status, list->cur->element.logged);
+	while (list->cur != NULL) {									// traverse till end to rewrite
+		fprintf(fp, "%s %s %d %d %d \n", list->cur->element.username, list->cur->element.password, list->cur->element.status, list->cur->element.logged, list->cur->element.id);
 		list->cur = list->cur->next;
 	}
 
