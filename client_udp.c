@@ -43,8 +43,10 @@ enum AppState {
     GAME_PLAY,
 };
 
+void setFocusOnTextbox(Textbox *textbox, int mouseX, int mouseY);
+
 void initTextbox(Textbox *textbox, int x, int y, int w, int h) {
-    textbox->text[0] = '1';
+    strcpy(textbox->text, " \0");
     textbox->cursorPosition = 0;
     textbox->boxRect = (SDL_Rect){x, y, w, h};
     textbox->hasFocus = false;
@@ -57,6 +59,7 @@ void handleKeyboardEvent(SDL_Event *e, Textbox *textbox) {
         if (e->key.keysym.sym == SDLK_BACKSPACE && textbox->cursorPosition > 0) {
             // Handle backspace
             textbox->text[--textbox->cursorPosition] = '\0';
+            printf("delete\n");
         } else if (e->key.keysym.sym == SDLK_RETURN) {
             // Handle enter key (submit the form or switch to next field)
         }
@@ -66,54 +69,6 @@ void handleKeyboardEvent(SDL_Event *e, Textbox *textbox) {
             textbox->text[textbox->cursorPosition++] = e->text.text[0];
             textbox->text[textbox->cursorPosition] = '\0';
         }
-    }
-}
-
-void renderTextbox(SDL_Renderer *renderer, TTF_Font *font, Textbox *textbox) {
-    // Draw the textbox border
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White border
-    SDL_RenderDrawRect(renderer, &textbox->boxRect);
-
-    // Render the text inside the textbox only if it has focus
-    if (textbox->hasFocus) {
-        SDL_Color textColor = {255, 255, 255, 255}; // White text
-
-        // Create a surface for the text
-        SDL_Surface *textSurface = TTF_RenderText_Solid(font, textbox->text, textColor);
-        if (textSurface == NULL) {
-            // Handle the error, e.g., log it and return
-            printf("Error rendering text: %s\n", TTF_GetError());
-            return;
-        }
-
-        // Create a texture from the surface
-        SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-        if (textTexture == NULL) {
-            // Handle the error, e.g., log it and return
-            printf("Error creating texture: %s\n", SDL_GetError());
-            SDL_FreeSurface(textSurface); // Free the surface to avoid memory leak
-            return;
-        }
-
-        // Set rendering space and render to screen
-        int textWidth = textSurface->w;
-        int textHeight = textSurface->h;
-        SDL_Rect renderQuad = { textbox->boxRect.x + 5, textbox->boxRect.y + 5, textWidth, textHeight };
-        SDL_RenderCopy(renderer, textTexture, NULL, &renderQuad);
-
-        // Clean up
-        SDL_DestroyTexture(textTexture);
-        SDL_FreeSurface(textSurface);
-    }
-}
-
-
-
-void setFocusOnTextbox(Textbox *textbox, int mouseX, int mouseY) {
-    if (SDL_PointInRect(&(SDL_Point){mouseX, mouseY}, &textbox->boxRect)) {
-        textbox->hasFocus = true;
-    } else {
-        textbox->hasFocus = false;
     }
 }
 
@@ -297,6 +252,7 @@ int main(){
                     SDL_RenderCopy(renderer, loginBigTextTexture, NULL, &loginBigTextRenderQuad);
                     SDL_RenderCopy(renderer, usernameTextTexture, NULL, &usernameRenderQuad);
                     SDL_RenderCopy(renderer, passwordTextTexture, NULL, &passwordRenderQuad);
+
                     SDL_RenderCopy(renderer, boxTextTexture, NULL, &boxRenderQuad);
                 }
                 SDL_RenderPresent(renderer);
@@ -305,7 +261,7 @@ int main(){
                     if (e.type == SDL_QUIT) {
                         quit = true;
 
-                    } else if (e.type == SDL_KEYDOWN) {
+                    } else if (e.type == SDL_KEYDOWN || e.type == SDL_TEXTINPUT) {
                         switch (state) {
                             case MAIN_MENU:
                                 switch (e.key.keysym.sym) {
@@ -335,23 +291,14 @@ int main(){
                                 }
                             break;
                             case LOGIN:
-
-                                // SDL_RenderCopy(renderer, loginBigTextTexture, NULL, &loginBigTextRenderQuad);
-                                // SDL_RenderCopy(renderer, usernameTextTexture, NULL, &usernameRenderQuad);
-                                // SDL_RenderCopy(renderer, passwordTextTexture, NULL, &passwordRenderQuad);
-                                    // Render the textbox
-
-                                // SDL_RenderPresent(renderer);
-
-                                switch (e.key.keysym.sym) {
-                                    case SDLK_DOWN:
-                                        printf("key down\n");
-                                        break;
-                                    case SDLK_UP:
-                                        printf("key up\n");
-                                        break;
-                                }
+                                handleKeyboardEvent(&e, &usernameTextbox);
                             break;
+                        }
+                    } else if (e.type == SDL_MOUSEBUTTONDOWN) {
+                        if (state == LOGIN) {
+                            int mouseX, mouseY;
+                            SDL_GetMouseState(&mouseX, &mouseY);
+                            setFocusOnTextbox(&usernameTextbox, mouseX, mouseY);
                         }
                     }
                 }
@@ -370,3 +317,15 @@ int main(){
 	close(client_sock);
 	return 0;
 }
+
+void setFocusOnTextbox(Textbox *textbox, int mouseX, int mouseY) {
+    // Check if the mouse click is within the textbox's rectangle
+    if (mouseX >= textbox->boxRect.x && mouseX <= textbox->boxRect.x + textbox->boxRect.w &&
+        mouseY >= textbox->boxRect.y && mouseY <= textbox->boxRect.y + textbox->boxRect.h) {
+        textbox->hasFocus = true;  // Mouse click is inside the textbox
+        printf("focus\n");
+    } else {
+        textbox->hasFocus = false; // Mouse click is outside the textbox
+    }
+}
+
