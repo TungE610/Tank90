@@ -37,6 +37,13 @@ typedef struct {
     bool hasFocus;
 } Textbox;
 
+typedef struct {
+    char text[256];
+    SDL_Rect boxRect; // Position and size of the button
+    bool hasFocus;
+} Button;
+
+
 enum AppState {
     MAIN_MENU,
     LOGIN,
@@ -52,23 +59,24 @@ void initTextbox(Textbox *textbox, int x, int y, int w, int h) {
     textbox->hasFocus = false;
 }
 
+void initButton(Button *button, int x, int y, int w, int h, const char *text) {
+    strcpy(button->text, text);
+    button->boxRect = (SDL_Rect){x, y, w, h};
+    button->hasFocus = false;
+}
+
 void handleKeyboardEvent(SDL_Event *e, Textbox *textbox) {
     if (!textbox->hasFocus) return;
 
     if (e->type == SDL_KEYDOWN) {
-        if (e->key.keysym.sym == SDLK_BACKSPACE && textbox->cursorPosition > 0) {
+        if (e->key.keysym.sym == SDLK_BACKSPACE && strlen(textbox->text) > 1) {
             // Handle backspace
-            textbox->text[--textbox->cursorPosition] = '\0';
+            textbox->text[strlen(textbox->text) - 1] = '\0';
             printf("delete\n");
         } else if (e->key.keysym.sym == SDLK_RETURN) {
-            // Handle enter key (submit the form or switch to next field)
         }
     } else if (e->type == SDL_TEXTINPUT) {
-        if (textbox->cursorPosition < sizeof(textbox->text) - 1) {
-            // Append new character
-            textbox->text[textbox->cursorPosition++] = e->text.text[0];
-            textbox->text[textbox->cursorPosition] = '\0';
-        }
+        strcat(textbox->text, e->text.text);
     }
 }
 
@@ -216,29 +224,13 @@ int main(){
             SDL_Rect passwordRenderQuad = { 120, 250, passwordText->w, passwordText->h };
 
             Textbox usernameTextbox;
-            initTextbox(&usernameTextbox, 320, 200, 200, 30);
+            Textbox passwordTextbox;
+            initTextbox(&usernameTextbox, 320, 195, 200, 30);
+            initTextbox(&passwordTextbox, 320, 245, 200, 30);
             
             SDL_Color textColor = {255, 255, 255, 255}; // White text
 
             // Create a surface for the text
-            SDL_Surface *boxTextSurface = TTF_RenderText_Solid(usernameFont, usernameTextbox.text, textColor);
-            if (boxTextSurface == NULL) {
-                // Handle the error, e.g., log it and return
-                printf("Error rendering text: %s\n", TTF_GetError());
-            }
-
-            // Create a texture from the surface
-            SDL_Texture *boxTextTexture = SDL_CreateTextureFromSurface(renderer, boxTextSurface);
-            if (textTexture == NULL) {
-                // Handle the error, e.g., log it and return
-                printf("Error creating texture: %s\n", SDL_GetError());
-                SDL_FreeSurface(boxTextSurface); // Free the surface to avoid memory leak
-            }
-
-            // Set rendering space and render to screen
-            int textWidth = boxTextSurface->w;
-            int textHeight = boxTextSurface->h;
-            SDL_Rect boxRenderQuad = { usernameTextbox.boxRect.x + 5, usernameTextbox.boxRect.y + 5, textWidth, textHeight };
 
             while( quit == false ){
                 // render menu 
@@ -253,7 +245,65 @@ int main(){
                     SDL_RenderCopy(renderer, usernameTextTexture, NULL, &usernameRenderQuad);
                     SDL_RenderCopy(renderer, passwordTextTexture, NULL, &passwordRenderQuad);
 
-                    SDL_RenderCopy(renderer, boxTextTexture, NULL, &boxRenderQuad);
+                    // username box
+                    SDL_Surface *usernameBoxTextSurface = TTF_RenderText_Solid(usernameFont, usernameTextbox.text, textColor);
+                    if (usernameBoxTextSurface == NULL) {
+                        // Handle the error, e.g., log it and return
+                        printf("Error rendering text: %s\n", TTF_GetError());
+                    }
+
+                    // Create a texture from the surface
+                    SDL_Texture *usernameBoxTextTexture = SDL_CreateTextureFromSurface(renderer, usernameBoxTextSurface);
+                    if (usernameBoxTextTexture == NULL) {
+                        // Handle the error, e.g., log it and return
+                        printf("Error creating texture: %s\n", SDL_GetError());
+                        SDL_FreeSurface(usernameBoxTextSurface); // Free the surface to avoid memory leak
+                    }
+
+                    // Set rendering space and render to screen
+                    int usernameTextWidth = usernameBoxTextSurface->w;
+                    int usernameTextHeight = usernameBoxTextSurface->h;
+                    SDL_Rect usernameBoxRenderQuad = { usernameTextbox.boxRect.x + 5, usernameTextbox.boxRect.y + 5, usernameTextWidth, usernameTextHeight };
+
+                    //password box
+                    SDL_Surface *passwordBoxTextSurface = TTF_RenderText_Solid(usernameFont, passwordTextbox.text, textColor);
+                    if (passwordBoxTextSurface == NULL) {
+                        // Handle the error, e.g., log it and return
+                        printf("Error rendering text: %s\n", TTF_GetError());
+                    }
+
+                    // Create a texture from the surface
+                    SDL_Texture *passwordBoxTextTexture = SDL_CreateTextureFromSurface(renderer, passwordBoxTextSurface);
+                    if (passwordBoxTextTexture == NULL) {
+                        // Handle the error, e.g., log it and return
+                        printf("Error creating texture: %s\n", SDL_GetError());
+                        SDL_FreeSurface(passwordBoxTextSurface); // Free the surface to avoid memory leak
+                    }
+
+                    // Set rendering space and render to screen
+                    int passwordTextWidth = passwordBoxTextSurface->w;
+                    int passwordTextHeight = passwordBoxTextSurface->h;
+                    SDL_Rect passwordBoxRenderQuad = { passwordTextbox.boxRect.x + 5, passwordTextbox.boxRect.y + 5, passwordTextWidth, passwordTextHeight };
+
+                    SDL_RenderCopy(renderer, usernameBoxTextTexture, NULL, &usernameBoxRenderQuad);
+                    SDL_RenderCopy(renderer, passwordBoxTextTexture, NULL, &passwordBoxRenderQuad);
+
+                    // render login button ---------------------------------------------------------------------------
+                    Button loginButton;
+                    initButton(&loginButton, 230, 330, 200, 40, "Login");
+
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 20); // Blue color
+                    SDL_Rect loginButtonRect = { loginButton.boxRect.x, loginButton.boxRect.y, loginButton.boxRect.w, loginButton.boxRect.h };
+                    SDL_RenderFillRect(renderer, &loginButtonRect);
+
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 25); // Black background
+                    // Render the text on the button
+                    SDL_Color buttonTextColor = {255, 255, 255, 255}; // White text
+                    SDL_Surface *buttonTextSurface = TTF_RenderText_Solid(loginFont, loginButton.text, buttonTextColor);
+                    SDL_Texture *buttonTextTexture = SDL_CreateTextureFromSurface(renderer, buttonTextSurface);
+                    SDL_Rect buttonTextRenderQuad = { loginButton.boxRect.x + 50, loginButton.boxRect.y + 12, buttonTextSurface->w, buttonTextSurface->h };
+                    SDL_RenderCopy(renderer, buttonTextTexture, NULL, &buttonTextRenderQuad);
+
                 }
                 SDL_RenderPresent(renderer);
                 
@@ -292,6 +342,7 @@ int main(){
                             break;
                             case LOGIN:
                                 handleKeyboardEvent(&e, &usernameTextbox);
+                                handleKeyboardEvent(&e, &passwordTextbox);
                             break;
                         }
                     } else if (e.type == SDL_MOUSEBUTTONDOWN) {
@@ -299,6 +350,11 @@ int main(){
                             int mouseX, mouseY;
                             SDL_GetMouseState(&mouseX, &mouseY);
                             setFocusOnTextbox(&usernameTextbox, mouseX, mouseY);
+                            setFocusOnTextbox(&passwordTextbox, mouseX, mouseY);
+
+                            if (mouseX >= 230 && mouseX <= 430 && mouseY >= 330 && mouseY <= 370) {
+                                login(usernameTextbox.text, passwordTextbox.text);
+                            }
                         }
                     }
                 }
@@ -327,5 +383,9 @@ void setFocusOnTextbox(Textbox *textbox, int mouseX, int mouseY) {
     } else {
         textbox->hasFocus = false; // Mouse click is outside the textbox
     }
+}
+
+void login(char username[], char password[]){
+
 }
 
