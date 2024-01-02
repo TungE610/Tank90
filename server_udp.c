@@ -182,9 +182,10 @@ void login(singleLinkedList* list,char  message[], int socket){
 
     node* foundPlayer;
     extractUsernameAndPassword((unsigned char *)message, &extractedUsername, &extractedPassword);
+    printf("username: %s\n",extractedUsername);
+    printf("password: %s\n",extractedPassword);
 
     foundPlayer = findAccount(list, extractedUsername);
-    printf("found: %s - %s\n", foundPlayer->element.username, foundPlayer->element.password);
 
     if (foundPlayer != NULL) {
         

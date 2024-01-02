@@ -21,7 +21,7 @@
 #define SERV_IP "127.0.0.1"
 #define SERV_PORT 5500
 const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+const int SCREEN_HEIGHT = 540;
 int tankX = 220;
 int tankY = 245;
 int tankWidth = 30;
@@ -40,6 +40,7 @@ SDL_Texture *enermy_1_left = NULL;
 SDL_Texture *enermy_1_up = NULL;
 SDL_Texture *enermy_1_down = NULL;
 SDL_Texture *bullet = NULL;
+SDL_Texture *none = NULL;
 
 SDL_Renderer *renderer;
 char *SERVER_ADDR = "127.0.0.1";
@@ -61,6 +62,7 @@ typedef struct {
 enum AppState {
     MAIN_MENU,
     LOGIN,
+    REGISTER,
     CHOOSE_MODE,
     PLAY_SINGLE_GAME,
     PLAY_DUAL_GAME,
@@ -82,18 +84,18 @@ void initButton(Button *button, int x, int y, int w, int h, const char *text) {
 }
 
 void handleKeyboardEvent(SDL_Event *e, Textbox *textbox) {
-    if (!textbox->hasFocus) return;
+    if (textbox->hasFocus){
+        if (e->type == SDL_KEYDOWN) {
+            if (e->key.keysym.sym == SDLK_BACKSPACE && strlen(textbox->text) > 1) {
+                textbox->text[strlen(textbox->text) - 1] = '\0';
+            } else if (e->key.keysym.sym == SDLK_RETURN) {
 
-    if (e->type == SDL_KEYDOWN) {
-        if (e->key.keysym.sym == SDLK_BACKSPACE && strlen(textbox->text) > 1) {
-            // Handle backspace
-            textbox->text[strlen(textbox->text) - 1] = '\0';
-            printf("delete\n");
-        } else if (e->key.keysym.sym == SDLK_RETURN) {
+            }
+        } else if (e->type == SDL_TEXTINPUT) {
+            strcat(textbox->text, e->text.text);
         }
-    } else if (e->type == SDL_TEXTINPUT) {
-        strcat(textbox->text, e->text.text);
     }
+
 }
 
 int main(){
@@ -110,7 +112,9 @@ int main(){
     int single_mode_stage = 1;
     int single_mode_postion_x = 4;
     int single_mode_postion_y = 11;
-
+    char login_message[BUFF_SIZE];
+    strcpy(login_message, " ");
+    int mouseX, mouseY;
     enum AppState state = MAIN_MENU; // Start in the main menu state
 
     TTF_Init();
@@ -188,6 +192,7 @@ int main(){
 
             // Create a text surface
             SDL_Color white = {255, 255, 255};  // White text color
+            SDL_Color red = {255, 0, 0};  // White text color
             SDL_Surface *textSurface = TTF_RenderText_Solid(welcomeFont, "TANK 90", white);
 
             SDL_Surface *loginText = TTF_RenderText_Solid(loginFont, "1. Login", white);
@@ -202,15 +207,15 @@ int main(){
             SDL_RenderClear(renderer);
 
             // Render the text texture
-            SDL_Rect renderQuad = { 150, 100, textSurface->w, textSurface->h };
+            SDL_Rect renderQuad = { 150, 150, textSurface->w, textSurface->h };
             SDL_RenderCopy(renderer, textTexture, NULL, &renderQuad);
 
             // render login text texture
-            SDL_Rect loginTextRenderQuad = { 220, 180, loginText->w, loginText->h };
+            SDL_Rect loginTextRenderQuad = { 220, 230, loginText->w, loginText->h };
             SDL_RenderCopy(renderer, loginTextTexture, NULL, &loginTextRenderQuad);
 
             // render login text texture
-            SDL_Rect registerTextRenderQuad = { 220, 230, registerText->w, registerText->h };
+            SDL_Rect registerTextRenderQuad = { 220, 280, registerText->w, registerText->h };
             SDL_RenderCopy(renderer, registerTextTexture, NULL, &registerTextRenderQuad);
 
             // load tank icon to choosee
@@ -228,10 +233,11 @@ int main(){
             enermy_1_up = IMG_LoadTexture(renderer, "images/enermy_1_up.png");
             enermy_1_down = IMG_LoadTexture(renderer, "images/enermy_1_down.png");
             bullet = IMG_LoadTexture(renderer, "images/bullet.png");
+            none = IMG_LoadTexture(renderer, "images/none.png");
 
             int tankwidth = 30;
             int tankheight = 30;
-            SDL_Rect tankRect = {180, 175, tankwidth, tankheight};
+            SDL_Rect tankRect = {180, 225, tankwidth, tankheight};
 
             TTF_Font *loginBigFont = TTF_OpenFont("./resources/font/ARCADE.TTF", 50);  // Adjust font size as needed
             TTF_Font *usernameFont = TTF_OpenFont("./resources/font/ARCADE.TTF", 20);  // Adjust font size as needed
@@ -242,15 +248,17 @@ int main(){
             }
 
             SDL_Surface *loginBigText = TTF_RenderText_Solid(loginBigFont, "LOGIN", white);
+            SDL_Surface *registerBigText = TTF_RenderText_Solid(loginBigFont, "REGISTER", white);
             SDL_Surface *usernameText = TTF_RenderText_Solid(usernameFont, "Username: ", white);
             SDL_Surface *passwordText = TTF_RenderText_Solid(usernameFont, "Password: ", white);
             SDL_Surface *chooseModeText = TTF_RenderText_Solid(loginBigFont, "Choose Mode", white);
             SDL_Surface *singleModeText = TTF_RenderText_Solid(usernameFont, "1 Person", white);
             SDL_Surface *dualModeText = TTF_RenderText_Solid(usernameFont, "2 People", white);
 
-            SDL_Texture *loginBigTextTexture = SDL_CreateTextureFromSurface(renderer, loginBigText);  
+            SDL_Texture *loginBigTextTexture = SDL_CreateTextureFromSurface(renderer, loginBigText); 
+            SDL_Texture *registerBigTextTexture = SDL_CreateTextureFromSurface(renderer, registerBigText);  \
             SDL_Texture *usernameTextTexture = SDL_CreateTextureFromSurface(renderer, usernameText); 
-            SDL_Texture *passwordTextTexture = SDL_CreateTextureFromSurface(renderer, passwordText);    
+            SDL_Texture *passwordTextTexture = SDL_CreateTextureFromSurface(renderer, passwordText);
             SDL_Texture *chooseModeTextTexture = SDL_CreateTextureFromSurface(renderer, chooseModeText);  
             SDL_Texture *singleModeTextTexture = SDL_CreateTextureFromSurface(renderer, singleModeText);      
             SDL_Texture *dualModeTextTexture = SDL_CreateTextureFromSurface(renderer, dualModeText);      
@@ -277,9 +285,12 @@ int main(){
             createSingleMap1(single_map_1);
 
             // Create a surface for the text
+            int vertical_controller = 0;
+            int hozirontal_controller = 0;
+
+            TTF_Font *loginMessageFont = TTF_OpenFont("./resources/font/ARCADE.TTF", 13);  // Adjust font size as needed
 
             while( quit == false ){
-                printf("run\n");
                 SDL_RenderClear(renderer);
                 if (state == MAIN_MENU) {
                     SDL_RenderCopy(renderer, textTexture, NULL, &renderQuad);
@@ -290,6 +301,13 @@ int main(){
                     SDL_RenderCopy(renderer, loginBigTextTexture, NULL, &loginBigTextRenderQuad);
                     SDL_RenderCopy(renderer, usernameTextTexture, NULL, &usernameRenderQuad);
                     SDL_RenderCopy(renderer, passwordTextTexture, NULL, &passwordRenderQuad);
+                    
+                    SDL_Surface *loginMessgageText = TTF_RenderText_Solid(loginMessageFont, login_message, red);
+                    SDL_Texture *loginMessageTextTexture = SDL_CreateTextureFromSurface(renderer, loginMessgageText);   
+                    SDL_Rect loginMessageRenderQuad = { 120, 285, loginMessgageText->w, loginMessgageText->h }; 
+                    SDL_RenderCopy(renderer, loginMessageTextTexture, NULL, &loginMessageRenderQuad);
+                    SDL_FreeSurface(loginMessgageText); // Free the surface to avoid memory leak
+                    SDL_DestroyTexture(loginMessageTextTexture); // Free the surface to avoid memory leak
 
                     // username box
                     SDL_Surface *usernameBoxTextSurface = TTF_RenderText_Solid(usernameFont, usernameTextbox.text, textColor);
@@ -350,6 +368,11 @@ int main(){
                     SDL_Rect buttonTextRenderQuad = { loginButton.boxRect.x + 50, loginButton.boxRect.y + 12, buttonTextSurface->w, buttonTextSurface->h };
                     SDL_RenderCopy(renderer, buttonTextTexture, NULL, &buttonTextRenderQuad);
 
+                } else if (state == REGISTER) {
+                    SDL_RenderCopy(renderer, registerBigTextTexture, NULL, &loginBigTextRenderQuad);
+                    SDL_RenderCopy(renderer, usernameTextTexture, NULL, &usernameRenderQuad);
+                    SDL_RenderCopy(renderer, passwordTextTexture, NULL, &passwordRenderQuad);
+
                 } else if (state == CHOOSE_MODE) {
                     SDL_RenderCopy(renderer, chooseModeTextTexture, NULL, &chooseModeRenderQuad);
                     SDL_RenderCopy(renderer, singleModeTextTexture, NULL, &singleModeRenderQuad);
@@ -357,41 +380,54 @@ int main(){
                     SDL_RenderCopy(renderer, tank, NULL, &tankRectChooseMode);
                 } else if (state == PLAY_SINGLE_GAME && single_mode_stage == 1) {
 
-                    int mapX = (640 - (12 * 40)) / 2;
-                    int mapY = (480 - (12 * 40)) / 2;
+                            // Set the background color to black
+                SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+                SDL_RenderClear(renderer);
 
-                    // Render the map
-                    for (int y = 0; y < 12; y++) {
-                        for (int x = 0; x < 12; x++) {
-                            SDL_Rect destRect = { mapX + x * 40, mapY + y * 40, 40, 40 };
-                            SDL_Texture* texture = NULL;
+                // Set the draw color for the gray border
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
-                            switch (single_map_1[y][x]) {
-                                case 0:
-                                    break;
-                                case 1:
-                                    texture = block;
-                                    break;
-                                case 2:
-                                    texture = iron;
-                                    break;
-                                case 9:
-                                    texture = meUp;
-                                    break;
-                                case 7: 
-                                    texture = enermy_1_right;
-                                    break;
-                                default:
-                                    break;
-                            }
+                // Calculate the map boundaries
+                int mapX = (640 - (12 * 40)) / 2;
+                int mapY = (480 - (12 * 40)) / 2;
 
-                            if (texture == meUp) {
-                                SDL_RenderCopy(renderer, texture, NULL, &controlRect);
-                            } else {
-                                SDL_RenderCopy(renderer, texture, NULL, &destRect);
-                            }
+                // Render the gray border around the map
+                SDL_Rect borderRect = { mapX - 2, mapY - 2, 12 * 40 + 4, 12 * 40 + 4 };
+                SDL_RenderFillRect(renderer, &borderRect);
+
+                // Render the map
+                for (int y = 0; y < 12; y++) {
+                    for (int x = 0; x < 12; x++) {
+                        SDL_Rect destRect = { mapX + x * 40, mapY + y * 40, 40, 40 };
+                        SDL_Texture* texture = NULL;
+
+                        switch (single_map_1[y][x]) {
+                            case 0:
+                                // texture= none;
+                                break;
+                            case 1:
+                                texture = block;
+                                break;
+                            case 2:
+                                texture = iron;
+                                break;
+                            case 9:
+                                texture = meUp;
+                                break;
+                            case 7:
+                                texture = enermy_1_right;
+                                break;
+                            default:
+                                break;
+                        }
+
+                        if (texture == meUp) {
+                            SDL_RenderCopy(renderer, texture, NULL, &controlRect);
+                        } else {
+                            SDL_RenderCopy(renderer, texture, NULL, &destRect);
                         }
                     }
+                }
                 }
 
                 SDL_RenderPresent(renderer);
@@ -405,14 +441,14 @@ int main(){
                             case MAIN_MENU:
                                 switch (e.key.keysym.sym) {
                                     case SDLK_DOWN:
-                                        if (tankRect.y < 225) {
+                                        if (tankRect.y < 275) {
 
                                             tankRect.y += 50;
                                             menuChoose = 2;
                                         }
                                         break;
                                     case SDLK_UP:
-                                        if (tankRect.y > 175) {
+                                        if (tankRect.y > 225) {
 
                                             tankRect.y -= 50;
                                             menuChoose = 1;
@@ -422,16 +458,18 @@ int main(){
                                         if (menuChoose == 1) {
                                             state = LOGIN;
 
-                                        } else {
-
+                                        } else if(menuChoose == 2){
+                                            state = REGISTER;
                                         }
 
                                         break;
                                 }
                             break;
                             case LOGIN:
-                                handleKeyboardEvent(&e, &usernameTextbox);
-                                handleKeyboardEvent(&e, &passwordTextbox);
+                                    handleKeyboardEvent(&e, &usernameTextbox);
+                                    handleKeyboardEvent(&e, &passwordTextbox);
+                                break;
+                            case REGISTER:
                                 break;
                             case CHOOSE_MODE:
                                 switch (e.key.keysym.sym) {
@@ -462,20 +500,127 @@ int main(){
                             case PLAY_SINGLE_GAME:
                                 switch (e.key.keysym.sym) {
                                     case SDLK_DOWN:
-                                        
+                                        printf("vertical controller: %d\n", vertical_controller);
+                                        if (vertical_controller == 0) {
+                                            
+                                            if (single_mode_postion_y+1 < 12) {
+                                                if (single_map_1[single_mode_postion_y+1][single_mode_postion_x] != 1) {
+                                                    vertical_controller = 7;
+                                                    controlRect.y += 5;
+                                                } else {
+
+                                                }
+                                            } else {
+
+                                            }
+                                        } else {
+                                            
+                                            if (vertical_controller == 1) {
+                                                vertical_controller = 0;
+                                                controlRect.y += 5;
+                                                single_mode_postion_y+=1;
+                                                single_map_1[single_mode_postion_y][single_mode_postion_x] = 9;
+                                                single_map_1[single_mode_postion_y-1][single_mode_postion_x] = 0;
+                                            } else {
+                                                vertical_controller --;
+                                                controlRect.y += 5;
+                                            }
+                                            
+                                        }
                                         break;
                                     case SDLK_UP:
-                                        
+                                        printf("vertical controller: %d\n", vertical_controller);
+                                        if (vertical_controller == 0) {
+
+                                            if (single_mode_postion_y-1 > -1) {
+                                                if (single_map_1[single_mode_postion_y-1][single_mode_postion_x] != 1) {
+                                                    vertical_controller ++;
+                                                    controlRect.y -= 5;
+                                                } else {
+
+                                                }
+                                            } else {
+
+                                            }
+                                        } else {
+                                            
+                                            if (vertical_controller == 7) {
+                                                vertical_controller = 0;
+                                                controlRect.y -= 5;
+                                                single_mode_postion_y-=1;
+                                                single_map_1[single_mode_postion_y][single_mode_postion_x] = 9;
+                                                single_map_1[single_mode_postion_y+1][single_mode_postion_x] = 0;
+                                            } else {
+                                                vertical_controller += 1;
+                                                controlRect.y -= 5;
+                                            }
+                                            
+                                        }
+                                        break;
+                                    case SDLK_RIGHT:
+                                        if (hozirontal_controller == 0) {
+
+                                            if (single_mode_postion_x-1 > -1 ) {
+                                                if (single_map_1[single_mode_postion_y][single_mode_postion_x-1] != 1) {
+                                                    hozirontal_controller ++;
+                                                    controlRect.x -= 5;
+                                                } else {
+
+                                                }
+                                            } else {
+
+                                            }
+                                        } else {
+                                            
+                                            if (hozirontal_controller == 7) {
+                                                hozirontal_controller = 0;
+                                                controlRect.x -= 5;
+                                                single_mode_postion_x-=1;
+                                                single_map_1[single_mode_postion_y][single_mode_postion_x] = 9;
+                                                single_map_1[single_mode_postion_y][single_mode_postion_x+1] = 0;
+                                            } else {
+                                                hozirontal_controller += 1;
+                                                controlRect.x -= 5;
+                                            }
+                                            
+                                        }
+                                        break;
+                                    case SDLK_LEFT:
+                                        if (hozirontal_controller == 0) {
+                                            
+                                            if (single_mode_postion_x+1 < 12) {
+                                                if (single_map_1[single_mode_postion_y][single_mode_postion_x+1] != 1) {
+                                                    hozirontal_controller ++;
+                                                    controlRect.x += 5;
+                                                } else {
+
+                                                }
+                                            } else {
+
+                                            }
+                                        } else {
+                                            
+                                            if (hozirontal_controller == 7) {
+                                                hozirontal_controller = 0;
+                                                controlRect.x += 5;
+                                                single_mode_postion_x+=1;
+                                                single_map_1[single_mode_postion_y][single_mode_postion_x] = 9;
+                                                single_map_1[single_mode_postion_y][single_mode_postion_x-1] = 0;
+                                            } else {
+                                                hozirontal_controller += 1;
+                                                controlRect.x += 5;
+                                            }
+                                            
+                                        }
                                         break;
                                     case SDLK_RETURN:
-                                       
+                                        
                                         break;
                                 }
                                 break;
                         }
                     } else if (e.type == SDL_MOUSEBUTTONDOWN) {
                         if (state == LOGIN) {
-                            int mouseX, mouseY;
                             SDL_GetMouseState(&mouseX, &mouseY);
                             setFocusOnTextbox(&usernameTextbox, mouseX, mouseY);
                             setFocusOnTextbox(&passwordTextbox, mouseX, mouseY);
@@ -496,8 +641,18 @@ int main(){
                                 }
                                 buff[bytes_received] = '\0';
 
+                                printf("receive from server: %s\n", buff);
+
                                 if (strcmp(buff, "found") == 0) {
                                     state = CHOOSE_MODE;
+                                } else if (strcmp(buff, "locked") == 0){
+                                    strcpy(login_message, "Your account was locked");
+                                } else if (strcmp(buff, "logged") == 0) {
+                                    strcpy(login_message, "Your account was logged somewhere");
+                                } else if (strcmp(buff, "invalid") == 0) {
+                                    strcpy(login_message, "username or password incorrect");
+                                } else {  
+                                   strcpy(login_message, "Account not found");
                                 }
                             }
                         }
@@ -524,7 +679,6 @@ void setFocusOnTextbox(Textbox *textbox, int mouseX, int mouseY) {
     if (mouseX >= textbox->boxRect.x && mouseX <= textbox->boxRect.x + textbox->boxRect.w &&
         mouseY >= textbox->boxRect.y && mouseY <= textbox->boxRect.y + textbox->boxRect.h) {
         textbox->hasFocus = true;  // Mouse click is inside the textbox
-        printf("focus\n");
     } else {
         textbox->hasFocus = false; // Mouse click is outside the textbox
     }
