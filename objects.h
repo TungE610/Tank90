@@ -2,6 +2,9 @@
 #define OBJECTS_H
 
 #include <SDL.h>
+#include "authenticate.h"
+
+#define BUFF_SIZE 1024
 
 struct Room {
     int id;
@@ -12,6 +15,8 @@ struct Room {
 
 struct Player {
     int id;
+    char username[BUFF_SIZE];
+    char password[BUFF_SIZE];
     SDL_Rect position;
     int left, right, up, down;
     int can_jump, y_speed;
@@ -23,6 +28,7 @@ struct Player {
     int is_waiting_other_player;
     struct sockaddr_in address;
     int socket;
+    singleLinkedList *list;
 };
 
 struct Bullet {
