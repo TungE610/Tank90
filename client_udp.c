@@ -77,6 +77,13 @@ void initTextbox(Textbox *textbox, int x, int y, int w, int h) {
     textbox->hasFocus = false;
 }
 
+void updatePlayerPosition(int *y, int *x, int deltaY, int deltaX) {
+    single_map_1[*y][*x] = 0;
+    *y += deltaY;
+    *x += deltaX;
+    single_map_1[*y][*x] = 9;
+}
+
 void initButton(Button *button, int x, int y, int w, int h, const char *text) {
     strcpy(button->text, text);
     button->boxRect = (SDL_Rect){x, y, w, h};
@@ -113,7 +120,9 @@ int main(){
     int single_mode_postion_x = 4;
     int single_mode_postion_y = 11;
     char login_message[BUFF_SIZE];
+    char register_message[BUFF_SIZE];
     strcpy(login_message, " ");
+    strcpy(register_message, " ");
     int mouseX, mouseY;
     enum AppState state = MAIN_MENU; // Start in the main menu state
 
@@ -250,6 +259,7 @@ int main(){
             SDL_Surface *loginBigText = TTF_RenderText_Solid(loginBigFont, "LOGIN", white);
             SDL_Surface *registerBigText = TTF_RenderText_Solid(loginBigFont, "REGISTER", white);
             SDL_Surface *usernameText = TTF_RenderText_Solid(usernameFont, "Username: ", white);
+            SDL_Surface *retypePasswordText = TTF_RenderText_Solid(usernameFont, "Retype Password: ", white);
             SDL_Surface *passwordText = TTF_RenderText_Solid(usernameFont, "Password: ", white);
             SDL_Surface *chooseModeText = TTF_RenderText_Solid(loginBigFont, "Choose Mode", white);
             SDL_Surface *singleModeText = TTF_RenderText_Solid(usernameFont, "1 Person", white);
@@ -259,6 +269,7 @@ int main(){
             SDL_Texture *registerBigTextTexture = SDL_CreateTextureFromSurface(renderer, registerBigText);  \
             SDL_Texture *usernameTextTexture = SDL_CreateTextureFromSurface(renderer, usernameText); 
             SDL_Texture *passwordTextTexture = SDL_CreateTextureFromSurface(renderer, passwordText);
+            SDL_Texture *retypePasswordTextTexture = SDL_CreateTextureFromSurface(renderer, retypePasswordText);
             SDL_Texture *chooseModeTextTexture = SDL_CreateTextureFromSurface(renderer, chooseModeText);  
             SDL_Texture *singleModeTextTexture = SDL_CreateTextureFromSurface(renderer, singleModeText);      
             SDL_Texture *dualModeTextTexture = SDL_CreateTextureFromSurface(renderer, dualModeText);      
@@ -271,24 +282,34 @@ int main(){
             SDL_Rect loginBigTextRenderQuad = { 195, 100, loginBigText->w, loginBigText->h };
             SDL_Rect usernameRenderQuad = { 120, 200, usernameText->w, usernameText->h };
             SDL_Rect passwordRenderQuad = { 120, 250, passwordText->w, passwordText->h };
+            SDL_Rect retypePasswordRenderQuad = { 120, 300, retypePasswordText->w, retypePasswordText->h };
             SDL_Rect chooseModeRenderQuad = { 50, 100, chooseModeText->w, chooseModeText->h };
             SDL_Rect singleModeRenderQuad = { 250, 250, singleModeText->w, singleModeText->h };
             SDL_Rect dualModeRenderQuad = { 250, 300, dualModeText->w, dualModeText->h };
             SDL_Rect tankRectChooseMode = {200, 242, tankwidth, tankheight};
 
-            Textbox usernameTextbox;
-            Textbox passwordTextbox;
-            initTextbox(&usernameTextbox, 320, 195, 200, 30);
-            initTextbox(&passwordTextbox, 320, 245, 200, 30);
+            Textbox usernameLoginTextbox;
+            Textbox passwordLoginTextbox;
+            initTextbox(&usernameLoginTextbox, 320, 195, 200, 30);
+            initTextbox(&passwordLoginTextbox, 320, 245, 200, 30);
+
+            Textbox usernameRegisterTextbox;
+            Textbox passwordRegisterTextbox;
+            Textbox retypePasswordRegisterTextbox;
             
+            initTextbox(&usernameRegisterTextbox, 300, 195, 200, 30);
+            initTextbox(&passwordRegisterTextbox, 300, 245, 200, 30);
+            initTextbox(&retypePasswordRegisterTextbox, 410, 295, 200, 30);
+    
             SDL_Color textColor = {255, 255, 255, 255}; // White text
             createSingleMap1(single_map_1);
 
             // Create a surface for the text
-            int vertical_controller = 0;
-            int hozirontal_controller = 0;
+            int vertical_controller = 88;
+            int hozirontal_controller = 32;
 
             TTF_Font *loginMessageFont = TTF_OpenFont("./resources/font/ARCADE.TTF", 13);  // Adjust font size as needed
+            SDL_Texture *myTank = meUp;
 
             while( quit == false ){
                 SDL_RenderClear(renderer);
@@ -297,6 +318,7 @@ int main(){
                     SDL_RenderCopy(renderer, loginTextTexture, NULL, &loginTextRenderQuad);
                     SDL_RenderCopy(renderer, registerTextTexture, NULL, &registerTextRenderQuad);
                     SDL_RenderCopy(renderer, tank, NULL, &tankRect);
+//------------------------------------------------------------------------------------------------------------------------------------------
                 } else if (state == LOGIN) {
                     SDL_RenderCopy(renderer, loginBigTextTexture, NULL, &loginBigTextRenderQuad);
                     SDL_RenderCopy(renderer, usernameTextTexture, NULL, &usernameRenderQuad);
@@ -310,7 +332,7 @@ int main(){
                     SDL_DestroyTexture(loginMessageTextTexture); // Free the surface to avoid memory leak
 
                     // username box
-                    SDL_Surface *usernameBoxTextSurface = TTF_RenderText_Solid(usernameFont, usernameTextbox.text, textColor);
+                    SDL_Surface *usernameBoxTextSurface = TTF_RenderText_Solid(usernameFont, usernameLoginTextbox.text, textColor);
                     if (usernameBoxTextSurface == NULL) {
                         // Handle the error, e.g., log it and return
                         printf("Error rendering text: %s\n", TTF_GetError());
@@ -327,10 +349,10 @@ int main(){
                     // Set rendering space and render to screen
                     int usernameTextWidth = usernameBoxTextSurface->w;
                     int usernameTextHeight = usernameBoxTextSurface->h;
-                    SDL_Rect usernameBoxRenderQuad = { usernameTextbox.boxRect.x + 5, usernameTextbox.boxRect.y + 5, usernameTextWidth, usernameTextHeight };
+                    SDL_Rect usernameBoxRenderQuad = { usernameLoginTextbox.boxRect.x + 5, usernameLoginTextbox.boxRect.y + 5, usernameTextWidth, usernameTextHeight };
 
                     //password box
-                    SDL_Surface *passwordBoxTextSurface = TTF_RenderText_Solid(usernameFont, passwordTextbox.text, textColor);
+                    SDL_Surface *passwordBoxTextSurface = TTF_RenderText_Solid(usernameFont, passwordLoginTextbox.text, textColor);
                     if (passwordBoxTextSurface == NULL) {
                         // Handle the error, e.g., log it and return
                         printf("Error rendering text: %s\n", TTF_GetError());
@@ -347,7 +369,7 @@ int main(){
                     // Set rendering space and render to screen
                     int passwordTextWidth = passwordBoxTextSurface->w;
                     int passwordTextHeight = passwordBoxTextSurface->h;
-                    SDL_Rect passwordBoxRenderQuad = { passwordTextbox.boxRect.x + 5, passwordTextbox.boxRect.y + 5, passwordTextWidth, passwordTextHeight };
+                    SDL_Rect passwordBoxRenderQuad = { passwordLoginTextbox.boxRect.x + 5, passwordLoginTextbox.boxRect.y + 5, passwordTextWidth, passwordTextHeight };
 
                     SDL_RenderCopy(renderer, usernameBoxTextTexture, NULL, &usernameBoxRenderQuad);
                     SDL_RenderCopy(renderer, passwordBoxTextTexture, NULL, &passwordBoxRenderQuad);
@@ -368,11 +390,101 @@ int main(){
                     SDL_Rect buttonTextRenderQuad = { loginButton.boxRect.x + 50, loginButton.boxRect.y + 12, buttonTextSurface->w, buttonTextSurface->h };
                     SDL_RenderCopy(renderer, buttonTextTexture, NULL, &buttonTextRenderQuad);
 
+//-----------------------------------------------------------------------------------------------------------------------------------------------
                 } else if (state == REGISTER) {
                     SDL_RenderCopy(renderer, registerBigTextTexture, NULL, &loginBigTextRenderQuad);
                     SDL_RenderCopy(renderer, usernameTextTexture, NULL, &usernameRenderQuad);
                     SDL_RenderCopy(renderer, passwordTextTexture, NULL, &passwordRenderQuad);
+                    SDL_RenderCopy(renderer, retypePasswordTextTexture, NULL, &retypePasswordRenderQuad);
 
+                    SDL_Surface *registerMessgageText = TTF_RenderText_Solid(loginMessageFont, login_message, red);
+                    SDL_Texture *registerMessageTextTexture = SDL_CreateTextureFromSurface(renderer, registerMessgageText);   
+                    SDL_Rect registerMessageRenderQuad = { 120, 335, registerMessgageText->w, registerMessgageText->h }; 
+                    SDL_RenderCopy(renderer, registerMessageTextTexture, NULL, &registerMessageRenderQuad);
+                    SDL_FreeSurface(registerMessgageText); // Free the surface to avoid memory leak
+                    SDL_DestroyTexture(registerMessageTextTexture); // Free the surface to avoid memory leak
+
+                    // username box
+                    SDL_Surface *usernameBoxTextSurface = TTF_RenderText_Solid(usernameFont, usernameRegisterTextbox.text, textColor);
+                    if (usernameBoxTextSurface == NULL) {
+                        // Handle the error, e.g., log it and return
+                        printf("Error rendering text: %s\n", TTF_GetError());
+                    }
+
+                    // Create a texture from the surface
+                    SDL_Texture *usernameBoxTextTexture = SDL_CreateTextureFromSurface(renderer, usernameBoxTextSurface);
+                    if (usernameBoxTextTexture == NULL) {
+                        // Handle the error, e.g., log it and return
+                        printf("Error creating texture: %s\n", SDL_GetError());
+                        SDL_FreeSurface(usernameBoxTextSurface); // Free the surface to avoid memory leak
+                    }
+
+                    // Set rendering space and render to screen
+                    int usernameTextWidth = usernameBoxTextSurface->w;
+                    int usernameTextHeight = usernameBoxTextSurface->h;
+                    SDL_Rect usernameBoxRenderQuad = { usernameRegisterTextbox.boxRect.x + 5, usernameRegisterTextbox.boxRect.y + 5, usernameTextWidth, usernameTextHeight };
+
+                    //password box
+                    SDL_Surface *passwordBoxTextSurface = TTF_RenderText_Solid(usernameFont, passwordRegisterTextbox.text, textColor);
+                    if (passwordBoxTextSurface == NULL) {
+                        // Handle the error, e.g., log it and return
+                        printf("Error rendering text: %s\n", TTF_GetError());
+                    }
+
+                    // Create a texture from the surface
+                    SDL_Texture *passwordBoxTextTexture = SDL_CreateTextureFromSurface(renderer, passwordBoxTextSurface);
+                    if (passwordBoxTextTexture == NULL) {
+                        // Handle the error, e.g., log it and return
+                        printf("Error creating texture: %s\n", SDL_GetError());
+                        SDL_FreeSurface(passwordBoxTextSurface); // Free the surface to avoid memory leak
+                    }
+
+                    // Set rendering space and render to screen
+                    int passwordTextWidth = passwordBoxTextSurface->w;
+                    int passwordTextHeight = passwordBoxTextSurface->h;
+                    SDL_Rect passwordBoxRenderQuad = { passwordRegisterTextbox.boxRect.x + 5, passwordRegisterTextbox.boxRect.y + 5, passwordTextWidth, passwordTextHeight };
+
+                     //password box
+                    SDL_Surface *retypePasswordRegisterBoxTextSurface = TTF_RenderText_Solid(usernameFont, retypePasswordRegisterTextbox.text, textColor);
+                    if (retypePasswordRegisterBoxTextSurface == NULL) {
+                        // Handle the error, e.g., log it and return
+                        printf("Error rendering text: %s\n", TTF_GetError());
+                    }
+
+                    // Create a texture from the surface
+                    SDL_Texture *retypePasswordBoxTextTexture = SDL_CreateTextureFromSurface(renderer, retypePasswordRegisterBoxTextSurface);
+                    if (retypePasswordBoxTextTexture == NULL) {
+                        // Handle the error, e.g., log it and return
+                        printf("Error creating texture: %s\n", SDL_GetError());
+                        SDL_FreeSurface(retypePasswordRegisterBoxTextSurface); // Free the surface to avoid memory leak
+                    }
+
+                    // Set rendering space and render to screen
+                    int retypePasswordTextWidth = retypePasswordRegisterBoxTextSurface->w;
+                    int retypePasswordTextHeight = retypePasswordRegisterBoxTextSurface->h;
+                    SDL_Rect retypePasswordBoxRenderQuad = { retypePasswordRegisterTextbox.boxRect.x + 5, retypePasswordRegisterTextbox.boxRect.y + 5, retypePasswordTextWidth, retypePasswordTextHeight };
+
+                    SDL_RenderCopy(renderer, usernameBoxTextTexture, NULL, &usernameBoxRenderQuad);
+                    SDL_RenderCopy(renderer, passwordBoxTextTexture, NULL, &passwordBoxRenderQuad);
+                    SDL_RenderCopy(renderer, retypePasswordBoxTextTexture, NULL, &retypePasswordBoxRenderQuad);
+
+                    // render login button ---------------------------------------------------------------------------
+                    Button regiterButton;
+                    initButton(&regiterButton, 230, 380, 200, 40, "Register");
+
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 20); // Blue color
+                    SDL_Rect regiterButtonRect = { regiterButton.boxRect.x, regiterButton.boxRect.y, regiterButton.boxRect.w, regiterButton.boxRect.h };
+                    SDL_RenderFillRect(renderer, &regiterButtonRect);
+
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 25); // Black background
+                    // Render the text on the button
+                    SDL_Color buttonTextColor = {255, 255, 255, 255}; // White text
+                    SDL_Surface *buttonTextSurface = TTF_RenderText_Solid(loginFont, regiterButton.text, buttonTextColor);
+                    SDL_Texture *buttonTextTexture = SDL_CreateTextureFromSurface(renderer, buttonTextSurface);
+                    SDL_Rect buttonTextRenderQuad = { regiterButton.boxRect.x + 20, regiterButton.boxRect.y + 12, buttonTextSurface->w, buttonTextSurface->h };
+                    SDL_RenderCopy(renderer, buttonTextTexture, NULL, &buttonTextRenderQuad);
+
+//-------------------------------------------------------------------------------------------------------------------------------------------
                 } else if (state == CHOOSE_MODE) {
                     SDL_RenderCopy(renderer, chooseModeTextTexture, NULL, &chooseModeRenderQuad);
                     SDL_RenderCopy(renderer, singleModeTextTexture, NULL, &singleModeRenderQuad);
@@ -412,7 +524,7 @@ int main(){
                                 texture = iron;
                                 break;
                             case 9:
-                                texture = meUp;
+                                texture = myTank;
                                 break;
                             case 7:
                                 texture = enermy_1_right;
@@ -421,7 +533,7 @@ int main(){
                                 break;
                         }
 
-                        if (texture == meUp) {
+                        if (texture == meUp || texture == meDown || texture == meRight || texture == meLeft) {
                             SDL_RenderCopy(renderer, texture, NULL, &controlRect);
                         } else {
                             SDL_RenderCopy(renderer, texture, NULL, &destRect);
@@ -466,10 +578,13 @@ int main(){
                                 }
                             break;
                             case LOGIN:
-                                    handleKeyboardEvent(&e, &usernameTextbox);
-                                    handleKeyboardEvent(&e, &passwordTextbox);
+                                    handleKeyboardEvent(&e, &usernameLoginTextbox);
+                                    handleKeyboardEvent(&e, &passwordLoginTextbox);
                                 break;
                             case REGISTER:
+                                handleKeyboardEvent(&e, &usernameRegisterTextbox);
+                                handleKeyboardEvent(&e, &passwordRegisterTextbox);
+                                handleKeyboardEvent(&e, &retypePasswordRegisterTextbox);
                                 break;
                             case CHOOSE_MODE:
                                 switch (e.key.keysym.sym) {
@@ -499,120 +614,111 @@ int main(){
                                 }
                             case PLAY_SINGLE_GAME:
                                 switch (e.key.keysym.sym) {
-                                    case SDLK_DOWN:
-                                        printf("vertical controller: %d\n", vertical_controller);
-                                        if (vertical_controller == 0) {
-                                            
-                                            if (single_mode_postion_y+1 < 12) {
-                                                if (single_map_1[single_mode_postion_y+1][single_mode_postion_x] != 1) {
-                                                    vertical_controller = 7;
-                                                    controlRect.y += 5;
-                                                } else {
-
+                                        case SDLK_DOWN:
+                                            if (vertical_controller % 8 == 0 && single_mode_postion_y + 1 < 12 && single_map_1[single_mode_postion_y + 1][single_mode_postion_x] == 0) {
+                                                if (hozirontal_controller % 8 != 0 && hozirontal_controller < single_mode_postion_y * 8) {
+                                                    if (single_map_1[single_mode_postion_y+1][single_mode_postion_x -1] == 0 && single_map_1[single_mode_postion_y+1][single_mode_postion_x] == 0) {
+                                                        ++ vertical_controller;
+                                                        controlRect.y += 5;
+                                                    }
+                                                } else if (hozirontal_controller % 8 != 0 && hozirontal_controller > single_mode_postion_y * 8){
+                                                    if (single_map_1[single_mode_postion_y+1][single_mode_postion_x] == 0 && single_map_1[single_mode_postion_y+1][single_mode_postion_x + 1] == 0) {
+                                                        ++vertical_controller;
+                                                        controlRect.y += 5;
+                                                    }
+                                                } else if (hozirontal_controller % 8 == 0) {
+                                                        ++vertical_controller;
+                                                        controlRect.y += 5;
                                                 }
-                                            } else {
-
-                                            }
-                                        } else {
-                                            
-                                            if (vertical_controller == 1) {
-                                                vertical_controller = 0;
+                                            } else if (vertical_controller % 8 == 7 && vertical_controller+1 == (single_mode_postion_y + 1)* 8) {
+                                                ++vertical_controller;
                                                 controlRect.y += 5;
-                                                single_mode_postion_y+=1;
-                                                single_map_1[single_mode_postion_y][single_mode_postion_x] = 9;
-                                                single_map_1[single_mode_postion_y-1][single_mode_postion_x] = 0;
-                                            } else {
-                                                vertical_controller --;
+                                                updatePlayerPosition(&single_mode_postion_y, &single_mode_postion_x, 1, 0);
+                                            } else if (vertical_controller % 8 != 0) {
+                                                ++vertical_controller;
                                                 controlRect.y += 5;
                                             }
-                                            
-                                        }
-                                        break;
-                                    case SDLK_UP:
-                                        printf("vertical controller: %d\n", vertical_controller);
-                                        if (vertical_controller == 0) {
-
-                                            if (single_mode_postion_y-1 > -1) {
-                                                if (single_map_1[single_mode_postion_y-1][single_mode_postion_x] != 1) {
-                                                    vertical_controller ++;
-                                                    controlRect.y -= 5;
-                                                } else {
-
+                                            myTank = meDown;
+                                            break;
+                                        case SDLK_UP:
+                                            if (vertical_controller % 8 == 0 && single_mode_postion_y - 1 >= 0 && single_map_1[single_mode_postion_y - 1][single_mode_postion_x] == 0) {
+                                                if (hozirontal_controller % 8 != 0 && hozirontal_controller < single_mode_postion_y * 8) {
+                                                    if (single_map_1[single_mode_postion_y-1][single_mode_postion_x -1] == 0 && single_map_1[single_mode_postion_y-1][single_mode_postion_x] == 0) {
+                                                        --vertical_controller;
+                                                        controlRect.y -= 5;
+                                                    }
+                                                } else if (hozirontal_controller % 8 != 0 && hozirontal_controller > single_mode_postion_y * 8){
+                                                    if (single_map_1[single_mode_postion_y-1][single_mode_postion_x] == 0 && single_map_1[single_mode_postion_y-1][single_mode_postion_x + 1] == 0) {
+                                                        --vertical_controller;
+                                                        controlRect.y -= 5;
+                                                    }
+                                                } else if (hozirontal_controller % 8 == 0) {
+                                                        --vertical_controller;
+                                                        controlRect.y -= 5;
                                                 }
-                                            } else {
-
-                                            }
-                                        } else {
-                                            
-                                            if (vertical_controller == 7) {
-                                                vertical_controller = 0;
+                                            } else if (vertical_controller % 8 == 1 && vertical_controller-1 == (single_mode_postion_y - 1)*8) {
+                                                --vertical_controller;
                                                 controlRect.y -= 5;
-                                                single_mode_postion_y-=1;
-                                                single_map_1[single_mode_postion_y][single_mode_postion_x] = 9;
-                                                single_map_1[single_mode_postion_y+1][single_mode_postion_x] = 0;
-                                            } else {
-                                                vertical_controller += 1;
+                                                updatePlayerPosition(&single_mode_postion_y, &single_mode_postion_x, -1, 0);
+                                            } else if (vertical_controller % 8 != 0) {
+                                                --vertical_controller;
                                                 controlRect.y -= 5;
                                             }
-                                            
-                                        }
-                                        break;
-                                    case SDLK_RIGHT:
-                                        if (hozirontal_controller == 0) {
+                                            myTank = meUp;
+                                            break;
+                                        case SDLK_RIGHT:
+                                            if (hozirontal_controller % 8 == 0 && single_mode_postion_x + 1 < 12 && single_map_1[single_mode_postion_y][single_mode_postion_x + 1] == 0) {
 
-                                            if (single_mode_postion_x-1 > -1 ) {
-                                                if (single_map_1[single_mode_postion_y][single_mode_postion_x-1] != 1) {
-                                                    hozirontal_controller ++;
-                                                    controlRect.x -= 5;
-                                                } else {
-
+                                                if (vertical_controller % 8 != 0 && vertical_controller < single_mode_postion_y * 8) {
+                                                    if (single_map_1[single_mode_postion_y][single_mode_postion_x + 1] == 0 && single_map_1[single_mode_postion_y-1][single_mode_postion_x + 1] == 0) {
+                                                        ++hozirontal_controller;
+                                                        controlRect.x += 5;
+                                                    }
+                                                } else if (vertical_controller % 8 != 0 && vertical_controller > single_mode_postion_y * 8){
+                                                    if (single_map_1[single_mode_postion_y+1][single_mode_postion_x + 1] == 0 && single_map_1[single_mode_postion_y][single_mode_postion_x + 1] == 0) {
+                                                        ++hozirontal_controller;
+                                                        controlRect.x += 5;
+                                                    }
+                                                } else if (vertical_controller % 8 == 0) {
+                                                        ++hozirontal_controller;
+                                                        controlRect.x += 5;
                                                 }
-                                            } else {
-
-                                            }
-                                        } else {
-                                            
-                                            if (hozirontal_controller == 7) {
-                                                hozirontal_controller = 0;
-                                                controlRect.x -= 5;
-                                                single_mode_postion_x-=1;
-                                                single_map_1[single_mode_postion_y][single_mode_postion_x] = 9;
-                                                single_map_1[single_mode_postion_y][single_mode_postion_x+1] = 0;
-                                            } else {
-                                                hozirontal_controller += 1;
-                                                controlRect.x -= 5;
-                                            }
-                                            
-                                        }
-                                        break;
-                                    case SDLK_LEFT:
-                                        if (hozirontal_controller == 0) {
-                                            
-                                            if (single_mode_postion_x+1 < 12) {
-                                                if (single_map_1[single_mode_postion_y][single_mode_postion_x+1] != 1) {
-                                                    hozirontal_controller ++;
-                                                    controlRect.x += 5;
-                                                } else {
-
-                                                }
-                                            } else {
-
-                                            }
-                                        } else {
-                                            
-                                            if (hozirontal_controller == 7) {
-                                                hozirontal_controller = 0;
+                                            } else if (hozirontal_controller % 8 == 7 && hozirontal_controller+1 == (single_mode_postion_x + 1) * 8) {
+                                                ++hozirontal_controller;
                                                 controlRect.x += 5;
-                                                single_mode_postion_x+=1;
-                                                single_map_1[single_mode_postion_y][single_mode_postion_x] = 9;
-                                                single_map_1[single_mode_postion_y][single_mode_postion_x-1] = 0;
-                                            } else {
-                                                hozirontal_controller += 1;
+                                                updatePlayerPosition(&single_mode_postion_y, &single_mode_postion_x, 0, 1);
+                                            } else if (hozirontal_controller % 8 != 0) {
+                                                ++hozirontal_controller;
                                                 controlRect.x += 5;
                                             }
-                                            
-                                        }
-                                        break;
+                                            myTank = meRight;
+                                            break;
+                                        case SDLK_LEFT:
+                                            if (hozirontal_controller %  8 == 0 && single_mode_postion_x - 1 >= 0 && single_map_1[single_mode_postion_y][single_mode_postion_x - 1] == 0) {
+                                                if (vertical_controller % 8 != 0 && vertical_controller < single_mode_postion_y * 8) {
+                                                    if (single_map_1[single_mode_postion_y][single_mode_postion_x - 1] == 0 && single_map_1[single_mode_postion_y-1][single_mode_postion_x - 1] == 0) {
+                                                        --hozirontal_controller;
+                                                        controlRect.x -= 5;
+                                                    }
+                                                } else if (vertical_controller % 8 != 0 && vertical_controller > single_mode_postion_y * 8){
+                                                    if (single_map_1[single_mode_postion_y][single_mode_postion_x - 1] == 0 && single_map_1[single_mode_postion_y+1][single_mode_postion_x - 1] == 0) {
+                                                    -- hozirontal_controller;
+                                                        controlRect.x -= 5;
+                                                    }
+                                                } else if (vertical_controller % 8 == 0) {
+                                                        --hozirontal_controller;
+                                                        controlRect.x -= 5;
+                                                }
+                                            } else if (hozirontal_controller % 8 == 1 && hozirontal_controller-1 == (single_mode_postion_x - 1)*8) {
+                                                --hozirontal_controller;
+                                                controlRect.x -= 5;
+                                                updatePlayerPosition(&single_mode_postion_y, &single_mode_postion_x, 0, -1);
+                                            } else if (hozirontal_controller %8 != 0) {
+                                                --hozirontal_controller;
+                                                controlRect.x -= 5;
+                                            }
+                                            myTank = meLeft;
+                                            break;
                                     case SDLK_RETURN:
                                         
                                         break;
@@ -622,12 +728,12 @@ int main(){
                     } else if (e.type == SDL_MOUSEBUTTONDOWN) {
                         if (state == LOGIN) {
                             SDL_GetMouseState(&mouseX, &mouseY);
-                            setFocusOnTextbox(&usernameTextbox, mouseX, mouseY);
-                            setFocusOnTextbox(&passwordTextbox, mouseX, mouseY);
+                            setFocusOnTextbox(&usernameLoginTextbox, mouseX, mouseY);
+                            setFocusOnTextbox(&passwordLoginTextbox, mouseX, mouseY);
 
                             if (mouseX >= 230 && mouseX <= 430 && mouseY >= 330 && mouseY <= 370) {
                                 char loginMessage[BUFF_SIZE];
-                                strcpy(loginMessage, createLoginMessage(usernameTextbox.text, passwordTextbox.text));
+                                strcpy(loginMessage, createLoginMessage(usernameLoginTextbox.text, passwordLoginTextbox.text));
 
                                 bytes_sent = send(client_sock, loginMessage, strlen(loginMessage), 0);
                                 if (bytes_sent < 0) {
@@ -655,6 +761,11 @@ int main(){
                                    strcpy(login_message, "Account not found");
                                 }
                             }
+                        } else if (state == REGISTER) {
+                            SDL_GetMouseState(&mouseX, &mouseY);
+                            setFocusOnTextbox(&usernameRegisterTextbox, mouseX, mouseY);
+                            setFocusOnTextbox(&passwordRegisterTextbox, mouseX, mouseY);
+                            setFocusOnTextbox(&retypePasswordRegisterTextbox, mouseX, mouseY);
                         }
                     }
                 }
