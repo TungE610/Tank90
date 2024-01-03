@@ -110,7 +110,20 @@ void handleKeyboardEvent(SDL_Event *e, Textbox *textbox) {
 
 }
 
+int isValidPosition(int newX, int newY) {
+    // Check if the new position is within the map boundaries
+    if (newX >= 0 && newX < 12 && newY >= 0 && newY < 12) {
+        // Check if the new position is not a brick or iron
+        if (single_map_1[newY][newX] != 1 && single_map_1[newY][newX] != 2) {
+            return 1; // The position is valid (true)
+        }
+    }
+    return 0; // The position is not valid (false)
+}
+
 int main(){
+
+    Uint32 prevFrameTime = SDL_GetTicks();
 
 	int client_sock;
 	unsigned char buff[BUFF_SIZE];
@@ -242,10 +255,10 @@ int main(){
             meRight = IMG_LoadTexture(renderer, "images/me_right.png");
             meLeft = IMG_LoadTexture(renderer, "images/me_left.png");
             meDown = IMG_LoadTexture(renderer, "images/me_down.png");
-            enermy_1_right = IMG_LoadTexture(renderer, "images/enermy_1_right.png");
-            enermy_1_left = IMG_LoadTexture(renderer, "images/enermy_1_left.png");
-            enermy_1_up = IMG_LoadTexture(renderer, "images/enermy_1_up.png");
-            enermy_1_down = IMG_LoadTexture(renderer, "images/enermy_1_down.png");
+            enermy_1_right = IMG_LoadTexture(renderer, "images/enermy_right.png");
+            enermy_1_left = IMG_LoadTexture(renderer, "images/enermy_left.png");
+            enermy_1_up = IMG_LoadTexture(renderer, "images/enermy_up.png");
+            enermy_1_down = IMG_LoadTexture(renderer, "images/enermy_down.png");
             none = IMG_LoadTexture(renderer, "images/none.png");
 
             int tankwidth = 30;
@@ -320,13 +333,30 @@ int main(){
 
             // Initialize bullets and rects
             for (int i = 0; i < totalBullets; i++) {
+                bullet[i].position_x = hozirontal_controller;
+                bullet[i].position_y = vertical_controller;
                 bullet[i].is_active = 0;  // Assuming first bullet is active
                 bulletRect[i] = (SDL_Rect){ controlRect.x, controlRect.y, 30, 30 };
             }
 
+            Enermy enermy[5];
+            SDL_Rect enermyRect[5];
+
+            for (int i = 0; i < 5; i ++) {
+                enermy[i].position_x = 11;
+                enermy[i].position_y = 0;
+                enermy[i].direction = LEFT;
+                enermy[i].blood = 1;
+                enermyRect[i] = (SDL_Rect){ 440, 0, 40, 40 };
+                enermy[i].movementTimer = 0.0f; // Initialize movement timer to zero
+            }
+
             while( quit == false ){
                 // SDL_Texture *bulletTexture[totalBullets];
-
+                // Uint32 currentFrameTime = SDL_GetTicks();
+                // deltaTime = (currentFrameTime - prevFrameTime) / 1000.0f; // Convert to seconds
+                // prevFrameTime = currentFrameTime;
+                            
                 SDL_Texture *bulletTexture[totalBullets];
                 for (int i = 0; i < totalBullets; i ++) {
                     if (bullet[i].direction == UP) {
@@ -342,6 +372,20 @@ int main(){
                     if (bullet[i].is_active == 0) {
                         bulletRect[i].x  = controlRect.x;
                         bulletRect[i].y  = controlRect.y;
+                    }
+                }
+
+                SDL_Texture *enermyTexture[5];
+
+                for (int i = 0; i < 5; i ++) {
+                    if (enermy[i].direction == UP) {
+                        enermyTexture[i] = IMG_LoadTexture(renderer, "./images/enermy_up.png");
+                    } else if (enermy[i].direction == DOWN) {
+                        enermyTexture[i] = IMG_LoadTexture(renderer, "./images/enermy_down.png");
+                    } else if (enermy[i].direction == RIGHT) {
+                        enermyTexture[i] = IMG_LoadTexture(renderer, "./images/enermy_right.png");
+                    } else {
+                        enermyTexture[i] = IMG_LoadTexture(renderer, "./images/enermy_left.png");
                     }
                 }
 
@@ -573,28 +617,139 @@ int main(){
                         }
                     }
                 }
+//-------------------Render enermy----------------------------------------------------------------------------------------------
+                        for (int i = 0; i < 5; i++) {
 
+                            // Determine the direction for the enemy's movement (0: up, 1: down, 2: left, 3: right)
+                            int direction = rand() % 4;
+
+                            // Update the enermyRect based on the chosen direction
+                            switch (direction) {
+                                case 0: // Move up               
+                                    if (enermyRect[i].y % 40 == 0 && enermy[i].position_y -1 >= 0 && single_map_1[enermy[i].position_y - 1][enermy[i].position_x] == 0) {
+                                        if (enermyRect[i].x % 40 != 0 && enermyRect[i].x < enermy[i].position_x * 40) {
+                                            if (single_map_1[enermy[i].position_y - 1][enermy[i].position_x - 1] == 0 && single_map_1[enermy[i].position_y - 1][enermy[i].position_x] == 0) {
+                                                --enermyRect[i].y;
+                                            }
+                                        } else if (enermyRect[i].x % 40 != 0 && enermyRect[i].x > enermy[i].position_x * 40) {
+                                            if (single_map_1[enermy[i].position_y - 1][enermy[i].position_x] == 0 && single_map_1[enermy[i].position_y - 1][enermy[i].position_x + 1] == 0) {
+                                                --enermyRect[i].y;
+                                            }
+                                        } else if (enermyRect[i].x % 40 == 0) {
+                                            --enermyRect[i].y;
+                                        }
+                                    } else if (enermyRect[i].y % 40 == 39 && enermyRect[i].y + 1 == (enermy[i].position_y + 1) * 40) {
+                                        --enermyRect[i].y;
+                                        enermy[i].position_y--;
+                                    } else if (enermyRect[i].y % 40 != 0) {
+                                        --enermyRect[i].y;
+                                    }
+                                    break;
+                               case 1: // Move down
+                                    if (enermyRect[i].y % 40 == 0 && enermy[i].position_y + 1< 12 && single_map_1[enermy[i].position_y + 1][enermy[i].position_x] == 0) {
+                                        if (enermyRect[i].x % 40 != 0 && enermyRect[i].x < enermy[i].position_x * 40) {
+                                            if (single_map_1[enermy[i].position_y + 1][enermy[i].position_x - 1] == 0 && single_map_1[enermy[i].position_y + 1][enermy[i].position_x] == 0) {
+                                                ++enermyRect[i].y;
+                                            }
+                                        } else if (enermyRect[i].x % 40 != 0 && enermyRect[i].x > enermy[i].position_x * 40) {
+                                            if (single_map_1[enermy[i].position_y + 1][enermy[i].position_x] == 0 && single_map_1[enermy[i].position_y + 1][enermy[i].position_x + 1] == 0) {
+                                                ++enermyRect[i].y;
+                                            }
+                                        } else if (enermyRect[i].x % 40 == 0) {
+                                            ++enermyRect[i].y;
+                                        }
+                                    } else if (enermyRect[i].y % 40 == 1 && enermyRect[i].y - 1 == (enermy[i].position_y - 1) * 40) {
+                                        ++enermyRect[i].y;
+                                        enermy[i].position_y++;
+                                    } else if (enermyRect[i].y % 40 != 0) {
+                                        ++enermyRect[i].y;
+                                    }
+                                break;
+                                case 2: // Move left
+                                    if (enermyRect[i].x % 40 == 0 && enermy[i].position_x - 1 >= 0 && single_map_1[enermy[i].position_y][enermy[i].position_x - 1] == 0) {
+                                        if (enermyRect[i].y % 40 != 0 && enermyRect[i].y < enermy[i].position_y * 40) {
+                                            if (single_map_1[enermy[i].position_y][enermy[i].position_x - 1] == 0 && single_map_1[enermy[i].position_y - 1][enermy[i].position_x - 1] == 0) {
+                                                --enermyRect[i].x;
+                                            }
+                                        } else if (enermyRect[i].y % 40 != 0 && enermyRect[i].y > enermy[i].position_y * 40) {
+                                            if (single_map_1[enermy[i].position_y][enermy[i].position_x - 1] == 0 && single_map_1[enermy[i].position_y + 1][enermy[i].position_x - 1] == 0) {
+                                                --enermyRect[i].x;
+                                            }
+                                        } else if (enermyRect[i].y % 40 == 0) {
+                                            --enermyRect[i].x;
+                                        }
+                                    } else if (enermyRect[i].x % 40 == 1 && enermyRect[i].x - 1 == (enermy[i].position_x - 1) * 40) {
+                                        --enermyRect[i].x;
+                                        enermy[i].position_x--;
+                                    } else if (enermyRect[i].x % 40 != 0) {
+                                        --enermyRect[i].x;
+                                    }
+                                    break;
+                               case 3: // Move right
+                                if (enermyRect[i].x % 40 == 0 && enermy[i].position_x + 1 < 12 && single_map_1[enermy[i].position_y][enermy[i].position_x + 1] == 0) {
+                                    if (enermyRect[i].y % 40 != 0 && enermyRect[i].y < enermy[i].position_y * 40) {
+                                        if (single_map_1[enermy[i].position_y][enermy[i].position_x + 1] == 0 && single_map_1[enermy[i].position_y - 1][enermy[i].position_x + 1] == 0) {
+                                            ++enermyRect[i].x;
+                                        }
+                                    } else if (enermyRect[i].y % 40 != 0 && enermyRect[i].y > enermy[i].position_y * 40) {
+                                        if (single_map_1[enermy[i].position_y][enermy[i].position_x + 1] == 0 && single_map_1[enermy[i].position_y + 1][enermy[i].position_x + 1] == 0) {
+                                            ++enermyRect[i].x;
+                                        }
+                                    } else if (enermyRect[i].y % 40 == 0) {
+                                        ++enermyRect[i].x;
+                                    }
+                                } else if (enermyRect[i].x % 40 == 39 && enermyRect[i].x + 1 == (enermy[i].position_x + 1) * 40) {
+                                    ++enermyRect[i].x;
+                                    enermy[i].position_x++;
+                                } else if (enermyRect[i].x % 40 != 39) {
+                                    ++enermyRect[i].x;
+                                }
+                                break;
+                                default:
+                                    break;
+                            }
+
+                        }
+                        for (int i = 0; i < 5; i++) {
+                            SDL_RenderCopy(renderer, enermyTexture[i], NULL, &enermyRect[i]);
+                        }
+
+///---------------------end render enermy-----------------------------------------------------------
                 for (int i = 0; i < totalBullets; i ++) {
                     if (bullet[i].is_active == 1) {
                         SDL_RenderCopy(renderer, bulletTexture[i], NULL, &bulletRect[i]);
                     }
                     if (bullet[i].is_active == 1) {
                         if (bullet[i].direction == UP) {
-                            bulletRect[i].y -= 8;
+                            // bullet[i].position_y = bulletRect[i].y / 5;
+                            if (single_map_1[(bulletRect[i].y)/40 - 1][(bulletRect[i].x-80)/40] != 0 && bulletRect[i].y % 40 == 0) {
+                                bullet[i].is_active = 0;
+                                SDL_DestroyTexture(bulletTexture[i]); // Free the surface to avoid memory leak
+                            } else {
+                                bulletRect[i].y -= 1;
+                            }
                         } else if (bullet[i].direction == DOWN) {
-                            bulletRect[i].y += 8;
+                            if (single_map_1[(bulletRect[i].y)/40 + 1][(bulletRect[i].x-80)/40] != 0 && bulletRect[i].y % 40 == 0) {
+                                bullet[i].is_active = 0;
+                                SDL_DestroyTexture(bulletTexture[i]); // Free the surface to avoid memory leak
+                            }
+                            bulletRect[i].y += 1;
+                            // bullet[i].position_y = bulletRect[i].y / 5;
                         } else if (bullet[i].direction == RIGHT) {
-                            bulletRect[i].x += 8;
+                            if (single_map_1[(bulletRect[i].y)/40][(bulletRect[i].x-80)/40 + 1] != 0 && bulletRect[i].x % 40 == 0) {
+                                bullet[i].is_active = 0;
+                                SDL_DestroyTexture(bulletTexture[i]); // Free the surface to avoid memory leak
+                            }
+                            bulletRect[i].x += 1;
+                            // bullet[i].position_x = bulletRect[i].x / 5;
                         } else {
-                            bulletRect[i].x -= 8;
+                            if (single_map_1[(bulletRect[i].y)/40][(bulletRect[i].x-80)/40 - 1] != 0 && bulletRect[i].x % 40 == 0) {
+                                bullet[i].is_active = 0;
+                                SDL_DestroyTexture(bulletTexture[i]); // Free the surface to avoid memory leak
+                            }
+                            bulletRect[i].x -= 1;
+                            // bullet[i].position_x = bulletRect[i].x / 5;
                         }
-                        SDL_Delay(25);
-                        usleep(25);
-                    }
-
-                    if (bulletRect[i].x > 500) {
-                        bullet[i].is_active = 0;
-                        SDL_DestroyTexture(bulletTexture[i]); // Free the surface to avoid memory leak
                     }
                 }
                 }
@@ -754,8 +909,6 @@ int main(){
                         }
                     }
                 }
-
-
             }
         }
     }

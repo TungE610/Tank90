@@ -39,10 +39,20 @@ enum Direction {
 };
 
 typedef struct {
-    SDL_Rect position;
+    int position_x;
+    int position_y;
     int player_id;
     int direction;
     int is_active;
 } Bullet;
+
+typedef struct {
+    int position_x;
+    int position_y;
+    int id;
+    int direction;
+    int blood;
+    float movementTimer; // Add a movement timer
+} Enermy;
 
 #endif
