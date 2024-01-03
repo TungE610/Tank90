@@ -39,7 +39,6 @@ SDL_Texture *enermy_1_right = NULL;
 SDL_Texture *enermy_1_left = NULL;
 SDL_Texture *enermy_1_up = NULL;
 SDL_Texture *enermy_1_down = NULL;
-SDL_Texture *bullet = NULL;
 SDL_Texture *none = NULL;
 
 SDL_Renderer *renderer;
@@ -68,7 +67,13 @@ enum AppState {
     PLAY_DUAL_GAME,
 };
 
+int totalBullets = 20;
+
 void setFocusOnTextbox(Textbox *textbox, int mouseX, int mouseY);
+void moveDown(int *position_x, int *position_y,int *coor_x, int *coor_y, SDL_Rect *controlRect);
+void moveUp(int *position_x, int *position_y,int *coor_x, int *coor_y, SDL_Rect *controlRect);
+void moveRight(int *position_x, int *position_y,int *coor_x, int *coor_y, SDL_Rect *controlRect);
+void moveLeft(int *position_x, int *position_y,int *coor_x, int *coor_y, SDL_Rect *controlRect);
 
 void initTextbox(Textbox *textbox, int x, int y, int w, int h) {
     strcpy(textbox->text, " \0");
@@ -114,11 +119,11 @@ int main(){
 	SDL_Texture *texture = NULL;
 	SDL_Texture *loading = NULL;
 	SDL_Texture *playing = NULL;
+    int single_mode_postion_x = 4;
+    int single_mode_postion_y = 11;
     int menuChoose = 1;
     int chooseMode = 1;
     int single_mode_stage = 1;
-    int single_mode_postion_x = 4;
-    int single_mode_postion_y = 11;
     char login_message[BUFF_SIZE];
     char register_message[BUFF_SIZE];
     strcpy(login_message, " ");
@@ -241,7 +246,6 @@ int main(){
             enermy_1_left = IMG_LoadTexture(renderer, "images/enermy_1_left.png");
             enermy_1_up = IMG_LoadTexture(renderer, "images/enermy_1_up.png");
             enermy_1_down = IMG_LoadTexture(renderer, "images/enermy_1_down.png");
-            bullet = IMG_LoadTexture(renderer, "images/bullet.png");
             none = IMG_LoadTexture(renderer, "images/none.png");
 
             int tankwidth = 30;
@@ -311,7 +315,36 @@ int main(){
             TTF_Font *loginMessageFont = TTF_OpenFont("./resources/font/ARCADE.TTF", 13);  // Adjust font size as needed
             SDL_Texture *myTank = meUp;
 
+            Bullet bullet[totalBullets];
+            SDL_Rect bulletRect[totalBullets];
+
+            // Initialize bullets and rects
+            for (int i = 0; i < totalBullets; i++) {
+                bullet[i].is_active = 0;  // Assuming first bullet is active
+                bulletRect[i] = (SDL_Rect){ controlRect.x, controlRect.y, 30, 30 };
+            }
+
             while( quit == false ){
+                // SDL_Texture *bulletTexture[totalBullets];
+
+                SDL_Texture *bulletTexture[totalBullets];
+                for (int i = 0; i < totalBullets; i ++) {
+                    if (bullet[i].direction == UP) {
+                        bulletTexture[i] = IMG_LoadTexture(renderer, "./images/bullet_up.png");
+                    } else if (bullet[i].direction == DOWN) {
+                        bulletTexture[i] = IMG_LoadTexture(renderer, "./images/bullet_down.png");
+                    } else if (bullet[i].direction == RIGHT) {
+                        bulletTexture[i] = IMG_LoadTexture(renderer, "./images/bullet_right.png");
+                    } else {
+                        bulletTexture[i] = IMG_LoadTexture(renderer, "./images/bullet_left.png");
+                    }
+                    
+                    if (bullet[i].is_active == 0) {
+                        bulletRect[i].x  = controlRect.x;
+                        bulletRect[i].y  = controlRect.y;
+                    }
+                }
+
                 SDL_RenderClear(renderer);
                 if (state == MAIN_MENU) {
                     SDL_RenderCopy(renderer, textTexture, NULL, &renderQuad);
@@ -540,6 +573,30 @@ int main(){
                         }
                     }
                 }
+
+                for (int i = 0; i < totalBullets; i ++) {
+                    if (bullet[i].is_active == 1) {
+                        SDL_RenderCopy(renderer, bulletTexture[i], NULL, &bulletRect[i]);
+                    }
+                    if (bullet[i].is_active == 1) {
+                        if (bullet[i].direction == UP) {
+                            bulletRect[i].y -= 8;
+                        } else if (bullet[i].direction == DOWN) {
+                            bulletRect[i].y += 8;
+                        } else if (bullet[i].direction == RIGHT) {
+                            bulletRect[i].x += 8;
+                        } else {
+                            bulletRect[i].x -= 8;
+                        }
+                        SDL_Delay(25);
+                        usleep(25);
+                    }
+
+                    if (bulletRect[i].x > 500) {
+                        bullet[i].is_active = 0;
+                        SDL_DestroyTexture(bulletTexture[i]); // Free the surface to avoid memory leak
+                    }
+                }
                 }
 
                 SDL_RenderPresent(renderer);
@@ -615,113 +672,41 @@ int main(){
                             case PLAY_SINGLE_GAME:
                                 switch (e.key.keysym.sym) {
                                         case SDLK_DOWN:
-                                            if (vertical_controller % 8 == 0 && single_mode_postion_y + 1 < 12 && single_map_1[single_mode_postion_y + 1][single_mode_postion_x] == 0) {
-                                                if (hozirontal_controller % 8 != 0 && hozirontal_controller < single_mode_postion_y * 8) {
-                                                    if (single_map_1[single_mode_postion_y+1][single_mode_postion_x -1] == 0 && single_map_1[single_mode_postion_y+1][single_mode_postion_x] == 0) {
-                                                        ++ vertical_controller;
-                                                        controlRect.y += 5;
-                                                    }
-                                                } else if (hozirontal_controller % 8 != 0 && hozirontal_controller > single_mode_postion_y * 8){
-                                                    if (single_map_1[single_mode_postion_y+1][single_mode_postion_x] == 0 && single_map_1[single_mode_postion_y+1][single_mode_postion_x + 1] == 0) {
-                                                        ++vertical_controller;
-                                                        controlRect.y += 5;
-                                                    }
-                                                } else if (hozirontal_controller % 8 == 0) {
-                                                        ++vertical_controller;
-                                                        controlRect.y += 5;
-                                                }
-                                            } else if (vertical_controller % 8 == 7 && vertical_controller+1 == (single_mode_postion_y + 1)* 8) {
-                                                ++vertical_controller;
-                                                controlRect.y += 5;
-                                                updatePlayerPosition(&single_mode_postion_y, &single_mode_postion_x, 1, 0);
-                                            } else if (vertical_controller % 8 != 0) {
-                                                ++vertical_controller;
-                                                controlRect.y += 5;
-                                            }
+                                            moveDown(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &controlRect);
                                             myTank = meDown;
                                             break;
                                         case SDLK_UP:
-                                            if (vertical_controller % 8 == 0 && single_mode_postion_y - 1 >= 0 && single_map_1[single_mode_postion_y - 1][single_mode_postion_x] == 0) {
-                                                if (hozirontal_controller % 8 != 0 && hozirontal_controller < single_mode_postion_y * 8) {
-                                                    if (single_map_1[single_mode_postion_y-1][single_mode_postion_x -1] == 0 && single_map_1[single_mode_postion_y-1][single_mode_postion_x] == 0) {
-                                                        --vertical_controller;
-                                                        controlRect.y -= 5;
-                                                    }
-                                                } else if (hozirontal_controller % 8 != 0 && hozirontal_controller > single_mode_postion_y * 8){
-                                                    if (single_map_1[single_mode_postion_y-1][single_mode_postion_x] == 0 && single_map_1[single_mode_postion_y-1][single_mode_postion_x + 1] == 0) {
-                                                        --vertical_controller;
-                                                        controlRect.y -= 5;
-                                                    }
-                                                } else if (hozirontal_controller % 8 == 0) {
-                                                        --vertical_controller;
-                                                        controlRect.y -= 5;
-                                                }
-                                            } else if (vertical_controller % 8 == 1 && vertical_controller-1 == (single_mode_postion_y - 1)*8) {
-                                                --vertical_controller;
-                                                controlRect.y -= 5;
-                                                updatePlayerPosition(&single_mode_postion_y, &single_mode_postion_x, -1, 0);
-                                            } else if (vertical_controller % 8 != 0) {
-                                                --vertical_controller;
-                                                controlRect.y -= 5;
-                                            }
+                                            moveUp(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &controlRect);
                                             myTank = meUp;
                                             break;
                                         case SDLK_RIGHT:
-                                            if (hozirontal_controller % 8 == 0 && single_mode_postion_x + 1 < 12 && single_map_1[single_mode_postion_y][single_mode_postion_x + 1] == 0) {
-
-                                                if (vertical_controller % 8 != 0 && vertical_controller < single_mode_postion_y * 8) {
-                                                    if (single_map_1[single_mode_postion_y][single_mode_postion_x + 1] == 0 && single_map_1[single_mode_postion_y-1][single_mode_postion_x + 1] == 0) {
-                                                        ++hozirontal_controller;
-                                                        controlRect.x += 5;
-                                                    }
-                                                } else if (vertical_controller % 8 != 0 && vertical_controller > single_mode_postion_y * 8){
-                                                    if (single_map_1[single_mode_postion_y+1][single_mode_postion_x + 1] == 0 && single_map_1[single_mode_postion_y][single_mode_postion_x + 1] == 0) {
-                                                        ++hozirontal_controller;
-                                                        controlRect.x += 5;
-                                                    }
-                                                } else if (vertical_controller % 8 == 0) {
-                                                        ++hozirontal_controller;
-                                                        controlRect.x += 5;
-                                                }
-                                            } else if (hozirontal_controller % 8 == 7 && hozirontal_controller+1 == (single_mode_postion_x + 1) * 8) {
-                                                ++hozirontal_controller;
-                                                controlRect.x += 5;
-                                                updatePlayerPosition(&single_mode_postion_y, &single_mode_postion_x, 0, 1);
-                                            } else if (hozirontal_controller % 8 != 0) {
-                                                ++hozirontal_controller;
-                                                controlRect.x += 5;
-                                            }
+                                            moveRight(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &controlRect);
                                             myTank = meRight;
                                             break;
                                         case SDLK_LEFT:
-                                            if (hozirontal_controller %  8 == 0 && single_mode_postion_x - 1 >= 0 && single_map_1[single_mode_postion_y][single_mode_postion_x - 1] == 0) {
-                                                if (vertical_controller % 8 != 0 && vertical_controller < single_mode_postion_y * 8) {
-                                                    if (single_map_1[single_mode_postion_y][single_mode_postion_x - 1] == 0 && single_map_1[single_mode_postion_y-1][single_mode_postion_x - 1] == 0) {
-                                                        --hozirontal_controller;
-                                                        controlRect.x -= 5;
-                                                    }
-                                                } else if (vertical_controller % 8 != 0 && vertical_controller > single_mode_postion_y * 8){
-                                                    if (single_map_1[single_mode_postion_y][single_mode_postion_x - 1] == 0 && single_map_1[single_mode_postion_y+1][single_mode_postion_x - 1] == 0) {
-                                                    -- hozirontal_controller;
-                                                        controlRect.x -= 5;
-                                                    }
-                                                } else if (vertical_controller % 8 == 0) {
-                                                        --hozirontal_controller;
-                                                        controlRect.x -= 5;
-                                                }
-                                            } else if (hozirontal_controller % 8 == 1 && hozirontal_controller-1 == (single_mode_postion_x - 1)*8) {
-                                                --hozirontal_controller;
-                                                controlRect.x -= 5;
-                                                updatePlayerPosition(&single_mode_postion_y, &single_mode_postion_x, 0, -1);
-                                            } else if (hozirontal_controller %8 != 0) {
-                                                --hozirontal_controller;
-                                                controlRect.x -= 5;
-                                            }
+                                            moveLeft(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &controlRect);
                                             myTank = meLeft;
                                             break;
                                     case SDLK_RETURN:
-                                        
                                         break;
+                                    case SDLK_SPACE:
+                                        //  shot(controlRect.x, controlRect.y, 1, renderer);
+                                        for (int i =0; i < totalBullets; i ++) {
+                                            if (bullet[i].is_active == 0) {
+                                                bullet[i].is_active = 1;
+                                                if (myTank == meUp) {
+                                                     bullet[i].direction = UP;
+                                                } else if (myTank == meDown) {
+                                                     bullet[i].direction = DOWN;
+                                                } else if (myTank == meRight) {
+                                                     bullet[i].direction = RIGHT;
+                                                } else {
+                                                     bullet[i].direction = LEFT;
+                                                }
+                                                break;
+                                            }
+                                        }
+                                       break;
                                 }
                                 break;
                         }
@@ -795,6 +780,133 @@ void setFocusOnTextbox(Textbox *textbox, int mouseX, int mouseY) {
     }
 }
 
-void login(char username[], char password[]){
+void moveDown(int *position_x, int *position_y, int *coor_x, int *coor_y, SDL_Rect *controlRect) {
+    int vertical_controller = *position_y;
+    int horizontal_controller = *position_x;
 
+    if (vertical_controller % 8 == 0 && *coor_y + 1 < 12 && single_map_1[*coor_y + 1][*coor_x] == 0) {
+        if (horizontal_controller % 8 != 0 && horizontal_controller < *coor_x * 8) {
+            if (single_map_1[*coor_y + 1][*coor_x - 1] == 0 && single_map_1[*coor_y + 1][*coor_x] == 0) {
+                ++vertical_controller;
+                controlRect->y += 5;
+            }
+        } else if (horizontal_controller % 8 != 0 && horizontal_controller > *coor_x * 8) {
+            if (single_map_1[*coor_y + 1][*coor_x] == 0 && single_map_1[*coor_y + 1][*coor_x + 1] == 0) {
+                ++vertical_controller;
+                controlRect->y += 5;
+            }
+        } else if (horizontal_controller % 8 == 0) {
+            ++vertical_controller;
+            controlRect->y += 5;
+        }
+    } else if (vertical_controller % 8 == 7 && vertical_controller + 1 == (*coor_y + 1) * 8) {
+        ++vertical_controller;
+        controlRect->y += 5;
+        updatePlayerPosition(coor_y, coor_x, 1, 0);
+    } else if (vertical_controller % 8 != 0) {
+        ++vertical_controller;
+        controlRect->y += 5;
+    }
+
+    *position_x = horizontal_controller; // Update position_x
+    *position_y = vertical_controller;   // Update position_y
+}
+
+void moveUp(int *position_x, int *position_y, int *coor_x, int *coor_y, SDL_Rect *controlRect) {
+    int vertical_controller = *position_y;
+    int horizontal_controller = *position_x;
+
+    // Check if moving up is possible and handle the cases
+    if (vertical_controller % 8 == 0 && *coor_y - 1 >= 0 && single_map_1[*coor_y - 1][*coor_x] == 0) {
+        if (horizontal_controller % 8 != 0 && horizontal_controller < *coor_x * 8) {
+            if (single_map_1[*coor_y - 1][*coor_x - 1] == 0 && single_map_1[*coor_y - 1][*coor_x] == 0) {
+                --vertical_controller;
+                controlRect->y -= 5;
+            }
+        } else if (horizontal_controller % 8 != 0 && horizontal_controller > *coor_x * 8) {
+            if (single_map_1[*coor_y - 1][*coor_x] == 0 && single_map_1[*coor_y - 1][*coor_x + 1] == 0) {
+                --vertical_controller;
+                controlRect->y -= 5;
+            }
+        } else if (horizontal_controller % 8 == 0) {
+            --vertical_controller;
+            controlRect->y -= 5;
+        }
+    } else if (vertical_controller % 8 == 1 && vertical_controller - 1 == (*coor_y - 1) * 8) {
+        --vertical_controller;
+        controlRect->y -= 5;
+        updatePlayerPosition(coor_y, coor_x, -1, 0);
+    } else if (vertical_controller % 8 != 0) {
+        --vertical_controller;
+        controlRect->y -= 5;
+    }
+
+    *position_x = horizontal_controller; // Update position_x
+    *position_y = vertical_controller;   // Update position_y
+}
+
+void moveRight(int *position_x, int *position_y, int *coor_x, int *coor_y, SDL_Rect *controlRect) {
+    int vertical_controller = *position_y;
+    int horizontal_controller = *position_x;
+
+    // Check if moving right is possible and handle the cases
+    if (horizontal_controller % 8 == 0 && *coor_x + 1 < 12 && single_map_1[*coor_y][*coor_x + 1] == 0) {
+        if (vertical_controller % 8 != 0 && vertical_controller < *coor_y * 8) {
+            if (single_map_1[*coor_y][*coor_x + 1] == 0 && single_map_1[*coor_y - 1][*coor_x + 1] == 0) {
+                ++horizontal_controller;
+                controlRect->x += 5;
+            }
+        } else if (vertical_controller % 8 != 0 && vertical_controller > *coor_y * 8) {
+            if (single_map_1[*coor_y + 1][*coor_x + 1] == 0 && single_map_1[*coor_y][*coor_x + 1] == 0) {
+                ++horizontal_controller;
+                controlRect->x += 5;
+            }
+        } else if (vertical_controller % 8 == 0) {
+            ++horizontal_controller;
+            controlRect->x += 5;
+        }
+    } else if (horizontal_controller % 8 == 7 && horizontal_controller + 1 == (*coor_x + 1) * 8) {
+        ++horizontal_controller;
+        controlRect->x += 5;
+        updatePlayerPosition(coor_y, coor_x, 0, 1);
+    } else if (horizontal_controller % 8 != 0) {
+        ++horizontal_controller;
+        controlRect->x += 5;
+    }
+
+    *position_x = horizontal_controller; // Update position_x
+    *position_y = vertical_controller;   // Update position_y
+}
+
+void moveLeft(int *position_x, int *position_y, int *coor_x, int *coor_y, SDL_Rect *controlRect) {
+    int vertical_controller = *position_y;
+    int horizontal_controller = *position_x;
+
+    // Check if moving left is possible and handle the cases
+    if (horizontal_controller % 8 == 0 && *coor_x - 1 >= 0 && single_map_1[*coor_y][*coor_x - 1] == 0) {
+        if (vertical_controller % 8 != 0 && vertical_controller < *coor_y * 8) {
+            if (single_map_1[*coor_y][*coor_x - 1] == 0 && single_map_1[*coor_y - 1][*coor_x - 1] == 0) {
+                --horizontal_controller;
+                controlRect->x -= 5;
+            }
+        } else if (vertical_controller % 8 != 0 && vertical_controller > *coor_y * 8) {
+            if (single_map_1[*coor_y][*coor_x - 1] == 0 && single_map_1[*coor_y + 1][*coor_x - 1] == 0) {
+                --horizontal_controller;
+                controlRect->x -= 5;
+            }
+        } else if (vertical_controller % 8 == 0) {
+            --horizontal_controller;
+            controlRect->x -= 5;
+        }
+    } else if (horizontal_controller % 8 == 1 && horizontal_controller - 1 == (*coor_x - 1) * 8) {
+        --horizontal_controller;
+        controlRect->x -= 5;
+        updatePlayerPosition(coor_y, coor_x, 0, -1);
+    } else if (horizontal_controller % 8 != 0) {
+        --horizontal_controller;
+        controlRect->x -= 5;
+    }
+
+    *position_x = horizontal_controller; // Update position_x
+    *position_y = vertical_controller;   // Update position_y
 }
