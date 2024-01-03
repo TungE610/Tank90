@@ -31,10 +31,18 @@ struct Player {
     singleLinkedList *list;
 };
 
-struct Bullet {
-    SDL_Rect position;
-    int face;
-    int player_id;
+enum Direction {
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT
 };
+
+typedef struct {
+    SDL_Rect position;
+    int player_id;
+    int direction;
+    int is_active;
+} Bullet;
 
 #endif
