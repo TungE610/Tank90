@@ -49,7 +49,7 @@ void readDatatoList(singleLinkedList *list) {
 
 node* findAccount(singleLinkedList *list, char username[]) {
 
-	// readDatatoList(list);										//read data to list
+	readDatatoList(list);										//read data to list
 	list->cur = list->root;
 
 	while (list->cur != NULL) {													// traverse till find out matching account

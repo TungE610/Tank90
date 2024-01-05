@@ -6,15 +6,16 @@
 
 #define BUFF_SIZE 1024
 
-struct Room {
+typedef struct{
     int id;
-    int first_player;
-    int second_player;
+    int first_player_id;
+    int second_player_id;
     int status;
-};
+} Room;
 
 struct Player {
     int id;
+    int system_id;
     char username[BUFF_SIZE];
     char password[BUFF_SIZE];
     SDL_Rect position;
