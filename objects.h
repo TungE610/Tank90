@@ -6,15 +6,16 @@
 
 #define BUFF_SIZE 1024
 
-struct Room {
+typedef struct{
     int id;
-    int first_player;
-    int second_player;
+    int first_player_id;
+    int second_player_id;
     int status;
-};
+} Room;
 
 struct Player {
     int id;
+    int system_id;
     char username[BUFF_SIZE];
     char password[BUFF_SIZE];
     SDL_Rect position;
@@ -39,10 +40,20 @@ enum Direction {
 };
 
 typedef struct {
-    SDL_Rect position;
+    int position_x;
+    int position_y;
     int player_id;
     int direction;
     int is_active;
 } Bullet;
+
+typedef struct {
+    int position_x;
+    int position_y;
+    int id;
+    int direction;
+    int blood;
+    float movementTimer; // Add a movement timer
+} Enermy;
 
 #endif
