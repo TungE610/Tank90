@@ -10,18 +10,19 @@ typedef struct
 	int logged;
 	int id;
 } ListElementType;
-
+#define BUFF_SIZE 1024
 #include "linkedlist.h"
 
 void readDatatoList(singleLinkedList *list);
-void appendAccountToFile(char accountname[], char password[]);
+void appendAccountToFile(char accountname[], char password[], int id);
 void blockUser(singleLinkedList *list, char username[]);
 int checkBlock(singleLinkedList *list, char username[]);
 void rewriteFile(singleLinkedList *list);
-void registerUser(singleLinkedList *list);
+int registerUser(singleLinkedList *list, char *username, char * password, int id);
 void signin(singleLinkedList *list, char *signedInUser);
 void signout(singleLinkedList *list, char *signedInUser);
 void searchUser(singleLinkedList *list);
+int accountNum(singleLinkedList *list);
 /*
 	readDatatoList: read data from file to list
 */
@@ -49,7 +50,7 @@ void readDatatoList(singleLinkedList *list) {
 
 node* findAccount(singleLinkedList *list, char username[]) {
 
-	readDatatoList(list);										//read data to list
+	// readDatatoList(list);									//read data to list
 	list->cur = list->root;
 
 	while (list->cur != NULL) {													// traverse till find out matching account
@@ -117,7 +118,7 @@ int checkBlock(singleLinkedList *list, char username[]) {
 	appendAccountToFile: write new user to account file
 */
 
-void appendAccountToFile(char username[], char password[]) {
+void appendAccountToFile(char username[], char password[], int id) {
 	FILE *fp = fopen("account.txt", "a+"); 							// open file with append mode
 	
 	if (fp == NULL) {
@@ -125,7 +126,7 @@ void appendAccountToFile(char username[], char password[]) {
 		return;
 	}
 
-	fprintf(fp, "\n%s %s 1", username, password); 					// new user's state is active
+	fprintf(fp, "\n%s %s 1 0 %d", username, password, id); 					// new user's state is active
 
 	fclose(fp); 													// close file
 }
@@ -205,26 +206,15 @@ void rewriteFile(singleLinkedList *list) {
 	fclose(fp);														//close file
 };
 
-void registerUser(singleLinkedList *list) {
-	while ((getchar()) != '\n');
-
-	char username[30], password[30];
-
-	readDatatoList(list);
-
-	printf("\n---------Register---------\n");
-	printf("Username : ");
-	scanf("%s", username); 										// input username
-
+int registerUser(singleLinkedList *list, char *username, char*password, int id) {
 	if (findAccount(list, username)) { 							// check if username existed in account file
-		printf("Account existed");
+		return 0;
 	} else {
-		printf("Password : ");
-		scanf("%s", password); 									// input password
-
-		appendAccountToFile(username, password); 				// save new user infomation to file
-		printf("Successful registration");
+		appendAccountToFile(username, password, id); 				// save new user infomation to file
+		return 1;
 	}
+
+	return 2;
 }
 
 void signin(singleLinkedList* list, char* signedInUser) {
@@ -315,4 +305,13 @@ void searchUser(singleLinkedList *list)
 	}
 }
 
+int accountNum(singleLinkedList *list){
+	int count = 0;
+	list->cur = list->root;
 
+	while (list->cur != NULL) {									// traverse till end to rewrite
+		count++;
+	}
+
+	return count;
+}

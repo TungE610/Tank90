@@ -41,6 +41,25 @@ char *createLoginMessage(char username[], char password[]) {
     return message;
 }
 
+char *createRegisterMessage(char username[], char password[]) {
+
+    size_t usernameLength = strlen(username);
+    size_t passwordLength = strlen(password);
+    
+    size_t totalLength = 1 + usernameLength + 1 + passwordLength; // 1 for 0x01, 1 for the separator '*'
+
+    // Allocate memory for the message
+    unsigned char *message = (unsigned char *)malloc(totalLength);
+
+    // Construct the message
+    message[0] = 0x02;
+    memcpy(message + 1, username, usernameLength);
+    message[1 + usernameLength] = '*'; // Use '*' as a separator
+    memcpy(message +1 + usernameLength + 1, password, passwordLength);
+
+    return message;
+}
+
 char *createCreateRoomMessage(int id) {
 
     size_t totalLength;
@@ -63,7 +82,7 @@ char *createCreateRoomMessage(int id) {
     }
 
     // Construct the message
-    message[0] = 0x02;
+    message[0] = 0x03;
     memcpy(message + 1, sid, strlen(sid));
     message[totalLength] = '\0'; // Null-terminate the message
 
@@ -74,7 +93,7 @@ char *createChooseRoomMessage() {
     unsigned char *message = (unsigned char *)malloc(1);
 
     // Construct the message
-    message[0] = 0x03;
+    message[0] = 0x04;
 
     return message;
 }
@@ -110,7 +129,7 @@ char* createJoinRoomMessage(int playerId, int roomId) {
     char message[64]; // Assuming a maximum length for the message
     
     // Format the message string
-    snprintf(message, sizeof(message), "%c%d*%d", 0x04, playerId, roomId);
+    snprintf(message, sizeof(message), "%c%d*%d", 0x05, playerId, roomId);
 
     // Allocate memory for the string and copy the formatted message
     char* result = (char*)malloc(strlen(message) + 1); // +1 for the null terminator
@@ -125,7 +144,7 @@ char* createStartGameMessage(int roomId) {
     char message[64]; // Assuming a maximum length for the message
     
     // Format the message string
-    snprintf(message, sizeof(message), "%c%d", 0x05, roomId);
+    snprintf(message, sizeof(message), "%c%d", 0x06, roomId);
 
     // Allocate memory for the string and copy the formatted message
     char* result = (char*)malloc(strlen(message) + 1); // +1 for the null terminator
@@ -140,7 +159,7 @@ char* createDirectionMessage(int roomId, int playerId, int direction) {
     char message[64]; // Assuming a maximum length for the message
     
     // Format the message string
-    snprintf(message, sizeof(message), "%c%d*%d*%d", 0x06, roomId, playerId, direction);
+    snprintf(message, sizeof(message), "%c%d*%d*%d", 0x07, roomId, playerId, direction);
 
     // Allocate memory for the string and copy the formatted message
     char* result = (char*)malloc(strlen(message) + 1); // +1 for the null terminator
@@ -155,7 +174,7 @@ char *createBulletDirectionMessage(int roomId, int playerId, int direction) {
     char message[64]; // Assuming a maximum length for the message
     
     // Format the message string
-    snprintf(message, sizeof(message), "%c%d*%d*%d", 0x08, roomId, playerId, direction);
+    snprintf(message, sizeof(message), "%c%d*%d*%d", 0x09, roomId, playerId, direction);
 
     // Allocate memory for the string and copy the formatted message
     char* result = (char*)malloc(strlen(message) + 1); // +1 for the null terminator

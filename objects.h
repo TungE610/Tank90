@@ -56,4 +56,17 @@ typedef struct {
     float movementTimer; // Add a movement timer
 } Enermy;
 
+typedef struct {
+    char text[256];
+    int cursorPosition;
+    SDL_Rect boxRect; // Position and size of the textbox
+    bool hasFocus;
+} Textbox;
+
+typedef struct {
+    char text[256];
+    SDL_Rect boxRect; // Position and size of the button
+    bool hasFocus;
+} Button;
+
 #endif
