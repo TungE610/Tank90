@@ -3,7 +3,7 @@
 #include <time.h>
 #include <stdint.h>
 #include <SDL2/SDL.h>
-#include <SDL_ttf.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdbool.h>
 #include <netinet/in.h>
 #include <SDL2/SDL_image.h>
@@ -27,8 +27,8 @@ pthread_mutex_t room_nums_mutex;
 
 struct Player *players[MAX_PLAYERS];
 Room rooms[MAX_PLAYERS];
-void login(singleLinkedList*list,char message[], int socket, int id);
-
+void registerPlayer(singleLinkedList* list,char message[], int socket, int id);
+void login(singleLinkedList* list,char message[], int socket, int id);
 
 void initRoom(Room *room, int first_player_id) {
     room->id = room_nums;
@@ -81,6 +81,18 @@ void *handleClient(void *arg) {
                 login(player->list, buff, player->socket, player->id);
 
             } else if (buff[0] == 0x02) {
+                
+                node* root = player->list->root;
+                int count = 0;
+                while(root != NULL) {
+                    count ++;
+                    root = root->next;
+                }
+                
+                registerPlayer(player->list, buff, player->socket,  count + 1);
+
+            } else if (buff[0] == 0x03) {
+
                 pthread_mutex_lock(&room_nums_mutex);
                 room_nums += 1;
                 pthread_mutex_unlock(&room_nums_mutex);
@@ -99,7 +111,7 @@ void *handleClient(void *arg) {
 
                 bytes_sent = send(player->socket, snum, strlen(snum), 0);
 
-            } else if (buff[0] == 0x03) {
+            } else if (buff[0] == 0x04) {
                 
                 int waitingRoom = 0;
 
@@ -138,7 +150,7 @@ void *handleClient(void *arg) {
                         }
                     }
                 }
-            } else if (buff[0] == 0x04) {
+            } else if (buff[0] == 0x05) {
                 int playerId, roomId;
                 int res = extractJoinRoomMessage(buff, &playerId, &roomId);
 
@@ -171,7 +183,7 @@ void *handleClient(void *arg) {
                         }
                     }
                 }
-            } else if (buff[0] == 0x06) {
+            } else if (buff[0] == 0x07) {
                 int roomId, playerId, direction;
                 extractDirectionMessage(buff, &roomId, &playerId, &direction);
 
@@ -198,7 +210,7 @@ void *handleClient(void *arg) {
                         }
                     }
                 }
-            } else if (buff[0] == 0x08) {
+            } else if (buff[0] == 0x09) {
                 int roomId, playerId, direction;
                 extractDirectionMessage(buff, &roomId, &playerId, &direction);
 
@@ -207,9 +219,6 @@ void *handleClient(void *arg) {
                         if (players[i]->system_id == rooms[roomId].second_player_id) {
                             char sdirection[BUFF_SIZE];
                             sprintf(sdirection, "%c%d", 0x09, direction);
-                            printf("check sent: %s\n", sdirection);
-                            printf("check id: %d\n", players[i]->system_id);
-                            printf("socket: %d\n", players[i]->socket);
                             bytes_sent = send(players[i]->socket, sdirection, strlen(sdirection), 0);
                             break;
                         }
@@ -372,5 +381,22 @@ void login(singleLinkedList* list,char  message[], int socket, int id){
         }
     } else {
         bytes_sent = send(socket, "not found", strlen("not found"), 0);
+    }
+}
+
+void registerPlayer(singleLinkedList* list,char  message[], int socket, int id){
+
+    char *extractedUsername;
+    char *extractedPassword;
+    int bytes_sent;
+
+    extractUsernameAndPassword((unsigned char *)message, &extractedUsername, &extractedPassword);
+
+    int res = registerUser(list, extractedUsername, extractedPassword, id);
+
+    if (res == 0) {
+        bytes_sent = send(socket, "existed", strlen("existed"), 0);
+    } else {
+        bytes_sent = send(socket, "success", strlen("success"), 0);
     }
 }
