@@ -11,6 +11,8 @@
 #include <unistd.h>
 #include <time.h>
 #include <pthread.h>
+#include <signal.h>
+#include <math.h>
 #include "constants.h"
 #include "objects.h"
 #include "messages.h"
@@ -22,8 +24,6 @@
 #include "surfaces.h"
 #include "colors.h"
 
-int myId = 0;
-int in_room_id = 0;
 int foundRoomState = 1;
 int room_nums = 0;
 int ready_to_start = 0;
@@ -33,8 +33,6 @@ SDL_Renderer *renderer;
 
 Room rooms[50];
 
-int first_user = 0;
-
 void initRoom(Room *room, int id, int status, int first_player_id, int second_player_id) {
     room->id = id;
     room->status = status;
@@ -43,18 +41,15 @@ void initRoom(Room *room, int id, int status, int first_player_id, int second_pl
 }
 
 void setFocusOnTextbox(Textbox *textbox, int mouseX, int mouseY);
-void moveDown(int *position_x, int *position_y,int *coor_x, int *coor_y, SDL_Rect *controlRect, int stepEachBlock, int stepSize);
-void moveUp(int *position_x, int *position_y,int *coor_x, int *coor_y, SDL_Rect *controlRect, int stepEachBlock, int stepSize);
-void moveRight(int *position_x, int *position_y,int *coor_x, int *coor_y, SDL_Rect *controlRect, int stepEachBlock, int stepSize);
-void moveLeft(int *position_x, int *position_y,int *coor_x, int *coor_y, SDL_Rect *controlRect, int stepEachBlock, int stepSize);
+void moveDown(int *position_x, int *position_y,int *coor_x, int *coor_y, SDL_Rect *single_controlRect, int stepEachBlock, int stepSize, int single_map[12][12]);
+void moveUp(int *position_x, int *position_y,int *coor_x, int *coor_y, SDL_Rect *single_controlRect, int stepEachBlock, int stepSize, int single_map[12][12]);
+void moveRight(int *position_x, int *position_y,int *coor_x, int *coor_y, SDL_Rect *single_controlRect, int stepEachBlock, int stepSize, int single_map[12][12]);
+void moveLeft(int *position_x, int *position_y,int *coor_x, int *coor_y, SDL_Rect *single_controlRect, int stepEachBlock, int stepSize, int single_map[12][12]);
 void extractAndChangeValues(const char *input, int *id, int *state, int *first_player_id, int *second_player_id, int stepEachBlock, int stepSize);
 void renderRooms(SDL_Renderer *renderer, SDL_Texture *roomTexture, TTF_Font *font);
 void checkRooms();
 void* receiveThread(void* arg);
 void renderDualModeGame(SDL_Renderer *renderer, SDL_Texture *myTank, SDL_Texture *friendTank, SDL_Texture* bulletTexture[]);
-
-Bullet bullet[totalBullets];
-SDL_Rect bulletRect[totalBullets];
 
 int main(){
     TTF_Init();
@@ -160,61 +155,14 @@ int main(){
             initTextbox(&passwordRegisterTextbox, 300, 245, 200, 30);
             initTextbox(&retypePasswordRegisterTextbox, 410, 295, 200, 30);
 
-            // // Initialize bullets and rects
-            // for (int i = 0; i < totalBullets; i++) {
-            //     bullet[i].position_x = hozirontal_controller;
-            //     bullet[i].position_y = vertical_controller;
-            //     bullet[i].is_active = 0;  // Assuming first bullet is active
-            //     bulletRect[i] = (SDL_Rect){ controlRect.x, controlRect.y, 30, 30 };
-            // }
-
-            // Enermy enermy[5];
-            // SDL_Rect enermyRect[5];
-
-            // for (int i = 0; i < 5; i ++) {
-            //     enermy[i].position_x = 11;
-            //     enermy[i].position_y = 0;
-            //     enermy[i].direction = LEFT;
-            //     enermy[i].blood = 1;
-            //     enermyRect[i] = (SDL_Rect){ 440, 0, 40, 40 };
-            //     enermy[i].movementTimer = 0.0f; // Initialize movement timer to zero
-            // }
-
+            initValueForSingle1();
             while( quit == false ){
-
+                    for (int i = 0; i < removeNum; i ++) {
+                        printf("%d ", removed[i]);
+                    }
+                    printf("\n");
                     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 25);  // Black background
                     SDL_RenderClear(renderer);
-//                 SDL_Texture *bulletTexture[totalBullets];
-//                 for (int i = 0; i < totalBullets; i ++) {
-//                     if (bullet[i].direction == UP) {
-//                         bulletTexture[i] = IMG_LoadTexture(renderer, "./images/bullet_up.png");
-//                     } else if (bullet[i].direction == DOWN) {
-//                         bulletTexture[i] = IMG_LoadTexture(renderer, "./images/bullet_down.png");
-//                     } else if (bullet[i].direction == RIGHT) {
-//                         bulletTexture[i] = IMG_LoadTexture(renderer, "./images/bullet_right.png");
-//                     } else {
-//                         bulletTexture[i] = IMG_LoadTexture(renderer, "./images/bullet_left.png");
-//                     }
-                    
-//                     if (bullet[i].is_active == 0) {
-//                         bulletRect[i].x  = controlRect.x;
-//                         bulletRect[i].y  = controlRect.y;
-//                     }
-//                 }
-
-//                 SDL_Texture *enermyTexture[5];
-
-//                 for (int i = 0; i < 5; i ++) {
-//                     if (enermy[i].direction == UP) {
-//                         enermyTexture[i] = IMG_LoadTexture(renderer, "./images/enermy_up.png");
-//                     } else if (enermy[i].direction == DOWN) {
-//                         enermyTexture[i] = IMG_LoadTexture(renderer, "./images/enermy_down.png");
-//                     } else if (enermy[i].direction == RIGHT) {
-//                         enermyTexture[i] = IMG_LoadTexture(renderer, "./images/enermy_right.png");
-//                     } else {
-//                         enermyTexture[i] = IMG_LoadTexture(renderer, "./images/enermy_left.png");
-//                     }
-//                 }
 
 //                 SDL_RenderClear(renderer);
                 if (state == MAIN_MENU) {
@@ -331,152 +279,53 @@ int main(){
                     SDL_RenderCopy(renderer, dualModeTextTexture, NULL, &dualModeRenderQuad);
                     SDL_RenderCopy(renderer, tank, NULL, &tankRectChooseMode);
                 }
-                else if (state == PLAY_SINGLE_GAME) {
+                else if (state == PLAY_SINGLE_MAP_1) {
 
                 SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
                 SDL_RenderClear(renderer);
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
-                renderSingleMap1(renderer);
+                renderSingle(renderer, single_map_1, 1);
 
-//-------------------Render enermy----------------------------------------------------------------------------------------------
-//                         for (int i = 0; i < 5; i++) {
-//                             int direction;
-//                             // Determine the direction for the enemy's movement (0: up, 1: down, 2: left, 3: right)
-//                             do {
-//                                 direction = rand() % 4;
-//                             } while (direction == previousDirection[i]);
-//                             previousDirection[i] = direction;
-//                             // Update the enermyRect based on the chosen direction
-//                             switch (direction) {
-//                                 case 0: // Move up               
-//                                     if (enermyRect[i].y % 8 == 0 && enermy[i].position_y -1 >= 0 && single_map_1[enermy[i].position_y - 1][enermy[i].position_x] == 0) {
-//                                         if (enermyRect[i].x % 8 != 0 && enermyRect[i].x < enermy[i].position_x * 8) {
-//                                             if (single_map_1[enermy[i].position_y - 1][enermy[i].position_x - 1] == 0 && single_map_1[enermy[i].position_y - 1][enermy[i].position_x] == 0) {
-//                                                 enermyRect[i].y -= 5;
-//                                             }
-//                                         } else if (enermyRect[i].x % 8 != 0 && enermyRect[i].x > enermy[i].position_x * 8) {
-//                                             if (single_map_1[enermy[i].position_y - 1][enermy[i].position_x] == 0 && single_map_1[enermy[i].position_y - 1][enermy[i].position_x + 1] == 0) {
-//                                                 enermyRect[i].y -= 5;
-//                                             }
-//                                         } else if (enermyRect[i].x % 8 == 0) {
-//                                             enermyRect[i].y -= 5;
-//                                         }
-//                                     } else if (enermyRect[i].y % 8 == 7 && enermyRect[i].y + 1 == (enermy[i].position_y + 1) * 8) {
-//                                         enermyRect[i].y -= 5;
-//                                         enermy[i].position_y--;
-//                                     } else if (enermyRect[i].y % 8 != 0) {
-//                                         enermyRect[i].y -= 5;
-//                                     }
-//                                     break;
-//                                case 1: // Move down
-//                                     if (enermyRect[i].y % 8 == 0 && enermy[i].position_y + 1< 12 && single_map_1[enermy[i].position_y + 1][enermy[i].position_x] == 0) {
-//                                         if (enermyRect[i].x % 8 != 0 && enermyRect[i].x < enermy[i].position_x * 8) {
-//                                             if (single_map_1[enermy[i].position_y + 1][enermy[i].position_x - 1] == 0 && single_map_1[enermy[i].position_y + 1][enermy[i].position_x] == 0) {
-//                                                 enermyRect[i].y+=5;
-//                                             }
-//                                         } else if (enermyRect[i].x % 8 != 0 && enermyRect[i].x > enermy[i].position_x * 8) {
-//                                             if (single_map_1[enermy[i].position_y + 1][enermy[i].position_x] == 0 && single_map_1[enermy[i].position_y + 1][enermy[i].position_x + 1] == 0) {
-//                                                 enermyRect[i].y+=5;
-//                                             }
-//                                         } else if (enermyRect[i].x % 8 == 0) {
-//                                             enermyRect[i].y+=5;
-//                                         }
-//                                     } else if (enermyRect[i].y % 8 == 1 && enermyRect[i].y - 1 == (enermy[i].position_y - 1) * 8) {
-//                                         enermyRect[i].y+=5;
-//                                         enermy[i].position_y++;
-//                                     } else if (enermyRect[i].y % 8 != 0) {
-//                                         enermyRect[i].y+=5;
-//                                     }
-//                                 break;
-//                                 case 2: // Move left
-//                                     if (enermyRect[i].x % 8 == 0 && enermy[i].position_x - 1 >= 0 && single_map_1[enermy[i].position_y][enermy[i].position_x - 1] == 0) {
-//                                         if (enermyRect[i].y % 8 != 0 && enermyRect[i].y < enermy[i].position_y * 8) {
-//                                             if (single_map_1[enermy[i].position_y][enermy[i].position_x - 1] == 0 && single_map_1[enermy[i].position_y - 1][enermy[i].position_x - 1] == 0) {
-//                                                 enermyRect[i].x-=5;
-//                                             }
-//                                         } else if (enermyRect[i].y % 8 != 0 && enermyRect[i].y > enermy[i].position_y * 8) {
-//                                             if (single_map_1[enermy[i].position_y][enermy[i].position_x - 1] == 0 && single_map_1[enermy[i].position_y + 1][enermy[i].position_x - 1] == 0) {
-//                                                 enermyRect[i].x-=5;
-//                                             }
-//                                         } else if (enermyRect[i].y % 8 == 0) {
-//                                             enermyRect[i].x-=5;
-//                                         }
-//                                     } else if (enermyRect[i].x % 8 == 1 && enermyRect[i].x - 1 == (enermy[i].position_x - 1) * 8) {
-//                                         enermyRect[i].x-=5;
-//                                         enermy[i].position_x--;
-//                                     } else if (enermyRect[i].x % 8 != 0) {
-//                                         enermyRect[i].x-=5;
-//                                     }
-//                                     break;
-//                                case 3: // Move right
-//                                 if (enermyRect[i].x % 8 == 0 && enermy[i].position_x + 1 < 12 && single_map_1[enermy[i].position_y][enermy[i].position_x + 1] == 0) {
-//                                     if (enermyRect[i].y % 8 != 0 && enermyRect[i].y < enermy[i].position_y * 8) {
-//                                         if (single_map_1[enermy[i].position_y][enermy[i].position_x + 1] == 0 && single_map_1[enermy[i].position_y - 1][enermy[i].position_x + 1] == 0) {
-//                                             enermyRect[i].x+=5;
-//                                         }
-//                                     } else if (enermyRect[i].y % 8 != 0 && enermyRect[i].y > enermy[i].position_y * 8) {
-//                                         if (single_map_1[enermy[i].position_y][enermy[i].position_x + 1] == 0 && single_map_1[enermy[i].position_y + 1][enermy[i].position_x + 1] == 0) {
-//                                             enermyRect[i].x+=5;
-//                                         }
-//                                     } else if (enermyRect[i].y % 8 == 0) {
-//                                         enermyRect[i].x+=5;
-//                                     }
-//                                 } else if (enermyRect[i].x % 8 == 7 && enermyRect[i].x + 1 == (enermy[i].position_x + 1) * 8) {
-//                                     enermyRect[i].x+=5;
-//                                     enermy[i].position_x++;
-//                                 } else if (enermyRect[i].x % 8 != 7) {
-//                                     enermyRect[i].x+=5;
-//                                 }
-//                                 break;
-//                                 default:
-//                                     break;
-//                             }
+                renderSingle1Enermies(renderer, single_1_enermies);
 
-//                         }
-//                         for (int i = 0; i < 5; i++) {
-//                             SDL_RenderCopy(renderer, enermyTexture[i], NULL, &enermyRect[i]);
-//                         }
+                renderBulletSingle1(renderer);
+                SDL_Surface *scoreTextSurface = TTF_RenderText_Solid(TINY_FONT, "SCORE:", BLACK);
+                SDL_Texture *scoreTextTexture = SDL_CreateTextureFromSurface(renderer, scoreTextSurface);
+                SDL_Rect scoreTextRenderQuad = { 580, 250, scoreTextSurface->w, scoreTextSurface->h };
+                SDL_RenderCopy(renderer, scoreTextTexture, NULL, &scoreTextRenderQuad);
 
-// ///---------------------end render enermy-----------------------------------------------------------
-//                 for (int i = 0; i < totalBullets; i ++) {
-//                     if (bullet[i].is_active == 1) {
-//                         SDL_RenderCopy(renderer, bulletTexture[i], NULL, &bulletRect[i]);
-//                     }
-//                     if (bullet[i].is_active == 1) {
-//                         if (bullet[i].direction == UP) {
-//                             // bullet[i].position_y = bulletRect[i].y / 5;
-//                             if (single_map_1[(bulletRect[i].y)/40 - 1][(bulletRect[i].x-80)/40] != 0 && bulletRect[i].y % 40 == 0) {
-//                                 bullet[i].is_active = 0;
-//                                 SDL_DestroyTexture(bulletTexture[i]); // Free the surface to avoid memory leak
-//                             } else {
-//                                 bulletRect[i].y -= 1;
-//                             }
-//                         } else if (bullet[i].direction == DOWN) {
-//                             if (single_map_1[(bulletRect[i].y)/40 + 1][(bulletRect[i].x-80)/40] != 0 && bulletRect[i].y % 40 == 0) {
-//                                 bullet[i].is_active = 0;
-//                                 SDL_DestroyTexture(bulletTexture[i]); // Free the surface to avoid memory leak
-//                             }
-//                             bulletRect[i].y += 1;
-//                             // bullet[i].position_y = bulletRect[i].y / 5;
-//                         } else if (bullet[i].direction == RIGHT) {
-//                             if (single_map_1[(bulletRect[i].y)/40][(bulletRect[i].x-80)/40 + 1] != 0 && bulletRect[i].x % 40 == 0) {
-//                                 bullet[i].is_active = 0;
-//                                 SDL_DestroyTexture(bulletTexture[i]); // Free the surface to avoid memory leak
-//                             }
-//                             bulletRect[i].x += 1;
-//                             // bullet[i].position_x = bulletRect[i].x / 5;
-//                         } else {
-//                             if (single_map_1[(bulletRect[i].y)/40][(bulletRect[i].x-80)/40 - 1] != 0 && bulletRect[i].x % 40 == 0) {
-//                                 bullet[i].is_active = 0;
-//                                 SDL_DestroyTexture(bulletTexture[i]); // Free the surface to avoid memory leak
-//                             }
-//                             bulletRect[i].x -= 1;
-//                             // bullet[i].position_x = bulletRect[i].x / 5;
-//                             }
-//                         }
-//                     }
-                } 
+                char sscores[BUFF_SIZE];
+                sprintf(sscores, "%d", single_scores);
+
+                SDL_Surface *scoreNumTextSurface = TTF_RenderText_Solid(TINY_FONT, sscores, BLACK);
+                SDL_Texture *scoreNumTextTexture = SDL_CreateTextureFromSurface(renderer, scoreNumTextSurface);
+                SDL_Rect scoreNumTextRenderQuad = { 610, 290, scoreNumTextSurface->w, scoreNumTextSurface->h };
+                SDL_RenderCopy(renderer, scoreNumTextTexture, NULL, &scoreNumTextRenderQuad);
+            } else if (state == CHANGING_TO_SINGLE_MAP_2) {
+                SDL_RenderClear(renderer);
+                renderChangeMapScreen(renderer, 2);
+            } else if (state == PLAY_SINGLE_MAP_2) {
+                SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+                SDL_RenderClear(renderer);
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+
+                renderSingle(renderer, single_map_2, 2);
+
+                renderBulletSingle1(renderer);
+                SDL_Surface *scoreTextSurface = TTF_RenderText_Solid(TINY_FONT, "SCORE:", BLACK);
+                SDL_Texture *scoreTextTexture = SDL_CreateTextureFromSurface(renderer, scoreTextSurface);
+                SDL_Rect scoreTextRenderQuad = { 580, 250, scoreTextSurface->w, scoreTextSurface->h };
+                SDL_RenderCopy(renderer, scoreTextTexture, NULL, &scoreTextRenderQuad);
+
+                char sscores[BUFF_SIZE];
+                sprintf(sscores, "%d", single_scores);
+
+                SDL_Surface *scoreNumTextSurface = TTF_RenderText_Solid(TINY_FONT, sscores, BLACK);
+                SDL_Texture *scoreNumTextTexture = SDL_CreateTextureFromSurface(renderer, scoreNumTextSurface);
+                SDL_Rect scoreNumTextRenderQuad = { 610, 290, scoreNumTextSurface->w, scoreNumTextSurface->h };
+                SDL_RenderCopy(renderer, scoreNumTextTexture, NULL, &scoreNumTextRenderQuad);
+            }
 // else if (state == CHOOSE_ROOM) {
 //                     SDL_RenderClear(renderer);
 
@@ -651,7 +500,7 @@ int main(){
                                             break;
                                         case SDLK_RETURN:
                                             if (chooseMode == 1) {
-                                                state = PLAY_SINGLE_GAME;
+                                                state = PLAY_SINGLE_MAP_1;
                                             } else {
                                                 // char chooseRoomMessage[BUFF_SIZE];
                                                 // strcpy(chooseRoomMessage, createChooseRoomMessage());
@@ -687,44 +536,62 @@ int main(){
                                 }
 
                                 break;
-                            case PLAY_SINGLE_GAME:
+                            case PLAY_SINGLE_MAP_1:
                                 switch (e.key.keysym.sym) {
                                     case SDLK_DOWN:
-                                        moveDown(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &controlRect, 8, 5);
+                                        moveDown(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &single_controlRect, 8, 5, single_map_1);
                                         myTank = meDown;
                                         break;
                                     case SDLK_UP:
-                                        moveUp(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &controlRect, 8, 5);
+                                        moveUp(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &single_controlRect, 8, 5, single_map_1);
                                         myTank = meUp;
                                         break;
                                     case SDLK_RIGHT:
-                                        moveRight(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &controlRect, 8, 5);
+                                        moveRight(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &single_controlRect, 8, 5, single_map_1);
                                         myTank = meRight;
                                         break;
                                     case SDLK_LEFT:
-                                        moveLeft(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &controlRect, 8 , 5);
+                                        moveLeft(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &single_controlRect, 8 , 5, single_map_1);
                                         myTank = meLeft;
                                         break;
                                     case SDLK_RETURN:
                                         break;
                                     case SDLK_SPACE:
-                                        // for (int i =0; i < totalBullets; i ++) {
-                                        //     if (bullet[i].is_active == 0) {
-                                        //         bullet[i].is_active = 1;
-                                        //         if (myTank == meUp) {
-                                        //              bullet[i].direction = UP;
-
-                                        //         } else if (myTank == meDown) {
-                                        //              bullet[i].direction = DOWN;
-                                        //         } else if (myTank == meRight) {
-                                        //              bullet[i].direction = RIGHT;
-                                        //         } else {
-                                        //              bullet[i].direction = LEFT;
-                                        //         }
-                                        //         break;
-                                        //     }
-                                        // }
-                                       break;
+                                        singleShot(myTank, single_controlRect, meUp, meDown, meRight, meLeft, 1);
+                                        break;
+                                }
+                                break;
+                            case CHANGING_TO_SINGLE_MAP_2:
+                                switch (e.key.keysym.sym) {
+                                    case SDLK_RETURN:
+                                    state = PLAY_SINGLE_MAP_2;
+                                    break;
+                                }
+                                break;
+                            break;
+                                case PLAY_SINGLE_MAP_2:
+                                switch (e.key.keysym.sym) {
+                                    case SDLK_DOWN:
+                                        moveDown(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8, 5, single_map_2);
+                                        myTank = meDown;
+                                        break;
+                                    case SDLK_UP:
+                                        moveUp(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8, 5, single_map_2);
+                                        myTank = meUp;
+                                        break;
+                                    case SDLK_RIGHT:
+                                        moveRight(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8, 5, single_map_2);
+                                        myTank = meRight;
+                                        break;
+                                    case SDLK_LEFT:
+                                        moveLeft(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8 , 5, single_map_2);
+                                        myTank = meLeft;
+                                        break;
+                                    case SDLK_RETURN:
+                                        break;
+                                    case SDLK_SPACE:
+                                        singleShot(myTank, single_controlRect, meUp, meDown, meRight, meLeft, 1);
+                                        break;
                                 }
                                 break;
                 //             case PLAY_DUAL_GAME:
@@ -1303,3 +1170,4 @@ int main(){
 //         }
 //     }
 // }
+

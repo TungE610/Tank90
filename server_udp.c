@@ -192,9 +192,6 @@ void *handleClient(void *arg) {
                         if (players[i]->system_id == rooms[roomId].second_player_id) {
                             char sdirection[BUFF_SIZE];
                             sprintf(sdirection, "%c%d", 0x07, direction);
-                            printf("check sent: %s\n", sdirection);
-                            printf("check id: %d\n", players[i]->system_id);
-                            printf("socket: %d\n", players[i]->socket);
                             bytes_sent = send(players[i]->socket, sdirection, strlen(sdirection), 0);
                             break;
                         }
