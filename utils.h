@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <string.h>
+#include <math.h>
 #include <SDL2/SDL.h>
 #include "maps.h"
 
@@ -53,15 +54,6 @@ void initButton(Button *button, int x, int y, int w, int h, const char *text) {
     button->hasFocus = false;
 }
 
-int isValidPosition(int newX, int newY) {
-    if (newX >= 0 && newX < 12 && newY >= 0 && newY < 12) {
-        if (single_map_1[newY][newX] != 1 && single_map_1[newY][newX] != 2) {
-            return 1; // The position is valid (true)
-        }
-    }
-    return 0; // The position is not valid (false)
-}
-
 void handleKeyboardEvent(SDL_Event *e, Textbox *textbox) {
     if (textbox->hasFocus){
         if (e->type == SDL_KEYDOWN) {
@@ -85,6 +77,15 @@ void setFocusOnTextbox(Textbox *textbox, int mouseX, int mouseY) {
     }
 }
 
+int round_integer_division(int numerator, int denominator) {
+    if (denominator == 0) {
+        printf("Không thể chia cho 0\n");
+        return 0; // Hoặc giá trị khác tùy bạn
+    }
+
+    double result = (double)numerator / denominator; // Chuyển sang kiểu double trước khi chia
+    return round(result); // Sử dụng hàm round để làm tròn
+}
 
 
 

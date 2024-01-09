@@ -23,7 +23,7 @@ struct Player {
     int can_jump, y_speed;
     int face, shoot, reloading;
     int left_key, right_key, up_key, down_key, attack_key;
-    int kills, deaths;
+    int scores;
     int is_choosing_game_mode;
     int game_mode;
     int is_waiting_other_player;
@@ -39,6 +39,8 @@ enum Direction {
     RIGHT
 };
 
+// enum Direction direction = LEFT;
+
 typedef struct {
     int position_x;
     int position_y;
@@ -48,12 +50,12 @@ typedef struct {
 } Bullet;
 
 typedef struct {
-    int position_x;
-    int position_y;
+    // int position_x;
+    // int position_y;
     int id;
-    int direction;
+    // int direction;
     int blood;
-    float movementTimer; // Add a movement timer
+    int exist;
 } Enermy;
 
 typedef struct {
