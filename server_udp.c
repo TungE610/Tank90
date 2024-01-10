@@ -163,9 +163,11 @@ void *handleClient(void *arg) {
 
                 rooms[roomId].status = 2;
 
-                checkRooms();
+                char sfirstUserId[BUFF_SIZE];
 
-                bytes_sent = send(player->socket, "ok", strlen("ok"), 0);
+                sprintf(sfirstUserId, "%d", rooms[roomId].first_player_id);
+
+                bytes_sent = send(player->socket, sfirstUserId, strlen(sfirstUserId), 0);
 
                 int waitingPlayerId;
 
