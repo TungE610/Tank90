@@ -17,7 +17,8 @@ int isFirstUserInRoom = 0;
 int me_revival = 3;
 int friend_revival = 3;
 int scoreUpdated = 1;
-// int game_pause = 0;
+int topN = 8;
+TopPlayer topPlayer[8];
 
 SDL_Rect single_controlRect = { 240, 440, 40, 40 };
 SDL_Rect single_controlRect_2 = { 240, 440, 40, 40 };

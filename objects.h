@@ -32,6 +32,11 @@ struct Player {
     singleLinkedList *list;
 };
 
+typedef struct {
+    char username[BUFF_SIZE];
+    int score;
+} TopPlayer;
+
 enum Direction {
     UP,
     DOWN,
