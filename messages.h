@@ -92,11 +92,11 @@ char *createCreateRoomMessage(int id) {
 char *createChooseRoomMessage() {
     unsigned char *message = (unsigned char *)malloc(1);
 
-    // Construct the message
     message[0] = 0x04;
 
     return message;
 }
+
 char* createRoomStateMessage(int id, int state, int first_player_id, int second_player_id) {
     // Calculate the length of the message string based on state
     int len;
@@ -199,7 +199,7 @@ int extractBulletDirectionMessage(const char* message, int *roomId, int *playerI
 }
 
 int extractDirectionMessage(const char* message, int *roomId, int *playerId, int *direction) {
-    if (message[0] != 0x06) {
+    if (message[0] != 0x07) {
         return 0; // Invalid message format
     }
 
@@ -212,7 +212,7 @@ int extractDirectionMessage(const char* message, int *roomId, int *playerId, int
 }
 
 int extractStartGameMessage(const char* message) {
-    if (message == NULL || message[0] != 0x05) {
+    if (message == NULL || message[0] != 0x06) {
         // Invalid message or message format
         return -1; // You can return a specific error code or value to indicate failure.
     }
@@ -225,7 +225,7 @@ int extractStartGameMessage(const char* message) {
 
 int extractJoinRoomMessage(const char* message, int* playerId, int* roomId) {
     // Check if the message starts with the expected format
-    if (message[0] != 0x04) {
+    if (message[0] != 0x05) {
         return 0; // Invalid message format
     }
 
@@ -237,5 +237,20 @@ int extractJoinRoomMessage(const char* message, int* playerId, int* roomId) {
     return 1; // Extraction successful
 }
 
+char *createReadyToStartMessage() {
+    unsigned char *message = (unsigned char *)malloc(1);
+
+    message[0] = 0x0a;
+
+    return message;
+}
+
+char *createNotifyStartMessage() {
+    unsigned char *message = (unsigned char *)malloc(1);
+
+    message[0] = 0x0b;
+
+    return message;
+}
 
 #endif

@@ -9,6 +9,7 @@ typedef struct
 	int status;
 	int logged;
 	int id;
+	int score;
 } ListElementType;
 #define BUFF_SIZE 1024
 #include "linkedlist.h"
@@ -37,7 +38,7 @@ void readDatatoList(singleLinkedList *list) {
         return;
     }
 
-    while (fscanf(fp, "%s %s %d %d %d", element.username, element.password, &element.status, &element.logged, &element.id) == 5) {
+    while (fscanf(fp, "%s %s %d %d %d %d", element.username, element.password, &element.status, &element.logged, &element.id, &element.score) == 6) {
         insertEnd(list, element);
     }
 
@@ -126,7 +127,7 @@ void appendAccountToFile(char username[], char password[], int id) {
 		return;
 	}
 
-	fprintf(fp, "\n%s %s 1 0 %d", username, password, id); 					// new user's state is active
+	fprintf(fp, "\n%s %s 1 0 %d 0", username, password, id); 					// new user's state is active
 
 	fclose(fp); 													// close file
 }
@@ -199,7 +200,7 @@ void rewriteFile(singleLinkedList *list) {
 	}
 
 	while (list->cur != NULL) {									// traverse till end to rewrite
-		fprintf(fp, "%s %s %d %d %d \n", list->cur->element.username, list->cur->element.password, list->cur->element.status, list->cur->element.logged, list->cur->element.id);
+		fprintf(fp, "%s %s %d %d %d %d\n", list->cur->element.username, list->cur->element.password, list->cur->element.status, list->cur->element.logged, list->cur->element.id, list->cur->element.score);
 		list->cur = list->cur->next;
 	}
 
