@@ -323,7 +323,6 @@ int main() {
         printf("check socket: %d\n", player->socket);
 
 		printf("You got a connection from %s\n", inet_ntoa(client->sin_addr) ); /* prints client's IP */
-        reloadAccountList(list);   // update list
         pthread_create(&threadIDs[number_of_players], NULL, handleClient, (void *)player);
 
         pthread_detach(threadIDs[number_of_players]);
@@ -348,10 +347,8 @@ void login(singleLinkedList* list,char  message[], int socket, int id){
     char *extractedUsername;
     char *extractedPassword;
     int bytes_sent;
-
     node* foundPlayer;
     extractUsernameAndPassword((unsigned char *)message, &extractedUsername, &extractedPassword);
-
     foundPlayer = findAccount(list, extractedUsername);
 
     if (foundPlayer != NULL) {
@@ -362,7 +359,12 @@ void login(singleLinkedList* list,char  message[], int socket, int id){
             sprintf(sid,"%d",foundPlayer->element.id);
             players[id]->system_id = foundPlayer->element.id;
 
-            if (strcmp(foundPlayer->element.password, extractedPassword) == 0) {
+            char hashedInput[SHA256_DIGEST_LENGTH*2 +1];
+
+            // hash chuoi duoc nhap vao 
+            hashPassword(extractedPassword, hashedInput);
+
+            if (strcmp(foundPlayer->element.password, hashedInput)==0) {
                 bytes_sent = send(socket, sid, strlen(sid), 0);
             } else {
                 bytes_sent = send(socket, "invalid", strlen("invalid"), 0);
@@ -387,13 +389,12 @@ void registerPlayer(singleLinkedList* list,char  message[], int socket, int id){
     int bytes_sent;
 
     extractUsernameAndPassword((unsigned char *)message, &extractedUsername, &extractedPassword);
-
     int res = registerUser(list, extractedUsername, extractedPassword, id);
+
 
     if (res == 0) {
         bytes_sent = send(socket, "existed", strlen("existed"), 0);
     } else {
         bytes_sent = send(socket, "success", strlen("success"), 0);
-        reloadAccountList(list);      // update list 
     }
 }
