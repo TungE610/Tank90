@@ -1129,7 +1129,7 @@ void renderRooms(SDL_Renderer *renderer, SDL_Texture *roomTexture, TTF_Font *fon
         char roomIdText[2];
         snprintf(roomIdText, sizeof(roomIdText), "%d", rooms[i].id);
 
-        SDL_Surface *textSurface = TTF_RenderText_Solid(font, roomIdText, (SDL_Color){0, 0, 0, 255});
+        SDL_Surface *textSurface = TTF_RenderText_Solid(font, roomIdText, (SDL_Color){255, 255, 255, 255});
         SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
         SDL_FreeSurface(textSurface);
 
@@ -1137,8 +1137,8 @@ void renderRooms(SDL_Renderer *renderer, SDL_Texture *roomTexture, TTF_Font *fon
         SDL_QueryTexture(textTexture, NULL, NULL, &textWidth, &textHeight);
 
         SDL_Rect textRect = {
-            roomRect.x,
-            roomRect.y,
+            roomRect.x+35,
+            roomRect.y-25,
             textWidth,
             textHeight
         };
@@ -1148,13 +1148,13 @@ void renderRooms(SDL_Renderer *renderer, SDL_Texture *roomTexture, TTF_Font *fon
         char roomStatusText[2]; // Adjust the size as needed
         snprintf(roomStatusText, sizeof(roomIdText), "%d", rooms[i].status);
 
-        SDL_Surface *roomStatusTextSurface = TTF_RenderText_Solid(TINY_FONT, roomStatusText, (SDL_Color){0, 0, 0, 255});
+        SDL_Surface *roomStatusTextSurface = TTF_RenderText_Solid(TINY_FONT, roomStatusText, (SDL_Color){255, 255, 255, 255});
         SDL_Texture *roomStatusTextTexture = SDL_CreateTextureFromSurface(renderer, roomStatusTextSurface);
         SDL_FreeSurface(roomStatusTextSurface);
 
         SDL_Rect roomStatusRect = {
-            roomRect.x+18,
-            roomRect.y+25,
+            roomRect.x+75,
+            roomRect.y+85,
             roomStatusTextSurface->w,
             roomStatusTextSurface->h
         };
@@ -1163,8 +1163,8 @@ void renderRooms(SDL_Renderer *renderer, SDL_Texture *roomTexture, TTF_Font *fon
         SDL_Texture *personTexture = IMG_LoadTexture(renderer, "images/person.jpg");
 
         SDL_Rect personRect = {
-            roomRect.x+35,
-            roomRect.y+25,
+            roomRect.x+15,
+            roomRect.y+90,
             15,15
         };
 
