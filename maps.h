@@ -1449,6 +1449,36 @@ void dualShot(SDL_Texture *tank, SDL_Rect rect, SDL_Texture *meUp, SDL_Texture *
         }
     }
 }
+void dualShot_positive(SDL_Texture *tank, SDL_Rect rect, SDL_Texture *meUp, SDL_Texture *meDown, SDL_Texture *meRight, SDL_Texture *meLeft, int player_shot) {
+    for (int i =0; i < 30; i ++) {
+        if (dual_bullet[i].is_active == 0) {
+            dual_bullet[i].is_active = 1;
+
+            dual_bullet[i].player_id = friendId;
+           
+            dual_bulletRect[i].x = rect.x;
+            dual_bulletRect[i].y = rect.y;
+
+            if (tank == meUp) {
+                dual_bullet[i].direction = UP;
+                bulletTexture[i] = *(&bullet_up);
+            } else if (tank == meDown) {
+                dual_bullet[i].direction = DOWN;
+                bulletTexture[i] = *(&bullet_down);
+
+            } else if (tank == meRight) {
+                dual_bullet[i].direction = RIGHT;
+                bulletTexture[i] = *(&bullet_right);
+
+            } else {
+                dual_bullet[i].direction = LEFT;
+                bulletTexture[i] = *(&bullet_left);
+
+            }
+            break;
+        }
+    }
+}
 
 void dualShotFriend(SDL_Texture *tank, SDL_Rect rect, SDL_Texture *meUp, SDL_Texture *meDown, SDL_Texture *meRight, SDL_Texture *meLeft, int player_shot) {
     for (int i =0; i < 30; i ++) {
@@ -1456,6 +1486,37 @@ void dualShotFriend(SDL_Texture *tank, SDL_Rect rect, SDL_Texture *meUp, SDL_Tex
             dual_bullet_friend[i].is_active = 1;
 
             dual_bullet_friend[i].player_id = myId;
+           
+            dual_bulletRect_friend[i].x = rect.x;
+            dual_bulletRect_friend[i].y = rect.y;
+
+            if (tank == meUp) {
+                dual_bullet_friend[i].direction = UP;
+                bulletTexture[i] = *(&bullet_up);
+            } else if (tank == meDown) {
+                dual_bullet_friend[i].direction = DOWN;
+                bulletTexture[i] = *(&bullet_down);
+
+            } else if (tank == meRight) {
+                dual_bullet_friend[i].direction = RIGHT;
+                bulletTexture[i] = *(&bullet_right);
+
+            } else {
+                dual_bullet_friend[i].direction = LEFT;
+                bulletTexture[i] = *(&bullet_left);
+
+            }
+            break;
+        }
+    }
+}
+
+void dualShotFriend_positive(SDL_Texture *tank, SDL_Rect rect, SDL_Texture *meUp, SDL_Texture *meDown, SDL_Texture *meRight, SDL_Texture *meLeft, int player_shot) {
+    for (int i =0; i < 30; i ++) {
+        if (dual_bullet_friend[i].is_active == 0) {
+            dual_bullet_friend[i].is_active = 1;
+
+            dual_bullet_friend[i].player_id = friendId;
            
             dual_bulletRect_friend[i].x = rect.x;
             dual_bulletRect_friend[i].y = rect.y;
@@ -1599,6 +1660,116 @@ void renderBulletDual(SDL_Renderer *renderer) {
     }
 }
 
+void renderBulletDual_postive(SDL_Renderer *renderer) {
+    for (int i = 0; i < 30; i ++) {
+        if (dual_bullet[i].is_active == 1) {
+            SDL_RenderCopy(renderer, bulletTexture[i], NULL, &dual_bulletRect[i]);
+        }
+        if (dual_bullet[i].is_active == 1) {
+            if (dual_bullet[i].direction == UP) {
+
+                if (dual_bullet[i].player_id == friendId && dual_bulletRect[i].y >= dual_friendRect.y && dual_friendRect.y >= dual_bulletRect[i].y - 2
+                    && dual_bulletRect[i].x > dual_friendRect.x - 20 && dual_bulletRect[i].x < dual_friendRect.x + 20 && friendId != 0
+                ) {
+                    friendTank = IMG_LoadTexture(renderer, "images/hitted.png");
+                    SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
+                    
+                    SDL_DestroyTexture(friendTank);
+
+                    friendTank = IMG_LoadTexture(renderer, "images/friend_up.png");
+                    dual_friendRect = (SDL_Rect) { 400, 440, 40, 40 };
+                    SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
+
+                    dual_bullet[i].is_active = 0;
+                    dual_bullet[i].player_id = 0;
+                }
+
+                if (dual_bulletRect[i].y < 1 || (dual_map_1[(dual_bulletRect[i].y)/40 - 1][round_integer_division(dual_bulletRect[i].x-80, 40)] != 0 && dual_bulletRect[i].y % 40 < 15)) {
+                    dual_bullet[i].is_active = 0;
+                    dual_bullet[i].player_id = 0;
+                }
+
+                if (dual_bullet[i].is_active == 1) {
+                    dual_bulletRect[i].y -= 1;
+                }
+            } else if (dual_bullet[i].direction == DOWN) {
+                if (dual_bullet[i].player_id == friendId && dual_bulletRect[i].y <= dual_friendRect.y && dual_friendRect.y <= dual_bulletRect[i].y + 2
+                    && dual_bulletRect[i].x > dual_friendRect.x - 20 && dual_bulletRect[i].x < dual_friendRect.x + 20 && friendId != 0
+                ) {
+
+                    friendTank = IMG_LoadTexture(renderer, "images/hitted.png");
+                    SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
+                    
+                    friendTank = IMG_LoadTexture(renderer, "images/friend_up.png");
+                    dual_friendRect = (SDL_Rect) { 400, 440, 40, 40 };
+                    SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
+
+                    dual_bullet[i].is_active = 0;
+                    dual_bullet[i].player_id = 0;
+                }
+            
+                if (dual_bulletRect[i].y > 440 || (dual_map_1[(dual_bulletRect[i].y)/40 + 2][round_integer_division(dual_bulletRect[i].x-80, 40)] != 0 && dual_bulletRect[i].y % 40 > 15)) {
+                    dual_bullet[i].is_active = 0;
+                    dual_bullet[i].player_id = 0;
+                }
+                
+                if (dual_bullet[i].is_active == 1) {
+                    dual_bulletRect[i].y += 1;
+                }
+            } else if (single_3_bullet[i].direction == RIGHT) {
+                
+                if (dual_bullet[i].player_id == friendId && dual_bulletRect[i].x <= dual_friendRect.x  && dual_friendRect.x <= dual_bulletRect[i].x + 2
+                    && dual_bulletRect[i].y > dual_friendRect.y - 20 && dual_bulletRect[i].y < dual_friendRect.y + 20 && friendId != 0
+                ) {
+
+                    friendTank = IMG_LoadTexture(renderer, "images/hitted.png");
+                    SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
+                    
+                    friendTank = IMG_LoadTexture(renderer, "images/friend_up.png");
+                    dual_friendRect = (SDL_Rect) { 400, 440, 40, 40 };
+                    SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
+
+                    dual_bullet[i].is_active = 0;
+                    dual_bullet[i].player_id = 0;
+
+                }
+                if (dual_bulletRect[i].x > 520 || (dual_map_1[round_integer_division(dual_bulletRect[i].y,40)][(dual_bulletRect[i].x-80)/40 + 2] != 0 && dual_bulletRect[i].x % 40 > 15)) {
+                    dual_bullet[i].is_active = 0;
+                    dual_bullet[i].player_id = 0;
+                } 
+
+                if (dual_bullet[i].is_active == 1) {
+                    dual_bulletRect[i].x += 1;
+                }
+            } else {
+                if (dual_bullet[i].player_id == friendId && dual_bulletRect[i].x >= dual_friendRect.x && dual_friendRect.x >= dual_bulletRect[i].x - 2
+                    && dual_bulletRect[i].y > dual_friendRect.y - 20 && dual_bulletRect[i].y < dual_friendRect.y + 20 && friendId != 0
+                ) {
+                    friendTank = IMG_LoadTexture(renderer, "images/hitted.png");
+                    SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
+
+                    SDL_DestroyTexture(friendTank);
+                    
+                    friendTank = IMG_LoadTexture(renderer, "images/friend_up.png");
+                    dual_friendRect = (SDL_Rect) { 400, 440, 40, 40 };
+                    SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
+
+                    dual_bullet[i].is_active = 0;
+                    dual_bullet[i].player_id = 0;
+                }
+            
+                if (dual_bulletRect[i].x < 2 || (dual_map_1[round_integer_division(dual_bulletRect[i].y,40)][(dual_bulletRect[i].x-80)/40 - 1] != 0 && dual_bulletRect[i].x % 40 < 15)) {
+                    dual_bullet[i].is_active = 0;
+                    dual_bullet[i].player_id = 0;
+                } 
+                if (dual_bullet[i].is_active == 1) {
+                    dual_bulletRect[i].x -= 1;
+                }
+            }
+        }
+    }
+}
+
 void renderBulletDual_friend(SDL_Renderer *renderer) {
     for (int i = 0; i < 30; i ++) {
         if (dual_bullet_friend[i].is_active == 1) {
@@ -1606,10 +1777,6 @@ void renderBulletDual_friend(SDL_Renderer *renderer) {
         }
         if (dual_bullet_friend[i].is_active == 1) {
             if (dual_bullet_friend[i].direction == UP) {
-                
-                printf("dual_bulletRect_friend[i].y: %d\n", dual_bulletRect_friend[i].y);
-                printf("dual_controlRect.y: %d\n", dual_controlRect.y);
-                printf("dual_bulletRect_friend[i].y - 2: %d\n", dual_bulletRect_friend[i].y - 2);
 
                 if (dual_bullet_friend[i].player_id == myId && dual_bulletRect_friend[i].y >= dual_controlRect.y && dual_controlRect.y >= dual_bulletRect_friend[i].y - 2
                     && dual_bulletRect_friend[i].x > dual_controlRect.x - 20 && dual_bulletRect_friend[i].x < dual_controlRect.x + 20 && myId != 0
@@ -1638,9 +1805,6 @@ void renderBulletDual_friend(SDL_Renderer *renderer) {
                     dual_bulletRect_friend[i].y -= 1;
                 }
             } else if (dual_bullet_friend[i].direction == DOWN) {
-                printf("dual_bulletRect_friend[i].y: %d\n", dual_bulletRect_friend[i].y);
-                printf("dual_controlRect.y: %d\n", dual_controlRect.y);
-                printf("dual_bulletRect_friend[i].y - 2: %d\n", dual_bulletRect_friend[i].y + 2);
                 if (dual_bullet_friend[i].player_id == myId && dual_bulletRect_friend[i].y <= dual_controlRect.y && dual_controlRect.y <= dual_bulletRect_friend[i].y + 2
                     && dual_bulletRect_friend[i].x > dual_controlRect.x - 20 && dual_bulletRect_friend[i].x < dual_controlRect.x + 20 && myId != 0
                 ) {
@@ -1700,6 +1864,114 @@ void renderBulletDual_friend(SDL_Renderer *renderer) {
                 ) {
                     single_scores++;
 
+                    myTank = IMG_LoadTexture(renderer, "images/hitted.png");
+                    SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
+                    
+                    myTank = IMG_LoadTexture(renderer, "images/me_up.png");
+                    dual_controlRect = (SDL_Rect) { 240, 440, 40, 40 };
+                    SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
+
+                    dual_bullet_friend[i].is_active = 0;
+                    dual_bullet_friend[i].player_id = 0;
+                }
+            
+                if (dual_bulletRect_friend[i].x < 2 || (dual_map_1[round_integer_division(dual_bulletRect_friend[i].y,40)][(dual_bulletRect_friend[i].x-80)/40 - 1] != 0 && dual_bulletRect_friend[i].x % 40 < 15)) {
+                    dual_bullet_friend[i].is_active = 0;
+                    dual_bullet_friend[i].player_id = 0;
+                } 
+                if (dual_bullet_friend[i].is_active == 1) {
+                    dual_bulletRect_friend[i].x -= 1;
+                }
+            }
+        }
+    }
+}
+
+void renderBulletDual_friend_positive(SDL_Renderer *renderer) {
+    for (int i = 0; i < 30; i ++) {
+        if (dual_bullet_friend[i].is_active == 1) {
+            SDL_RenderCopy(renderer, bulletTexture[i], NULL, &dual_bulletRect_friend[i]);
+        }
+        if (dual_bullet_friend[i].is_active == 1) {
+            if (dual_bullet_friend[i].direction == UP) {
+
+                if (dual_bullet_friend[i].player_id == friendId && dual_bulletRect_friend[i].y >= dual_controlRect.y && dual_controlRect.y >= dual_bulletRect_friend[i].y - 2
+                    && dual_bulletRect_friend[i].x > dual_controlRect.x - 20 && dual_bulletRect_friend[i].x < dual_controlRect.x + 20 && friendId != 0
+                ) {
+                    myTank = IMG_LoadTexture(renderer, "images/hitted.png");
+                    SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
+                    
+                    SDL_DestroyTexture(myTank);
+
+                    myTank = IMG_LoadTexture(renderer, "images/me_up.png");
+                    dual_controlRect = (SDL_Rect) { 240, 440, 40, 40 };
+                    SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
+
+                    dual_bullet_friend[i].is_active = 0;
+                    dual_bullet_friend[i].player_id = 0;
+                }
+
+                if (dual_bulletRect_friend[i].y < 1 || (dual_map_1[(dual_bulletRect_friend[i].y)/40 - 1][round_integer_division(dual_bulletRect_friend[i].x-80, 40)] != 0 && dual_bulletRect_friend[i].y % 40 < 15)) {
+                    dual_bullet_friend[i].is_active = 0;
+                    dual_bullet_friend[i].player_id = 0;
+                }
+
+                if (dual_bullet_friend[i].is_active == 1) {
+                    dual_bulletRect_friend[i].y -= 1;
+                }
+            } else if (dual_bullet_friend[i].direction == DOWN) {
+                if (dual_bullet_friend[i].player_id == friendId && dual_bulletRect_friend[i].y <= dual_controlRect.y && dual_controlRect.y <= dual_bulletRect_friend[i].y + 2
+                    && dual_bulletRect_friend[i].x > dual_controlRect.x - 20 && dual_bulletRect_friend[i].x < dual_controlRect.x + 20 && friendId != 0
+                ) {
+
+                    myTank = IMG_LoadTexture(renderer, "images/hitted.png");
+                    SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
+                    
+                    myTank = IMG_LoadTexture(renderer, "images/me_up.png");
+                    dual_controlRect = (SDL_Rect) { 240, 440, 40, 40 };
+                    SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
+
+                    dual_bullet_friend[i].is_active = 0;
+                    dual_bullet_friend[i].player_id = 0;
+                }
+            
+                if (dual_bulletRect_friend[i].y > 440 || (dual_map_1[(dual_bulletRect_friend[i].y)/40 + 2][round_integer_division(dual_bulletRect_friend[i].x-80, 40)] != 0 && dual_bulletRect_friend[i].y % 40 > 15)) {
+                    printf("come here\n");
+                    dual_bullet_friend[i].is_active = 0;
+                    dual_bullet_friend[i].player_id = 0;
+                }
+                
+                if (dual_bullet_friend[i].is_active == 1) {
+                    dual_bulletRect_friend[i].y += 1;
+                }
+            } else if (single_3_bullet[i].direction == RIGHT) {
+                
+                if (dual_bullet_friend[i].player_id == friendId && dual_bulletRect_friend[i].x <= dual_controlRect.x  && dual_controlRect.x <= dual_bulletRect_friend[i].x + 2
+                    && dual_bulletRect_friend[i].y > dual_controlRect.y - 20 && dual_bulletRect_friend[i].y < dual_controlRect.y + 20 && friendId != 0
+                ) {
+                    myTank = IMG_LoadTexture(renderer, "images/hitted.png");
+                    SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
+                    
+                    myTank = IMG_LoadTexture(renderer, "images/me_up.png");
+                    dual_controlRect = (SDL_Rect) { 240, 440, 40, 40 };
+                    SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
+
+                    dual_bullet_friend[i].is_active = 0;
+                    dual_bullet_friend[i].player_id = 0;
+
+                }
+                if (dual_bulletRect_friend[i].x > 520 || (dual_map_1[round_integer_division(dual_bulletRect_friend[i].y,40)][(dual_bulletRect_friend[i].x-80)/40 + 2] != 0 && dual_bulletRect_friend[i].x % 40 > 15)) {
+                    dual_bullet_friend[i].is_active = 0;
+                    dual_bullet_friend[i].player_id = 0;
+                } 
+
+                if (dual_bullet_friend[i].is_active == 1) {
+                    dual_bulletRect_friend[i].x += 1;
+                }
+            } else {
+                if (dual_bullet_friend[i].player_id == friendId && dual_bulletRect_friend[i].x >= dual_controlRect.x && dual_controlRect.x >= dual_bulletRect_friend[i].x - 2
+                    && dual_bulletRect_friend[i].y > dual_controlRect.y - 20 && dual_bulletRect_friend[i].y < dual_controlRect.y + 20 && friendId != 0
+                ) {
                     myTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
                     

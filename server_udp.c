@@ -178,7 +178,9 @@ void *handleClient(void *arg) {
 
                 char readyToStartMessage[BUFF_SIZE];
 
-                strcpy(readyToStartMessage, createReadyToStartMessage()); // 0x0a
+                strcpy(readyToStartMessage, createReadyToStartMessage(playerId)); // 0x0a
+
+                printf("check send message: %s\n", readyToStartMessage);
 
                 bytes_sent = send(players[waitingPlayerId]->socket, readyToStartMessage, strlen(readyToStartMessage), 0);
                 
@@ -238,24 +240,31 @@ void *handleClient(void *arg) {
                     }
                 }
             } else if (buff[0] == 0x09) {
+
                 int roomId, playerId, direction;
-                extractDirectionMessage(buff, &roomId, &playerId, &direction);
+                extractDualShotMessage(buff, &roomId, &playerId, &direction);
+
+                printf("check direction: %d %d %d\n", roomId, playerId, direction);
 
                 if (rooms[roomId].first_player_id == playerId) {
+
                     for (int i = 0; i < number_of_players; i ++) {
+
                         if (players[i]->system_id == rooms[roomId].second_player_id) {
+
                             char sdirection[BUFF_SIZE];
-                            sprintf(sdirection, "%c%d", 0x09, direction);
+                            sprintf(sdirection, "%c%d", 0x0c, direction);
                             bytes_sent = send(players[i]->socket, sdirection, strlen(sdirection), 0);
                             break;
                         }
                     }
                 } else {
                      for (int i = 0; i < number_of_players; i ++) {
+
                         if (players[i]->system_id == rooms[roomId].first_player_id) {
+
                             char sdirection[BUFF_SIZE];
-                            sprintf(sdirection, "%c%d", 0x09, direction);
-                            printf("check sent: %s\n", sdirection);
+                            sprintf(sdirection, "%c%d", 0x0c, direction);
                             bytes_sent = send(players[i]->socket, sdirection, strlen(sdirection), 0);
                             break;
                         }

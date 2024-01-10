@@ -170,7 +170,7 @@ char* createDirectionMessage(int roomId, int playerId, int direction) {
     return result;
 }
 
-char *createBulletDirectionMessage(int roomId, int playerId, int direction) {
+char *createDualShotMessage(int roomId, int playerId, int direction) {
     char message[64]; // Assuming a maximum length for the message
     
     // Format the message string
@@ -185,8 +185,8 @@ char *createBulletDirectionMessage(int roomId, int playerId, int direction) {
     return result;
 }
 
-int extractBulletDirectionMessage(const char* message, int *roomId, int *playerId, int *direction) {
-    if (message[0] != 0x08) {
+int extractDualShotMessage(const char* message, int *roomId, int *playerId, int *direction) {
+    if (message[0] != 0x09) {
         return 0; // Invalid message format
     }
 
@@ -237,12 +237,33 @@ int extractJoinRoomMessage(const char* message, int* playerId, int* roomId) {
     return 1; // Extraction successful
 }
 
-char *createReadyToStartMessage() {
-    unsigned char *message = (unsigned char *)malloc(1);
+char *createReadyToStartMessage(int friendId) {
+    char message[64]; // Assuming a maximum length for the message
+    
+    // Format the message string
+    snprintf(message, sizeof(message), "%c%d", 0x0a, friendId);
 
-    message[0] = 0x0a;
+    // Allocate memory for the string and copy the formatted message
+    char* result = (char*)malloc(strlen(message) + 1); // +1 for the null terminator
+    if (result != NULL) {
+        strcpy(result, message);
+    }
 
-    return message;
+    return result;
+}
+
+int extractReadyToStartMessage(const char* message, int* friendId) {
+    // Check if the message starts with the expected format
+    if (message[0] != 0x0a) {
+        return 0; // Invalid message format
+    }
+
+    // Use sscanf to parse the player and room IDs
+    if (sscanf(message + 1, "%d", friendId) != 2) {
+        return 0; // Parsing failed
+    }
+
+    return 1; // Extraction successful
 }
 
 char *createNotifyStartMessage() {

@@ -167,6 +167,10 @@ int main(){
             initValueForDual_friend();
 
             while( quit == false ){
+                    // for (int i = 0; i < 30; i ++) {
+                    //     printf("%d-%d ", dual_bullet[i].is_active, dual_bullet[i].player_id);
+                    // }
+                    // printf("\n");
                     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 25);  // Black background
                     SDL_RenderClear(renderer);
 
@@ -398,8 +402,10 @@ int main(){
                 renderDual(renderer, dual_map_1, 1);
                 if (isFirstUserInRoom == 1) {
                     renderBulletDual(renderer);
+                    renderBulletDual_friend_positive(renderer);
                 } else {
                     renderBulletDual_friend(renderer);
+                    renderBulletDual_postive(renderer);
                 }
 
                 SDL_Surface *scoreTextSurface = TTF_RenderText_Solid(TINY_FONT, "SCORE:", BLACK);
@@ -660,7 +666,6 @@ int main(){
                                 case PLAY_DUAL_GAME:
                                     switch (e.key.keysym.sym) {
                                         case SDLK_DOWN:
-                                            printf("down\n");
                 //                             positive = 1;
                                             if (isFirstUserInRoom == 1) {
                                                 dualMoveDown(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
@@ -677,7 +682,6 @@ int main(){
                                             bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
                                         break;
                                         case SDLK_UP:
-                                            printf("down\n");
                 //                             positive = 1;
                                             if (isFirstUserInRoom == 1) {
                                                 dualMoveUp(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
@@ -692,9 +696,6 @@ int main(){
                                             bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
                                         break;
                                         case SDLK_RIGHT:
-                                            printf("right\n");
-
-                //                             positive = 1;
                                             if (isFirstUserInRoom == 1) {
                                                 dualMoveRight(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
                                                 myTank = meRight;
@@ -708,8 +709,6 @@ int main(){
                                             bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
                                         break;
                                         case SDLK_LEFT:
-                                            printf("left\n");
-                //                             positive = 1;
                                             if (isFirstUserInRoom == 1) {
                                                 dualMoveLeft(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
                                                 myTank = meLeft;
@@ -728,44 +727,35 @@ int main(){
                                         case SDLK_RETURN:
                                             if (isFirstUserInRoom == 1) {
                                                 dualShot(myTank, dual_controlRect, meUp, meDown, meRight, meLeft, 1);
+
+                                                char dualShotMessage[BUFF_SIZE];
+                                                if (myTank == meUp) {
+                                                    strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, UP));
+                                                } else if (myTank == meDown) {
+                                                    strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, DOWN));
+                                                } else if (myTank == meRight) {
+                                                    strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, RIGHT));
+                                                } else {
+                                                    strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, LEFT));
+                                                }
+                                                bytes_sent = send(client_sock, dualShotMessage, strlen(dualShotMessage), 0);
+                                                
                                             } else {
                                                 dualShotFriend(friendTank, dual_friendRect, friendUp, friendDown, friendRight, friendLeft, 1);
+                                            
+                                            char dualShotMessage[BUFF_SIZE];
+                                                if (friendTank == friendUp) {
+                                                    strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, UP));
+                                                } else if (friendTank == friendDown) {
+                                                    strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, DOWN));
+                                                } else if (friendTank == friendRight) {
+                                                    strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, RIGHT));
+                                                } else {
+                                                    strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, LEFT));
+                                                }
+                                                 bytes_sent = send(client_sock, dualShotMessage, strlen(dualShotMessage), 0);
                                             }
-                //                         positive = 1;
-                //                         for (int i =0; i < totalBullets; i ++) {
-                //                             if (bullet[i].is_active == 0) {
-                //                                 bullet[i].is_active = 1;
-                //                                  if (first_user == 1 && positive == 1) {
-                //                                     bulletRect[i].x = controlRect.x;
-                //                                     bulletRect[i].y = controlRect.y;
-                //                                 } else if (first_user == 0 && positive == 1){
-                //                                     bulletRect[i].x = friendRect.x;
-                //                                     bulletRect[i].y = friendRect.y;
-                //                                 }
-                //                                 if (myTank == meUp) {
-                //                                     bullet[i].direction = UP;
-                //                                     char bulletDirectionMessage[BUFF_SIZE];
-                //                                     strcpy(bulletDirectionMessage, createBulletDirectionMessage(in_room_id, myId, UP));
-                //                                     bytes_sent = send(client_sock, bulletDirectionMessage, strlen(bulletDirectionMessage), 0);
-                //                                 } else if (myTank == meDown) {
-                //                                      bullet[i].direction = DOWN;
-                //                                      char bulletDirectionMessage[BUFF_SIZE];
-                //                                     strcpy(bulletDirectionMessage, createBulletDirectionMessage(in_room_id, myId, DOWN));
-                //                                     bytes_sent = send(client_sock, bulletDirectionMessage, strlen(bulletDirectionMessage), 0);
-                //                                 } else if (myTank == meRight) {
-                //                                      bullet[i].direction = RIGHT;
-                //                                      char bulletDirectionMessage[BUFF_SIZE];
-                //                                     strcpy(bulletDirectionMessage, createBulletDirectionMessage(in_room_id, myId, RIGHT));
-                //                                     bytes_sent = send(client_sock, bulletDirectionMessage, strlen(bulletDirectionMessage), 0);
-                //                                 } else {
-                //                                      bullet[i].direction = LEFT;
-                //                                      char bulletDirectionMessage[BUFF_SIZE];
-                //                                     strcpy(bulletDirectionMessage, createBulletDirectionMessage(in_room_id, myId, LEFT));
-                //                                     bytes_sent = send(client_sock, bulletDirectionMessage, strlen(bulletDirectionMessage), 0);
-                //                                 }
-                //                                 break;
-                //                             }
-                //                         }
+
                                             break;
                                     }
                                 break;
@@ -1054,12 +1044,18 @@ void* receiveThread(void* arg) {
         buff[bytes_received] = '\0';
 
         if (buff[0] == 0x0a) { // ready to play
+
+            int friend_id;
+
+            sscanf(buff + 1, "%d", &friend_id); // Skip the first byte (0x05) and read the integer.
+
+            friendId = friend_id;
+
             readyToStart = 1;
             state = READY_TO_PLAY_DUAL;
 
         } else if (buff[0] == 0x0b) {
             
-            printf("receive to start message\n");
             state = PLAY_DUAL_GAME;
 
         } else if (buff[0] == 0x08) {
@@ -1067,7 +1063,6 @@ void* receiveThread(void* arg) {
 
             sscanf(buff + 1, "%d", &direction); // Skip the first byte (0x05) and read the integer.
 
-            printf("receive direction: %d\n", direction);
             if (isFirstUserInRoom == 1) {
                 if (direction == UP) {
                     friendTank = friendUp;
@@ -1098,34 +1093,9 @@ void* receiveThread(void* arg) {
                     dualMoveLeft(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
                 }
             }
-        } else if (buff[0] == 0x09) {
-        //     positive = 0;
-        //     int direction;
-
-        //     sscanf(buff + 1, "%d", &direction); // Skip the first byte (0x05) and read the integer.
-        //    for (int i =0; i < totalBullets; i ++) {
-        //         if (bullet[i].is_active == 0) {
-        //             bullet[i].is_active = 1;
-                    
-        //             if (first_user == 1 && positive == 0) {
-        //                 bulletRect[i].x = friendRect.x;
-        //                 bulletRect[i].y = friendRect.y;
-        //             } else {
-        //                 bulletRect[i].x = controlRect.x;
-        //                 bulletRect[i].y = controlRect.y;
-        //             }
-        //             if (direction == UP) {
-        //                     bullet[i].direction = UP;
-        //             } else if (direction == DOWN) {
-        //                     bullet[i].direction = DOWN;
-        //             } else if (direction == RIGHT) {
-        //                     bullet[i].direction = RIGHT;
-        //             } else {
-        //                     bullet[i].direction = LEFT;
-        //             }
-        //             break;
-        //         }
-        //     }
+        } else if (buff[0] == 0x0c) {
+            printf("receive direction message\n");
+            dualShotFriend_positive(friendTank, dual_friendRect, friendUp, friendDown, friendRight, friendLeft, 1);
         }   
     }
 
@@ -1185,136 +1155,11 @@ void* receiveThread1(void* arg) {
                     dualMoveLeft(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
                 }
             }
-        } else if (buff[0] == 0x09) {
-        //     positive = 0;
-        //     int direction;
-
-        //     sscanf(buff + 1, "%d", &direction); // Skip the first byte (0x05) and read the integer.
-        //    for (int i =0; i < totalBullets; i ++) {
-        //         if (bullet[i].is_active == 0) {
-        //             bullet[i].is_active = 1;
-                    
-        //             if (first_user == 1 && positive == 0) {
-        //                 bulletRect[i].x = friendRect.x;
-        //                 bulletRect[i].y = friendRect.y;
-        //             } else {
-        //                 bulletRect[i].x = controlRect.x;
-        //                 bulletRect[i].y = controlRect.y;
-        //             }
-        //             if (direction == UP) {
-        //                     bullet[i].direction = UP;
-        //             } else if (direction == DOWN) {
-        //                     bullet[i].direction = DOWN;
-        //             } else if (direction == RIGHT) {
-        //                     bullet[i].direction = RIGHT;
-        //             } else {
-        //                     bullet[i].direction = LEFT;
-        //             }
-        //             break;
-        //         }
-        //     }
+        } else if (buff[0] == 0x0c) {
+            dualShot_positive(myTank, dual_controlRect, meUp, meDown, meRight, meLeft, 1);
         }   
     }
 
     pthread_exit(NULL);
 }
-
-// void renderDualModeGame(SDL_Renderer *renderer, SDL_Texture *myTank, SDL_Texture *friendTank, SDL_Texture* bulletTexture[]) {
-
-//     SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
-//     SDL_RenderClear(renderer);
-
-//     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-//     // Calculate the map boundaries
-//     int mapX = (640 - (12 * 40)) / 2;
-//     int mapY = (480 - (12 * 40)) / 2;
-
-//     // Render the gray border around the map
-//     SDL_Rect borderRect = { mapX - 2, mapY - 2, 12 * 40 + 4, 12 * 40 + 4 };
-//     SDL_RenderFillRect(renderer, &borderRect);
-
-//     // Render the map
-//     for (int y = 0; y < 12; y++) {
-//         for (int x = 0; x < 12; x++) {
-//             SDL_Rect destRect = { mapX + x * 40, mapY + y * 40, 40, 40 };
-//             SDL_Texture* texture = NULL;
-
-//             switch (dual_map_1[y][x]) {
-//                 case 0:
-//                     break;
-//                 case 1:
-//                     texture = block;
-//                     break;
-//                 case 2:
-//                     texture = iron;
-//                     break;
-//                 case 9:
-//                     if (first_user == 1) {
-//                         texture = myTank;
-//                         SDL_RenderCopy(renderer, texture, NULL, &controlRect);
-//                     } else {
-//                         texture = friendTank;
-//                         SDL_RenderCopy(renderer, texture, NULL, &controlRect);
-//                     }
-//                     break;
-//                 case 8:
-//                     if (first_user == 0) {
-//                         texture = myTank;
-//                         SDL_RenderCopy(renderer, texture, NULL, &friendRect);
-//                     } else {
-//                         texture = friendTank;
-//                         SDL_RenderCopy(renderer, texture, NULL, &friendRect);
-//                     }
-//                     break;
-//                 case 7:
-//                     texture = enermy_1_right;
-//                     break;
-//                 default:
-//                     break;
-//             }
-
-//             if (texture != myTank) { 
-//                 SDL_RenderCopy(renderer, texture, NULL, &destRect);
-//             }
-//         }
-//     }
-
-//      for (int i = 0; i < totalBullets; i ++) {
-//         if (bullet[i].is_active == 1) {
-//             SDL_RenderCopy(renderer, bulletTexture[i], NULL, &bulletRect[i]);
-//         }
-//         if (bullet[i].is_active == 1) {
-//             if (bullet[i].direction == UP) {
-//                 // bullet[i].position_y = bulletRect[i].y / 5;
-//                 if (dual_map_1[(bulletRect[i].y)/40 - 1][(bulletRect[i].x-80)/40] != 0 && bulletRect[i].y % 40 == 0) {
-//                     bullet[i].is_active = 0;
-//                     SDL_DestroyTexture(bulletTexture[i]); // Free the surface to avoid memory leak
-//                 } else {
-//                     bulletRect[i].y -= 1;
-//                 }
-//             } else if (bullet[i].direction == DOWN) {
-//                 if (dual_map_1[(bulletRect[i].y)/40 + 1][(bulletRect[i].x-80)/40] != 0 && bulletRect[i].y % 40 == 0) {
-//                     bullet[i].is_active = 0;
-//                     SDL_DestroyTexture(bulletTexture[i]); // Free the surface to avoid memory leak
-//                 }
-//                 bulletRect[i].y += 1;
-//                 // bullet[i].position_y = bulletRect[i].y / 5;
-//             } else if (bullet[i].direction == RIGHT) {
-//                 if (dual_map_1[(bulletRect[i].y)/40][(bulletRect[i].x-80)/40 + 1] != 0 && bulletRect[i].x % 40 == 0) {
-//                     bullet[i].is_active = 0;
-//                     SDL_DestroyTexture(bulletTexture[i]); // Free the surface to avoid memory leak
-//                 }
-//                 bulletRect[i].x += 1;
-//                 // bullet[i].position_x = bulletRect[i].x / 5;
-//             } else {
-//                 if (dual_map_1[(bulletRect[i].y)/40][(bulletRect[i].x-80)/40 - 1] != 0 && bulletRect[i].x % 40 == 0) {
-//                     bullet[i].is_active = 0;
-//                     SDL_DestroyTexture(bulletTexture[i]); // Free the surface to avoid memory leak
-//                 }
-//                 bulletRect[i].x -= 1;
-//                 // bullet[i].position_x = bulletRect[i].x / 5;
-//             }
-//         }
-//     }
-// }
 
