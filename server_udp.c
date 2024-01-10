@@ -270,6 +270,12 @@ void *handleClient(void *arg) {
                         }
                     }
                 }
+            } else if (buff[0] == 0x0d) {
+                int id, score;
+
+                extractUpdateScoreMessage(buff, &id, &score);
+
+                updateScore(player->list, id, score);
             }
 
             // player->is_choosing_game_mode = 0;
@@ -398,8 +404,8 @@ void login(singleLinkedList* list,char  message[], int socket, int id){
         
         if (foundPlayer->element.status == 1 && foundPlayer->element.logged == 0) {
             
-            char sid[2];
-            sprintf(sid,"%d",foundPlayer->element.id);
+            char sid[4];
+            sprintf(sid,"%d*%d",foundPlayer->element.id, foundPlayer->element.score);
             players[id]->system_id = foundPlayer->element.id;
 
             if (strcmp(foundPlayer->element.password, extractedPassword) == 0) {

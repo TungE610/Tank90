@@ -274,4 +274,35 @@ char *createNotifyStartMessage() {
     return message;
 }
 
+char *createUpdateScoreMessage(int id, int score) {
+    char message[64]; // Assuming a maximum length for the message
+    
+    // Format the message string
+    snprintf(message, sizeof(message), "%c%d*%d", 0x0d, id, score);
+
+    // Allocate memory for the string and copy the formatted message
+    char* result = (char*)malloc(strlen(message) + 1); // +1 for the null terminator
+    if (result != NULL) {
+        strcpy(result, message);
+    }
+
+    return result;
+}
+
+int extractUpdateScoreMessage(const char* message, int* id, int* score) {
+    // Check if the message starts with the expected format
+    if (message[0] != 0x0d) {
+        return 0; // Invalid message format
+    }
+
+    // Use sscanf to parse the player and room IDs
+    if (sscanf(message + 1, "%d*%d", id, score) != 2) {
+        return 0; // Parsing failed
+    }
+
+    return 1; // Extraction successful
+}
+
+
+
 #endif

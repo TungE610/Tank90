@@ -14,6 +14,10 @@ int myId = 0;
 int friendId = 0;
 int in_room_id = 0;
 int isFirstUserInRoom = 0;
+int me_revival = 3;
+int friend_revival = 3;
+int scoreUpdated = 1;
+// int game_pause = 0;
 
 SDL_Rect single_controlRect = { 240, 440, 40, 40 };
 SDL_Rect single_controlRect_2 = { 240, 440, 40, 40 };
