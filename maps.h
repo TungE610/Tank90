@@ -1625,7 +1625,16 @@ void renderBulletDual(SDL_Renderer *renderer) {
                 if (dual_bullet[i].player_id == myId && dual_bulletRect[i].y == dual_friendRect.y + 40
                     && dual_bulletRect[i].x > dual_friendRect.x - 20 && dual_bulletRect[i].x < dual_friendRect.x + 20 && myId != 0
                 ) {
-                    single_scores++;
+                    single_scores+=2;
+                    friend_revival --;
+
+                    if (friend_revival == 0) {
+                        if (isFirstUserInRoom == 1){
+                            state = WON;
+                        } else {
+                            state = GAME_OVER;
+                        }
+                    }
 
                     friendTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
@@ -1661,6 +1670,14 @@ void renderBulletDual(SDL_Renderer *renderer) {
                 ) {
 
                     single_scores+= 2;
+                    friend_revival --;
+                    if (friend_revival == 0) {
+                        if (isFirstUserInRoom == 1){
+                            state = WON;
+                        } else {
+                            state = GAME_OVER;
+                        }
+                    }
 
                     friendTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
@@ -1686,13 +1703,20 @@ void renderBulletDual(SDL_Renderer *renderer) {
                 if (dual_bullet[i].is_active == 1) {
                     dual_bulletRect[i].y += 1;
                 }
-            } else if (single_3_bullet[i].direction == RIGHT) {
-                printf("run here\n");
-                if (dual_bullet[i].player_id == myId && dual_bulletRect[i].x <= dual_friendRect.x  && dual_friendRect.x <= dual_bulletRect[i].x + 2
+            } else if (dual_bullet[i].direction == RIGHT) {
+                if (dual_bullet[i].player_id == myId && dual_bulletRect[i].x == dual_friendRect.x -40
                     && dual_bulletRect[i].y > dual_friendRect.y - 20 && dual_bulletRect[i].y < dual_friendRect.y + 20 && myId != 0
                 ) {
 
-                    single_scores++;
+                    single_scores+=2;
+                    friend_revival --;
+                    if (friend_revival == 0) {
+                        if (isFirstUserInRoom == 1){
+                            state = WON;
+                        } else {
+                            state = GAME_OVER;
+                        }
+                    }
 
                     friendTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
@@ -1719,15 +1743,19 @@ void renderBulletDual(SDL_Renderer *renderer) {
                     dual_bulletRect[i].x += 1;
                 }
             } else {
-                printf("bullet id: %d\n", dual_bullet[i].player_id);
-                printf("id: %d\n", myId);
-                printf("dual_bulletRect[i].x: %d\n", dual_bulletRect[i].x);
-                printf("dual_friendRect.x: %d\n", dual_friendRect.x);
 
-                if (dual_bullet[i].player_id == myId && dual_bulletRect[i].x >= dual_friendRect.x && dual_friendRect.x >= dual_bulletRect[i].x - 2
+                if (dual_bullet[i].player_id == myId && dual_bulletRect[i].x == dual_friendRect.x  + 40
                     && dual_bulletRect[i].y > dual_friendRect.y - 20 && dual_bulletRect[i].y < dual_friendRect.y + 20 && myId != 0
                 ) {
-                    single_scores++;
+                    single_scores+=2;
+                    friend_revival --;
+                    if (friend_revival == 0) {
+                        if (isFirstUserInRoom == 1){
+                            state = WON;
+                        } else {
+                            state = GAME_OVER;
+                        }
+                    }
 
                     friendTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
@@ -1767,10 +1795,19 @@ void renderBulletDual_postive(SDL_Renderer *renderer) {
         if (dual_bullet[i].is_active == 1) {
             if (dual_bullet[i].direction == UP) {
 
-                if (dual_bullet[i].player_id == friendId && dual_bulletRect[i].y >= dual_friendRect.y && dual_friendRect.y >= dual_bulletRect[i].y - 2
+                if (dual_bullet[i].player_id == friendId && dual_bulletRect[i].y == dual_friendRect.y + 40
                     && dual_bulletRect[i].x > dual_friendRect.x - 20 && dual_bulletRect[i].x < dual_friendRect.x + 20 && friendId != 0
                 ) {
-                    printf("hittle\n");
+                    friend_revival --;
+
+                    if (friend_revival == 0){
+                        if (isFirstUserInRoom == 1){
+                            state = WON;
+                        } else {
+                            state = GAME_OVER;
+                        }
+                    }
+
                     friendTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
                     
@@ -1800,10 +1837,17 @@ void renderBulletDual_postive(SDL_Renderer *renderer) {
                     dual_bulletRect[i].y -= 1;
                 }
             } else if (dual_bullet[i].direction == DOWN) {
-                if (dual_bullet[i].player_id == friendId && dual_bulletRect[i].y <= dual_friendRect.y && dual_friendRect.y <= dual_bulletRect[i].y + 2
+                if (dual_bullet[i].player_id == friendId && dual_bulletRect[i].y == dual_friendRect.y - 40
                     && dual_bulletRect[i].x > dual_friendRect.x - 20 && dual_bulletRect[i].x < dual_friendRect.x + 20 && friendId != 0
                 ) {
-
+                    friend_revival --;
+                    if (friend_revival == 0){
+                        if (isFirstUserInRoom == 1){
+                            state = WON;
+                        } else {
+                            state = GAME_OVER;
+                        }
+                    }
                     friendTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
                     
@@ -1828,12 +1872,18 @@ void renderBulletDual_postive(SDL_Renderer *renderer) {
                 if (dual_bullet[i].is_active == 1) {
                     dual_bulletRect[i].y += 1;
                 }
-            } else if (single_3_bullet[i].direction == RIGHT) {
-                printf("run here 1\n");
-                if (dual_bullet[i].player_id == friendId && dual_bulletRect[i].x <= dual_friendRect.x  && dual_friendRect.x <= dual_bulletRect[i].x + 2
+            } else if (dual_bullet[i].direction == RIGHT) {
+                if (dual_bullet[i].player_id == friendId && dual_bulletRect[i].x == dual_friendRect.x - 40
                     && dual_bulletRect[i].y > dual_friendRect.y - 20 && dual_bulletRect[i].y < dual_friendRect.y + 20 && friendId != 0
                 ) {
-
+                    friend_revival --;
+                    if (friend_revival == 0){
+                        if (isFirstUserInRoom == 1){
+                            state = WON;
+                        } else {
+                            state = GAME_OVER;
+                        }
+                    }
                     friendTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
                     
@@ -1859,9 +1909,17 @@ void renderBulletDual_postive(SDL_Renderer *renderer) {
                     dual_bulletRect[i].x += 1;
                 }
             } else {
-                if (dual_bullet[i].player_id == friendId && dual_bulletRect[i].x >= dual_friendRect.x && dual_friendRect.x >= dual_bulletRect[i].x - 2
+                if (dual_bullet[i].player_id == friendId && dual_bulletRect[i].x == dual_friendRect.x + 40
                     && dual_bulletRect[i].y > dual_friendRect.y - 20 && dual_bulletRect[i].y < dual_friendRect.y + 20 && friendId != 0
                 ) {
+                    friend_revival --;
+                   if(friend_revival == 0){
+                        if (isFirstUserInRoom == 1){
+                            state = WON;
+                        } else {
+                            state = GAME_OVER;
+                        }
+                    }
                     friendTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
 
@@ -1900,10 +1958,18 @@ void renderBulletDual_friend(SDL_Renderer *renderer) {
         if (dual_bullet_friend[i].is_active == 1) {
             if (dual_bullet_friend[i].direction == UP) {
 
-                if (dual_bullet_friend[i].player_id == myId && dual_bulletRect_friend[i].y >= dual_controlRect.y && dual_controlRect.y >= dual_bulletRect_friend[i].y - 2
+                if (dual_bullet_friend[i].player_id == myId && dual_bulletRect_friend[i].y == dual_controlRect.y + 40
                     && dual_bulletRect_friend[i].x > dual_controlRect.x - 20 && dual_bulletRect_friend[i].x < dual_controlRect.x + 20 && myId != 0
                 ) {
                     single_scores +=2;
+                    me_revival --;
+                     if (me_revival == 0) {
+                        if (isFirstUserInRoom == 1){
+                            state = GAME_OVER;
+                        } else {
+                            state = WON;
+                        }
+                    }
 
                     myTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
@@ -1934,11 +2000,19 @@ void renderBulletDual_friend(SDL_Renderer *renderer) {
                     dual_bulletRect_friend[i].y -= 1;
                 }
             } else if (dual_bullet_friend[i].direction == DOWN) {
-                if (dual_bullet_friend[i].player_id == myId && dual_bulletRect_friend[i].y <= dual_controlRect.y && dual_controlRect.y <= dual_bulletRect_friend[i].y + 2
+                if (dual_bullet_friend[i].player_id == myId && dual_bulletRect_friend[i].y == dual_controlRect.y - 40
                     && dual_bulletRect_friend[i].x > dual_controlRect.x - 20 && dual_bulletRect_friend[i].x < dual_controlRect.x + 20 && myId != 0
                 ) {
 
-                    single_scores++;
+                    single_scores+=2;
+                    me_revival --;
+                     if (me_revival == 0) {
+                        if (isFirstUserInRoom == 1){
+                            state = GAME_OVER;
+                        } else {
+                            state = WON;
+                        }
+                    }
 
                     myTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
@@ -1966,11 +2040,19 @@ void renderBulletDual_friend(SDL_Renderer *renderer) {
                 }
             } else if (dual_bullet_friend[i].direction == RIGHT) {
                 
-                if (dual_bullet_friend[i].player_id == myId && dual_bulletRect_friend[i].x <= dual_controlRect.x  && dual_controlRect.x <= dual_bulletRect_friend[i].x + 2
+                if (dual_bullet_friend[i].player_id == myId && dual_bulletRect_friend[i].x == dual_controlRect.x - 40
                     && dual_bulletRect_friend[i].y > dual_controlRect.y - 20 && dual_bulletRect_friend[i].y < dual_controlRect.y + 20 && myId != 0
                 ) {
 
-                    single_scores++;
+                    single_scores+=2;
+                    me_revival --;
+                     if (me_revival == 0) {
+                        if (isFirstUserInRoom == 1){
+                            state = GAME_OVER;
+                        } else {
+                            state = WON;
+                        }
+                    }
 
                     myTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
@@ -1997,10 +2079,18 @@ void renderBulletDual_friend(SDL_Renderer *renderer) {
                     dual_bulletRect_friend[i].x += 1;
                 }
             } else {
-                if (dual_bullet_friend[i].player_id == myId && dual_bulletRect_friend[i].x >= dual_controlRect.x && dual_controlRect.x >= dual_bulletRect_friend[i].x - 2
+                if (dual_bullet_friend[i].player_id == myId && dual_bulletRect_friend[i].x == dual_controlRect.x + 40
                     && dual_bulletRect_friend[i].y > dual_controlRect.y - 20 && dual_bulletRect_friend[i].y < dual_controlRect.y + 20 && myId != 0
                 ) {
-                    single_scores++;
+                    single_scores+=2;
+                    me_revival --;
+                     if (me_revival == 0) {
+                        if (isFirstUserInRoom == 1){
+                            state = GAME_OVER;
+                        } else {
+                            state = WON;
+                        }
+                    }
 
                     myTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
@@ -2038,9 +2128,18 @@ void renderBulletDual_friend_positive(SDL_Renderer *renderer) {
         if (dual_bullet_friend[i].is_active == 1) {
             if (dual_bullet_friend[i].direction == UP) {
 
-                if (dual_bullet_friend[i].player_id == friendId && dual_bulletRect_friend[i].y >= dual_controlRect.y && dual_controlRect.y >= dual_bulletRect_friend[i].y - 2
+                if (dual_bullet_friend[i].player_id == friendId && dual_bulletRect_friend[i].y == dual_controlRect.y + 40
                     && dual_bulletRect_friend[i].x > dual_controlRect.x - 20 && dual_bulletRect_friend[i].x < dual_controlRect.x + 20 && friendId != 0
                 ) {
+                    me_revival --;
+                    if (me_revival == 0){
+                        if (isFirstUserInRoom == 1){
+                            state = GAME_OVER;
+                        } else {
+                            state = WON;
+                        }
+                    }
+
                     myTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
                     
@@ -2070,10 +2169,17 @@ void renderBulletDual_friend_positive(SDL_Renderer *renderer) {
                     dual_bulletRect_friend[i].y -= 1;
                 }
             } else if (dual_bullet_friend[i].direction == DOWN) {
-                if (dual_bullet_friend[i].player_id == friendId && dual_bulletRect_friend[i].y <= dual_controlRect.y && dual_controlRect.y <= dual_bulletRect_friend[i].y + 2
+                if (dual_bullet_friend[i].player_id == friendId && dual_bulletRect_friend[i].y == dual_controlRect.y -40
                     && dual_bulletRect_friend[i].x > dual_controlRect.x - 20 && dual_bulletRect_friend[i].x < dual_controlRect.x + 20 && friendId != 0
                 ) {
-
+                    me_revival --;
+                    if(me_revival == 0){
+                        if (isFirstUserInRoom == 1){
+                            state = GAME_OVER;
+                        } else {
+                            state = WON;
+                        }
+                    }
                     myTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
                     
@@ -2101,9 +2207,17 @@ void renderBulletDual_friend_positive(SDL_Renderer *renderer) {
                 }
             } else if (dual_bullet_friend[i].direction == RIGHT) {
                 
-                if (dual_bullet_friend[i].player_id == friendId && dual_bulletRect_friend[i].x <= dual_controlRect.x  && dual_controlRect.x <= dual_bulletRect_friend[i].x + 2
+                if (dual_bullet_friend[i].player_id == friendId && dual_bulletRect_friend[i].x == dual_controlRect.x - 40
                     && dual_bulletRect_friend[i].y > dual_controlRect.y - 20 && dual_bulletRect_friend[i].y < dual_controlRect.y + 20 && friendId != 0
                 ) {
+                    me_revival --;
+                    if (me_revival == 0){
+                        if (isFirstUserInRoom == 1){
+                            state = GAME_OVER;
+                        } else {
+                            state = WON;
+                        }
+                    }
                     myTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
                     
@@ -2129,9 +2243,17 @@ void renderBulletDual_friend_positive(SDL_Renderer *renderer) {
                     dual_bulletRect_friend[i].x += 1;
                 }
             } else {
-                if (dual_bullet_friend[i].player_id == friendId && dual_bulletRect_friend[i].x >= dual_controlRect.x && dual_controlRect.x >= dual_bulletRect_friend[i].x - 2
+                if (dual_bullet_friend[i].player_id == friendId && dual_bulletRect_friend[i].x == dual_controlRect.x + 40
                     && dual_bulletRect_friend[i].y > dual_controlRect.y - 20 && dual_bulletRect_friend[i].y < dual_controlRect.y + 20 && friendId != 0
                 ) {
+                    me_revival --;
+                    if (me_revival == 0){
+                        if (isFirstUserInRoom == 1){
+                            state = GAME_OVER;
+                        } else {
+                            state = WON;
+                        }
+                    }
                     myTank = IMG_LoadTexture(renderer, "images/hitted.png");
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
                     

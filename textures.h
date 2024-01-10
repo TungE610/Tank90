@@ -54,6 +54,7 @@ SDL_Texture *myTank;
 SDL_Texture *loginBigTextTexture;
 SDL_Texture *registerBigTextTexture;
 SDL_Texture *gameoverBigTextTexture;
+SDL_Texture *wonBigTextTexture;
 SDL_Texture *roomsBigTextTexture;
 SDL_Texture *rankingBigTextTexture;
 SDL_Texture *rankingBigTextTexture;
@@ -146,6 +147,7 @@ void loadTextures(SDL_Renderer *renderer) {
     loginBigTextTexture = SDL_CreateTextureFromSurface(renderer, loginBigTextSurface); 
     rankingBigTextTexture = SDL_CreateTextureFromSurface(renderer, rankingBigTextSurface); 
     gameoverBigTextTexture = SDL_CreateTextureFromSurface(renderer, gameOverBigTextSurface); 
+    wonBigTextTexture = SDL_CreateTextureFromSurface(renderer, wonBigTextSurface); 
     registerBigTextTexture = SDL_CreateTextureFromSurface(renderer, registerBigText); 
     roomsBigTextTexture = SDL_CreateTextureFromSurface(renderer, roomsBigText);
     usernameTextTexture = SDL_CreateTextureFromSurface(renderer, usernameText); 

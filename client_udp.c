@@ -145,6 +145,7 @@ int main(){
             SDL_Rect loginBigTextRenderQuad = { 195, 100, loginBigTextSurface->w, loginBigTextSurface->h };
             SDL_Rect rankingBigTextRenderQuad = { 195, 100, rankingBigTextSurface->w, rankingBigTextSurface->h };
             SDL_Rect gameOverBigTextRenderQuad = { 150, 250, gameOverBigTextSurface->w, gameOverBigTextSurface->h };
+            SDL_Rect wonOverBigTextRenderQuad = { 240, 250, wonBigTextSurface->w, wonBigTextSurface->h };
             SDL_Rect roomsBigTextRenderQuad = { 195, 100, roomsBigText->w, roomsBigText->h };
             SDL_Rect usernameRenderQuad = { 120, 200, usernameText->w, usernameText->h };
             SDL_Rect passwordRenderQuad = { 120, 250, passwordText->w, passwordText->h };
@@ -580,6 +581,12 @@ int main(){
 
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                 SDL_RenderCopy(renderer, gameoverBigTextTexture, NULL, &gameOverBigTextRenderQuad);
+
+            } else if (state == WON) {
+                SDL_RenderClear(renderer);
+
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                SDL_RenderCopy(renderer, wonBigTextTexture, NULL, &wonOverBigTextRenderQuad);
             }
 
             SDL_RenderPresent(renderer);
@@ -865,6 +872,13 @@ int main(){
                                     }
                                 break;
                                 case GAME_OVER:
+                                    switch (e.key.keysym.sym) {
+                                        case SDLK_RETURN:
+                                            state = CHOOSE_MODE;
+                                        break;
+                                    }
+                                break;
+                                case WON:
                                     switch (e.key.keysym.sym) {
                                         case SDLK_RETURN:
                                             state = CHOOSE_MODE;

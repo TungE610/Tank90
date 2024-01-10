@@ -15,6 +15,7 @@
 SDL_Surface *loginBigTextSurface;
 SDL_Surface *rankingBigTextSurface;
 SDL_Surface *gameOverBigTextSurface;
+SDL_Surface *wonBigTextSurface;
 SDL_Surface *registerBigText;
 SDL_Surface *roomsBigText;
 SDL_Surface *usernameText;
@@ -32,6 +33,7 @@ void loadSurface() {
     loginBigTextSurface = TTF_RenderText_Solid(BIG_FONT, "LOGIN", WHITE);
     rankingBigTextSurface = TTF_RenderText_Solid(BIG_FONT, "RANKING", WHITE);
     gameOverBigTextSurface = TTF_RenderText_Solid(BIG_FONT, "GAME OVER", WHITE);
+    wonBigTextSurface = TTF_RenderText_Solid(BIG_FONT, "WON", WHITE);
     registerBigText = TTF_RenderText_Solid(BIG_FONT, "REGISTER", WHITE);
     roomsBigText = TTF_RenderText_Solid(BIG_FONT, "ROOMS", WHITE);
     usernameText = TTF_RenderText_Solid(TINY_FONT, "Username: ", WHITE);
