@@ -848,7 +848,7 @@ int main(){
                                             } else {
                                                 dualShotFriend(friendTank, dual_friendRect, friendUp, friendDown, friendRight, friendLeft, 1);
                                             
-                                            char dualShotMessage[BUFF_SIZE];
+                                                char dualShotMessage[BUFF_SIZE];
                                                 if (friendTank == friendUp) {
                                                     strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, UP));
                                                 } else if (friendTank == friendDown) {

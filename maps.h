@@ -1570,13 +1570,13 @@ void dualShotFriend(SDL_Texture *tank, SDL_Rect rect, SDL_Texture *meUp, SDL_Tex
                 bulletTexture[i] = *(&bullet_down);
 
             } else if (tank == meRight) {
+                printf("right\n");
                 dual_bullet_friend[i].direction = RIGHT;
                 bulletTexture[i] = *(&bullet_right);
 
             } else {
                 dual_bullet_friend[i].direction = LEFT;
                 bulletTexture[i] = *(&bullet_left);
-
             }
             break;
         }
@@ -1622,7 +1622,7 @@ void renderBulletDual(SDL_Renderer *renderer) {
         if (dual_bullet[i].is_active == 1) {
             if (dual_bullet[i].direction == UP) {
 
-                if (dual_bullet[i].player_id == myId && dual_bulletRect[i].y >= dual_friendRect.y && dual_friendRect.y >= dual_bulletRect[i].y - 2
+                if (dual_bullet[i].player_id == myId && dual_bulletRect[i].y == dual_friendRect.y + 40
                     && dual_bulletRect[i].x > dual_friendRect.x - 20 && dual_bulletRect[i].x < dual_friendRect.x + 20 && myId != 0
                 ) {
                     single_scores++;
@@ -1634,6 +1634,13 @@ void renderBulletDual(SDL_Renderer *renderer) {
 
                     friendTank = IMG_LoadTexture(renderer, "images/friend_up.png");
                     dual_friendRect = (SDL_Rect) { 400, 440, 40, 40 };
+
+                    dual_control_hozirontal_controller_friend = 64;
+                    dual_control_vertical_controller_friend = 88;
+                    
+                    dual_mode_position_x_friend = 8;
+                    dual_mode_position_y_friend = 11;
+
                     SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
 
                     dual_bullet[i].is_active = 0;
@@ -1649,7 +1656,7 @@ void renderBulletDual(SDL_Renderer *renderer) {
                     dual_bulletRect[i].y -= 1;
                 }
             } else if (dual_bullet[i].direction == DOWN) {
-                if (dual_bullet[i].player_id == myId && dual_bulletRect[i].y <= dual_friendRect.y && dual_friendRect.y <= dual_bulletRect[i].y + 2
+                if (dual_bullet[i].player_id == myId && dual_bulletRect[i].y == dual_friendRect.y - 40
                     && dual_bulletRect[i].x > dual_friendRect.x - 20 && dual_bulletRect[i].x < dual_friendRect.x + 20 && myId != 0
                 ) {
 
@@ -1660,6 +1667,11 @@ void renderBulletDual(SDL_Renderer *renderer) {
                     
                     friendTank = IMG_LoadTexture(renderer, "images/friend_up.png");
                     dual_friendRect = (SDL_Rect) { 400, 440, 40, 40 };
+                    dual_control_hozirontal_controller_friend = 64;
+                    dual_control_vertical_controller_friend = 88;
+                    
+                    dual_mode_position_x_friend = 8;
+                    dual_mode_position_y_friend = 11;
                     SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
 
                     dual_bullet[i].is_active = 0;
@@ -1675,7 +1687,7 @@ void renderBulletDual(SDL_Renderer *renderer) {
                     dual_bulletRect[i].y += 1;
                 }
             } else if (single_3_bullet[i].direction == RIGHT) {
-                
+                printf("run here\n");
                 if (dual_bullet[i].player_id == myId && dual_bulletRect[i].x <= dual_friendRect.x  && dual_friendRect.x <= dual_bulletRect[i].x + 2
                     && dual_bulletRect[i].y > dual_friendRect.y - 20 && dual_bulletRect[i].y < dual_friendRect.y + 20 && myId != 0
                 ) {
@@ -1687,6 +1699,11 @@ void renderBulletDual(SDL_Renderer *renderer) {
                     
                     friendTank = IMG_LoadTexture(renderer, "images/friend_up.png");
                     dual_friendRect = (SDL_Rect) { 400, 440, 40, 40 };
+                    dual_control_hozirontal_controller_friend = 64;
+                    dual_control_vertical_controller_friend = 88;
+                    
+                    dual_mode_position_x_friend = 8;
+                    dual_mode_position_y_friend = 11;
                     SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
 
                     dual_bullet[i].is_active = 0;
@@ -1702,6 +1719,11 @@ void renderBulletDual(SDL_Renderer *renderer) {
                     dual_bulletRect[i].x += 1;
                 }
             } else {
+                printf("bullet id: %d\n", dual_bullet[i].player_id);
+                printf("id: %d\n", myId);
+                printf("dual_bulletRect[i].x: %d\n", dual_bulletRect[i].x);
+                printf("dual_friendRect.x: %d\n", dual_friendRect.x);
+
                 if (dual_bullet[i].player_id == myId && dual_bulletRect[i].x >= dual_friendRect.x && dual_friendRect.x >= dual_bulletRect[i].x - 2
                     && dual_bulletRect[i].y > dual_friendRect.y - 20 && dual_bulletRect[i].y < dual_friendRect.y + 20 && myId != 0
                 ) {
@@ -1714,6 +1736,11 @@ void renderBulletDual(SDL_Renderer *renderer) {
                     
                     friendTank = IMG_LoadTexture(renderer, "images/friend_up.png");
                     dual_friendRect = (SDL_Rect) { 400, 440, 40, 40 };
+                    dual_control_hozirontal_controller_friend = 64;
+                    dual_control_vertical_controller_friend = 88;
+                    
+                    dual_mode_position_x_friend = 8;
+                    dual_mode_position_y_friend = 11;
                     SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
 
                     dual_bullet[i].is_active = 0;
@@ -1739,10 +1766,6 @@ void renderBulletDual_postive(SDL_Renderer *renderer) {
         }
         if (dual_bullet[i].is_active == 1) {
             if (dual_bullet[i].direction == UP) {
-                    printf("bullet id: %d\n", dual_bullet[i].player_id);
-                    printf("friend id: %d\n", friendId);
-                    printf("dual_bulletRect[i].y : %d\n", dual_bulletRect[i].y );
-                    printf("dual_friendRect.y : %d\n", dual_friendRect.y );
 
                 if (dual_bullet[i].player_id == friendId && dual_bulletRect[i].y >= dual_friendRect.y && dual_friendRect.y >= dual_bulletRect[i].y - 2
                     && dual_bulletRect[i].x > dual_friendRect.x - 20 && dual_bulletRect[i].x < dual_friendRect.x + 20 && friendId != 0
@@ -1755,6 +1778,13 @@ void renderBulletDual_postive(SDL_Renderer *renderer) {
 
                     friendTank = IMG_LoadTexture(renderer, "images/friend_up.png");
                     dual_friendRect = (SDL_Rect) { 400, 440, 40, 40 };
+
+                    dual_control_hozirontal_controller_friend = 64;
+                    dual_control_vertical_controller_friend = 88;
+                    
+                    dual_mode_position_x_friend = 8;
+                    dual_mode_position_y_friend = 11;
+
                     SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
 
                     dual_bullet[i].is_active = 0;
@@ -1779,6 +1809,11 @@ void renderBulletDual_postive(SDL_Renderer *renderer) {
                     
                     friendTank = IMG_LoadTexture(renderer, "images/friend_up.png");
                     dual_friendRect = (SDL_Rect) { 400, 440, 40, 40 };
+                    dual_control_hozirontal_controller_friend = 64;
+                    dual_control_vertical_controller_friend = 88;
+                    
+                    dual_mode_position_x_friend = 8;
+                    dual_mode_position_y_friend = 11;
                     SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
 
                     dual_bullet[i].is_active = 0;
@@ -1794,7 +1829,7 @@ void renderBulletDual_postive(SDL_Renderer *renderer) {
                     dual_bulletRect[i].y += 1;
                 }
             } else if (single_3_bullet[i].direction == RIGHT) {
-                
+                printf("run here 1\n");
                 if (dual_bullet[i].player_id == friendId && dual_bulletRect[i].x <= dual_friendRect.x  && dual_friendRect.x <= dual_bulletRect[i].x + 2
                     && dual_bulletRect[i].y > dual_friendRect.y - 20 && dual_bulletRect[i].y < dual_friendRect.y + 20 && friendId != 0
                 ) {
@@ -1804,6 +1839,11 @@ void renderBulletDual_postive(SDL_Renderer *renderer) {
                     
                     friendTank = IMG_LoadTexture(renderer, "images/friend_up.png");
                     dual_friendRect = (SDL_Rect) { 400, 440, 40, 40 };
+                    dual_control_hozirontal_controller_friend = 64;
+                    dual_control_vertical_controller_friend = 88;
+                    
+                    dual_mode_position_x_friend = 8;
+                    dual_mode_position_y_friend = 11;
                     SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
 
                     dual_bullet[i].is_active = 0;
@@ -1829,6 +1869,11 @@ void renderBulletDual_postive(SDL_Renderer *renderer) {
                     
                     friendTank = IMG_LoadTexture(renderer, "images/friend_up.png");
                     dual_friendRect = (SDL_Rect) { 400, 440, 40, 40 };
+                    dual_control_hozirontal_controller_friend = 64;
+                    dual_control_vertical_controller_friend = 88;
+                    
+                    dual_mode_position_x_friend = 8;
+                    dual_mode_position_y_friend = 11;
                     SDL_RenderCopy(renderer, friendTank, NULL, &dual_friendRect);
 
                     dual_bullet[i].is_active = 0;
@@ -1867,6 +1912,13 @@ void renderBulletDual_friend(SDL_Renderer *renderer) {
 
                     myTank = IMG_LoadTexture(renderer, "images/me_up.png");
                     dual_controlRect = (SDL_Rect) { 240, 440, 40, 40 };
+
+                    dual_control_hozirontal_controller = 32;
+                    dual_control_vertical_controller= 88;
+                    
+                    dual_mode_position_x = 4;
+                    dual_mode_position_y = 11;
+
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
 
                     dual_bullet_friend[i].is_active = 0;
@@ -1893,6 +1945,11 @@ void renderBulletDual_friend(SDL_Renderer *renderer) {
                     
                     myTank = IMG_LoadTexture(renderer, "images/me_up.png");
                     dual_controlRect = (SDL_Rect) { 240, 440, 40, 40 };
+                    dual_control_hozirontal_controller = 32;
+                    dual_control_vertical_controller= 88;
+                    
+                    dual_mode_position_x = 4;
+                    dual_mode_position_y = 11;
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
 
                     dual_bullet_friend[i].is_active = 0;
@@ -1907,7 +1964,7 @@ void renderBulletDual_friend(SDL_Renderer *renderer) {
                 if (dual_bullet_friend[i].is_active == 1) {
                     dual_bulletRect_friend[i].y += 1;
                 }
-            } else if (single_3_bullet[i].direction == RIGHT) {
+            } else if (dual_bullet_friend[i].direction == RIGHT) {
                 
                 if (dual_bullet_friend[i].player_id == myId && dual_bulletRect_friend[i].x <= dual_controlRect.x  && dual_controlRect.x <= dual_bulletRect_friend[i].x + 2
                     && dual_bulletRect_friend[i].y > dual_controlRect.y - 20 && dual_bulletRect_friend[i].y < dual_controlRect.y + 20 && myId != 0
@@ -1920,6 +1977,11 @@ void renderBulletDual_friend(SDL_Renderer *renderer) {
                     
                     myTank = IMG_LoadTexture(renderer, "images/me_up.png");
                     dual_controlRect = (SDL_Rect) { 240, 440, 40, 40 };
+                    dual_control_hozirontal_controller = 32;
+                    dual_control_vertical_controller= 88;
+                    
+                    dual_mode_position_x = 4;
+                    dual_mode_position_y = 11;
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
 
                     dual_bullet_friend[i].is_active = 0;
@@ -1945,6 +2007,11 @@ void renderBulletDual_friend(SDL_Renderer *renderer) {
                     
                     myTank = IMG_LoadTexture(renderer, "images/me_up.png");
                     dual_controlRect = (SDL_Rect) { 240, 440, 40, 40 };
+                    dual_control_hozirontal_controller = 32;
+                    dual_control_vertical_controller= 88;
+                    
+                    dual_mode_position_x = 4;
+                    dual_mode_position_y = 11;
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
 
                     dual_bullet_friend[i].is_active = 0;
@@ -1981,6 +2048,13 @@ void renderBulletDual_friend_positive(SDL_Renderer *renderer) {
 
                     myTank = IMG_LoadTexture(renderer, "images/me_up.png");
                     dual_controlRect = (SDL_Rect) { 240, 440, 40, 40 };
+
+                    dual_control_hozirontal_controller = 32;
+                    dual_control_vertical_controller= 88;
+                    
+                    dual_mode_position_x = 4;
+                    dual_mode_position_y = 11;
+
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
 
                     dual_bullet_friend[i].is_active = 0;
@@ -2005,6 +2079,11 @@ void renderBulletDual_friend_positive(SDL_Renderer *renderer) {
                     
                     myTank = IMG_LoadTexture(renderer, "images/me_up.png");
                     dual_controlRect = (SDL_Rect) { 240, 440, 40, 40 };
+                    dual_control_hozirontal_controller = 32;
+                    dual_control_vertical_controller= 88;
+                    
+                    dual_mode_position_x = 4;
+                    dual_mode_position_y = 11;
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
 
                     dual_bullet_friend[i].is_active = 0;
@@ -2020,7 +2099,7 @@ void renderBulletDual_friend_positive(SDL_Renderer *renderer) {
                 if (dual_bullet_friend[i].is_active == 1) {
                     dual_bulletRect_friend[i].y += 1;
                 }
-            } else if (single_3_bullet[i].direction == RIGHT) {
+            } else if (dual_bullet_friend[i].direction == RIGHT) {
                 
                 if (dual_bullet_friend[i].player_id == friendId && dual_bulletRect_friend[i].x <= dual_controlRect.x  && dual_controlRect.x <= dual_bulletRect_friend[i].x + 2
                     && dual_bulletRect_friend[i].y > dual_controlRect.y - 20 && dual_bulletRect_friend[i].y < dual_controlRect.y + 20 && friendId != 0
@@ -2030,6 +2109,11 @@ void renderBulletDual_friend_positive(SDL_Renderer *renderer) {
                     
                     myTank = IMG_LoadTexture(renderer, "images/me_up.png");
                     dual_controlRect = (SDL_Rect) { 240, 440, 40, 40 };
+                    dual_control_hozirontal_controller = 32;
+                    dual_control_vertical_controller= 88;
+                    
+                    dual_mode_position_x = 4;
+                    dual_mode_position_y = 11;
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
 
                     dual_bullet_friend[i].is_active = 0;
@@ -2053,6 +2137,11 @@ void renderBulletDual_friend_positive(SDL_Renderer *renderer) {
                     
                     myTank = IMG_LoadTexture(renderer, "images/me_up.png");
                     dual_controlRect = (SDL_Rect) { 240, 440, 40, 40 };
+                    dual_control_hozirontal_controller = 32;
+                    dual_control_vertical_controller= 88;
+                    
+                    dual_mode_position_x = 4;
+                    dual_mode_position_y = 11;
                     SDL_RenderCopy(renderer, myTank, NULL, &dual_controlRect);
 
                     dual_bullet_friend[i].is_active = 0;
