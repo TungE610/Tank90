@@ -11,6 +11,7 @@
 #include "objects.h"
 
 int myId = 0;
+int friendId = 0;
 int in_room_id = 0;
 int isFirstUserInRoom = 0;
 
