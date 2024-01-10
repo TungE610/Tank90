@@ -26,7 +26,7 @@
 
 int foundRoomState = 1;
 int room_nums = 0;
-int ready_to_start = 0;
+int readyToStart = 0;
 
 int positive = 1;
 SDL_Renderer *renderer;
@@ -45,10 +45,11 @@ void moveDown(int *position_x, int *position_y,int *coor_x, int *coor_y, SDL_Rec
 void moveUp(int *position_x, int *position_y,int *coor_x, int *coor_y, SDL_Rect *single_controlRect, int stepEachBlock, int stepSize, int single_map[12][12]);
 void moveRight(int *position_x, int *position_y,int *coor_x, int *coor_y, SDL_Rect *single_controlRect, int stepEachBlock, int stepSize, int single_map[12][12]);
 void moveLeft(int *position_x, int *position_y,int *coor_x, int *coor_y, SDL_Rect *single_controlRect, int stepEachBlock, int stepSize, int single_map[12][12]);
-void extractAndChangeValues(const char *input, int *id, int *state, int *first_player_id, int *second_player_id, int stepEachBlock, int stepSize);
+void extractAndChangeValues(const char *input, int *id, int *state, int *first_player_id, int *second_player_id);
 void renderRooms(SDL_Renderer *renderer, SDL_Texture *roomTexture, TTF_Font *font);
 void checkRooms();
 void* receiveThread(void* arg);
+void* receiveThread1(void* arg);
 void renderDualModeGame(SDL_Renderer *renderer, SDL_Texture *myTank, SDL_Texture *friendTank, SDL_Texture* bulletTexture[]);
 
 int main(){
@@ -69,7 +70,10 @@ int main(){
     strcpy(register_message, " ");
     int mouseX, mouseY;
     pthread_t tid;
-    int receiveThreadCreated = 0;
+    pthread_t pid;
+
+    int receiveThreadCreated1 = 0;
+    int receiveThreadCreated2 = 0;
     
     sin_size = sizeof(server_addr);
     int player_id;
@@ -156,11 +160,13 @@ int main(){
             initTextbox(&retypePasswordRegisterTextbox, 410, 295, 200, 30);
 
             initValueForSingle1();
+            initValueForSingle2();
+            initValueForSingle3();
+
+            initValueForDual();
+            initValueForDual_friend();
+
             while( quit == false ){
-                    for (int i = 0; i < removeNum; i ++) {
-                        printf("%d ", removed[i]);
-                    }
-                    printf("\n");
                     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 25);  // Black background
                     SDL_RenderClear(renderer);
 
@@ -312,7 +318,6 @@ int main(){
 
                 renderSingle(renderer, single_map_2, 2);
 
-                renderBulletSingle1(renderer);
                 SDL_Surface *scoreTextSurface = TTF_RenderText_Solid(TINY_FONT, "SCORE:", BLACK);
                 SDL_Texture *scoreTextTexture = SDL_CreateTextureFromSurface(renderer, scoreTextSurface);
                 SDL_Rect scoreTextRenderQuad = { 580, 250, scoreTextSurface->w, scoreTextSurface->h };
@@ -325,120 +330,149 @@ int main(){
                 SDL_Texture *scoreNumTextTexture = SDL_CreateTextureFromSurface(renderer, scoreNumTextSurface);
                 SDL_Rect scoreNumTextRenderQuad = { 610, 290, scoreNumTextSurface->w, scoreNumTextSurface->h };
                 SDL_RenderCopy(renderer, scoreNumTextTexture, NULL, &scoreNumTextRenderQuad);
+
+                renderSingle2Enermies(renderer, single_2_enermies);
+
+                renderBulletSingle2(renderer);
+
+            } else if (state == CHANGING_TO_SINGLE_MAP_3) {
+                SDL_RenderClear(renderer);
+                renderChangeMapScreen(renderer, 3);
+
+            } else if (state == PLAY_SINGLE_MAP_3) {
+
+                SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+                SDL_RenderClear(renderer);
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+
+                renderSingle(renderer, single_map_3, 3);
+
+                SDL_Surface *scoreTextSurface = TTF_RenderText_Solid(TINY_FONT, "SCORE:", BLACK);
+                SDL_Texture *scoreTextTexture = SDL_CreateTextureFromSurface(renderer, scoreTextSurface);
+                SDL_Rect scoreTextRenderQuad = { 580, 250, scoreTextSurface->w, scoreTextSurface->h };
+                SDL_RenderCopy(renderer, scoreTextTexture, NULL, &scoreTextRenderQuad);
+
+                char sscores[BUFF_SIZE];
+                sprintf(sscores, "%d", single_scores);
+
+                SDL_Surface *scoreNumTextSurface = TTF_RenderText_Solid(TINY_FONT, sscores, BLACK);
+                SDL_Texture *scoreNumTextTexture = SDL_CreateTextureFromSurface(renderer, scoreNumTextSurface);
+                SDL_Rect scoreNumTextRenderQuad = { 610, 290, scoreNumTextSurface->w, scoreNumTextSurface->h };
+                SDL_RenderCopy(renderer, scoreNumTextTexture, NULL, &scoreNumTextRenderQuad);
+
+                renderSingle3Enermies(renderer, single_3_enermies);
+
+                renderBulletSingle3(renderer);
             }
-// else if (state == CHOOSE_ROOM) {
-//                     SDL_RenderClear(renderer);
+            else if (state == CHOOSE_ROOM) {
+                SDL_RenderClear(renderer);
 
-//                     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-//                     SDL_RenderCopy(renderer, roomsBigTextTexture, NULL, &roomsBigTextRenderQuad);
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                SDL_RenderCopy(renderer, roomsBigTextTexture, NULL, &roomsBigTextRenderQuad);
 
-//                     // render create room button
-//                     Button createRoomButton;
-//                     initButton(&createRoomButton, 480, 110, 80, 40, " + ");
+                SDL_Texture *createRoomButton = IMG_LoadTexture(renderer, "./images/plus.png");
+                SDL_Rect createRoomRenderQuad = {480, 110, 40, 40};
 
-//                     SDL_SetRenderDrawColor(renderer, 0, 0, 255, 20);
-//                     SDL_Rect createRoomButtonRect = { createRoomButton.boxRect.x, createRoomButton.boxRect.y, createRoomButton.boxRect.w, createRoomButton.boxRect.h };
-//                     SDL_RenderFillRect(renderer, &createRoomButtonRect);
+                SDL_RenderCopy(renderer, createRoomButton, NULL, &createRoomRenderQuad);
 
-//                     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 25);
-//                     // Render the text on the button
-//                     SDL_Color buttonTextColor = {255, 255, 255, 255};
+                if (foundRoomState == 0) {
+                    SDL_Texture *notfoundTexture = IMG_LoadTexture(renderer, "images/nothingfound.png");
+                    SDL_Rect notfoundRenderQuad = {280, 220, 50, 50};
 
-//                     SDL_Surface *buttonTextSurface = TTF_RenderText_Solid(TINY_FONT, createRoomButton.text, buttonTextColor);
-//                     SDL_Texture *buttonTextTexture = SDL_CreateTextureFromSurface(renderer, buttonTextSurface);
-//                     SDL_Rect buttonTextRenderQuad = { createRoomButton.boxRect.x + 15, createRoomButton.boxRect.y + 15, buttonTextSurface->w, buttonTextSurface->h };
-//                     SDL_RenderCopy(renderer, buttonTextTexture, NULL, &createRoomButtonRect);
+                    SDL_Surface *notfoundTextSurface = TTF_RenderText_Solid(TINY_FONT, "no room found...", WHITE);
+                    SDL_Texture *notfoundTextTexture = SDL_CreateTextureFromSurface(renderer, notfoundTextSurface);
+                    SDL_Rect notfoundTextRenderQuad = { 190, 300, notfoundTextSurface->w, notfoundTextSurface->h };
+                    SDL_RenderCopy(renderer, notfoundTexture, NULL, &notfoundRenderQuad);
+                    SDL_RenderCopy(renderer, notfoundTextTexture, NULL, &notfoundTextRenderQuad);
+                } else {
+                    SDL_Texture *roomTexture = IMG_LoadTexture(renderer, "images/room.png");
+                    renderRooms(renderer, roomTexture, SMALL_FONT);
+                }
+            } 
+            else if (state == PLAY_DUAL_GAME) {
+                // renderDualModeGame(renderer, myTank, friendTank, bulletTexture);
+                SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+                SDL_RenderClear(renderer);
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
-//                     if (foundRoomState == 0) {
-//                         SDL_Texture *notfoundTexture = IMG_LoadTexture(renderer, "images/nothingfound.png");
-//                         SDL_Rect notfoundRenderQuad = {280, 220, 50, 50};
+                renderDual(renderer, dual_map_1, 1);
+                if (isFirstUserInRoom == 1) {
+                    renderBulletDual(renderer);
+                } else {
+                    renderBulletDual_friend(renderer);
+                }
 
-//                         SDL_Surface *notfoundTextSurface = TTF_RenderText_Solid(TINY_FONT, "no room found...", WHITE);
-//                         SDL_Texture *notfoundTextTexture = SDL_CreateTextureFromSurface(renderer, notfoundTextSurface);
-//                         SDL_Rect notfoundTextRenderQuad = { 190, 300, notfoundTextSurface->w, notfoundTextSurface->h };
-//                         SDL_RenderCopy(renderer, notfoundTexture, NULL, &notfoundRenderQuad);
-//                         SDL_RenderCopy(renderer, notfoundTextTexture, NULL, &notfoundTextRenderQuad);
-//                     } else {
-//                         SDL_Texture *roomTexture = IMG_LoadTexture(renderer, "images/room.png");
-//                         renderRooms(renderer, roomTexture, SMALL_FONT);
-//                     }
+                SDL_Surface *scoreTextSurface = TTF_RenderText_Solid(TINY_FONT, "SCORE:", BLACK);
+                SDL_Texture *scoreTextTexture = SDL_CreateTextureFromSurface(renderer, scoreTextSurface);
+                SDL_Rect scoreTextRenderQuad = { 580, 250, scoreTextSurface->w, scoreTextSurface->h };
+                SDL_RenderCopy(renderer, scoreTextTexture, NULL, &scoreTextRenderQuad);
 
-//                 } else if (state == PLAY_DUAL_GAME) {
-//                     renderDualModeGame(renderer, myTank, friendTank, bulletTexture);
+                char sscores[BUFF_SIZE];
+                sprintf(sscores, "%d", single_scores);
 
-//                 } else if (state == WAITING_OTHER) {
-//                     SDL_RenderClear(renderer);
+                SDL_Surface *scoreNumTextSurface = TTF_RenderText_Solid(TINY_FONT, sscores, BLACK);
+                SDL_Texture *scoreNumTextTexture = SDL_CreateTextureFromSurface(renderer, scoreNumTextSurface);
+                SDL_Rect scoreNumTextRenderQuad = { 610, 290, scoreNumTextSurface->w, scoreNumTextSurface->h };
+                SDL_RenderCopy(renderer, scoreNumTextTexture, NULL, &scoreNumTextRenderQuad);
+            } 
+            else if (state == WAITING_OTHER) {
+                SDL_RenderClear(renderer);
 
-//                 // Set the draw color for the gray border
+                char in_room_sid[2];
+                sprintf(in_room_sid, "%d", in_room_id);
 
-//                     char in_room_sid[2];
-//                     sprintf(in_room_sid, "%d", in_room_id);
+                char title[BUFF_SIZE];
+                strcpy(title, "ROOM ID:"); // Use strcpy to initialize the buffer
+                strcat(title, in_room_sid);
 
-//                     char title[BUFF_SIZE];
-//                     strcpy(title, "ROOM ID:"); // Use strcpy to initialize the buffer
-//                     strcat(title, in_room_sid);
+                SDL_Surface *roomIdBigText = TTF_RenderText_Solid(BIG_FONT, title, WHITE);
+                SDL_Texture *roomIdBigTextTexture = SDL_CreateTextureFromSurface(renderer, roomIdBigText);
+                SDL_Rect roomIdBigTextRenderQuad = { 110, 100, roomIdBigText->w, roomIdBigText->h };
 
-//                     SDL_Surface *roomIdBigText = TTF_RenderText_Solid(BIG_FONT, title, WHITE);
-//                     SDL_Texture *roomIdBigTextTexture = SDL_CreateTextureFromSurface(renderer, roomIdBigText);
-//                     SDL_Rect roomIdBigTextRenderQuad = { 110, 100, roomIdBigText->w, roomIdBigText->h };
+                SDL_RenderCopy(renderer, roomIdBigTextTexture, NULL, &roomIdBigTextRenderQuad);
 
-//                     SDL_RenderCopy(renderer, roomIdBigTextTexture, NULL, &roomIdBigTextRenderQuad);
+                SDL_Texture *waitingTank = IMG_LoadTexture(renderer, "./images/waiting.png");
+                SDL_Rect waitingTankRect = {245, 250, 140, 100};
 
-//                     SDL_Texture *waitingTank = IMG_LoadTexture(renderer, "./images/waiting.png");
-//                     SDL_Rect waitingTankRect = {245, 250, 140, 100};
+                SDL_Surface *waitingRoomTextSurface = TTF_RenderText_Solid(TINY_FONT, "waiting for another...", WHITE);
+                SDL_Texture *waitingRoomTextTexture = SDL_CreateTextureFromSurface(renderer, waitingRoomTextSurface);
+                SDL_Rect waitingTextRenderQuad = { 120, 380, waitingRoomTextSurface->w, waitingRoomTextSurface->h };
 
-//                     SDL_Surface *waitingRoomTextSurface = TTF_RenderText_Solid(TINY_FONT, "waiting for another...", WHITE);
-//                     SDL_Texture *waitingRoomTextTexture = SDL_CreateTextureFromSurface(renderer, waitingRoomTextSurface);
-//                     SDL_Rect waitingTextRenderQuad = { 120, 380, waitingRoomTextSurface->w, waitingRoomTextSurface->h };
+                SDL_RenderCopy(renderer, waitingRoomTextTexture, NULL, &waitingTextRenderQuad);
+                SDL_RenderCopy(renderer, waitingTank, NULL, &waitingTankRect);
+            }
+            else if (state == READY_TO_PLAY_DUAL){
+                    SDL_RenderClear(renderer);
 
-//                     SDL_RenderCopy(renderer, waitingRoomTextTexture, NULL, &waitingTextRenderQuad);
-//                     SDL_RenderCopy(renderer, waitingTank, NULL, &waitingTankRect);
-//                 } else if (state == IN_ROOM){
-//                     SDL_RenderClear(renderer);
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
-//                 // Set the draw color for the gray border
-//                     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                    char in_room_sid[2];
+                    sprintf(in_room_sid, "%d", in_room_id);
 
-//                     char in_room_sid[2];
-//                     sprintf(in_room_sid, "%d", in_room_id);
+                    char title[BUFF_SIZE];
+                    strcpy(title, "ROOM ID:"); // Use strcpy to initialize the buffer
+                    strcat(title, in_room_sid);
 
-//                     char title[BUFF_SIZE];
-//                     strcpy(title, "ROOM ID:"); // Use strcpy to initialize the buffer
-//                     strcat(title, in_room_sid);
+                    SDL_Surface *roomIdBigText = TTF_RenderText_Solid(BIG_FONT, title, WHITE);
+                    SDL_Texture *roomIdBigTextTexture = SDL_CreateTextureFromSurface(renderer, roomIdBigText);
+                    SDL_Rect roomIdBigTextRenderQuad = { 110, 100, roomIdBigText->w, roomIdBigText->h };
 
-//                     SDL_Surface *roomIdBigText = TTF_RenderText_Solid(BIG_FONT, title, WHITE);
-//                     SDL_Texture *roomIdBigTextTexture = SDL_CreateTextureFromSurface(renderer, roomIdBigText);
-//                     SDL_Rect roomIdBigTextRenderQuad = { 110, 100, roomIdBigText->w, roomIdBigText->h };
-
-//                     SDL_RenderCopy(renderer, roomIdBigTextTexture, NULL, &roomIdBigTextRenderQuad);
+                    SDL_RenderCopy(renderer, roomIdBigTextTexture, NULL, &roomIdBigTextRenderQuad);
 
                 
-//                     SDL_Texture *readyTank = IMG_LoadTexture(renderer, "./images/readyTank.png");
-//                     SDL_Rect readyTankRect = {245, 250, 140, 100};
+                    SDL_Texture *readyTank = IMG_LoadTexture(renderer, "./images/readyTank.png");
+                    SDL_Rect readyTankRect = {245, 210, 140, 100};
                     
-//                     SDL_RenderCopy(renderer, readyTank, NULL, &readyTankRect);
+                    SDL_RenderCopy(renderer, readyTank, NULL, &readyTankRect);
 
-//                     Button startButton;
-//                     initButton(&startButton, 220, 370, 200, 40, "Start");
+                    SDL_Texture *startTexture = IMG_LoadTexture(renderer, "./images/start.png");
+                    SDL_Rect startRenderQuad = {245, 300, 140, 100};
 
-//                     SDL_SetRenderDrawColor(renderer, 0, 0, 255, 20);
-//                     SDL_Rect startButtonRect = { startButton.boxRect.x, startButton.boxRect.y, startButton.boxRect.w, startButton.boxRect.h };
-//                     SDL_RenderFillRect(renderer, &startButtonRect);
+                    SDL_RenderCopy(renderer, startTexture, NULL, &startRenderQuad);
+            }
 
-//                     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 25);
-//                     // Render the text on the button
-//                     SDL_Color startButtonTextColor = {255, 255, 255, 255};
+            SDL_RenderPresent(renderer);
 
-//                     SDL_Surface *startButtonTextSurface = TTF_RenderText_Solid(BIG_FONT, startButton.text, startButtonTextColor);
-
-//                     SDL_Texture *startButtonTextTexture = SDL_CreateTextureFromSurface(renderer, startButtonTextSurface);
-
-//                     SDL_Rect startButtonTextRenderQuad = { startButton.boxRect.x + 50, startButton.boxRect.y + 12, startButtonTextSurface->w, startButtonTextSurface->h };
-//                     SDL_RenderCopy(renderer, startButtonTextTexture, NULL, &startButtonTextRenderQuad);
-                        SDL_RenderPresent(renderer);
-                // }
-
-                
                 while( SDL_PollEvent( &e ) ){ 
                     if (e.type == SDL_QUIT) {
                         quit = true;
@@ -502,34 +536,32 @@ int main(){
                                             if (chooseMode == 1) {
                                                 state = PLAY_SINGLE_MAP_1;
                                             } else {
-                                                // char chooseRoomMessage[BUFF_SIZE];
-                                                // strcpy(chooseRoomMessage, createChooseRoomMessage());
+                                                char chooseRoomMessage[BUFF_SIZE];
 
-                                                // bytes_sent = send(client_sock, chooseRoomMessage, strlen(chooseRoomMessage), 0);
-                                                // if (bytes_sent < 0) {
-                                                //     perror("Error sending message: ");
-                                                // }
+                                                strcpy(chooseRoomMessage, createChooseRoomMessage()); // 0x04
 
-                                                // bytes_received =recv(client_sock, buff, sizeof(buff), 0);
-                                                // buff[bytes_received] = '\0';
+                                                bytes_sent = send(client_sock, chooseRoomMessage, strlen(chooseRoomMessage), 0);
 
-                                                // // buff[bytes_received] = '\0';
-                                                // int waitingRoomNum = atoi(buff);
-                                                // bytes_sent = send(client_sock, "ok", strlen("ok"), 0);
+                                                bytes_received =recv(client_sock, buff, sizeof(buff), 0);
+                                                buff[bytes_received] = '\0';
 
-                                                // if (waitingRoomNum == 0) {
-                                                //     foundRoomState = 0;
-                                                // } else {
-                                                //     for (int i = 1; i <= waitingRoomNum; i ++) {
-                                                //         bytes_received =recv(client_sock, buff, sizeof(buff), 0);
-                                                //         foundRoomState ++;
-                                                //         int id, state,  first_player_id, second_player_id;
-                                                //         extractAndChangeValues(buff, &id, &state, &first_player_id, &second_player_id);
-                                                //         room_nums ++;
-                                                //         initRoom(&rooms[room_nums], id, state, first_player_id, second_player_id);
-                                                //     }
-                                                // }
-                                                // state = CHOOSE_ROOM;
+                                                int waitingRoomNum = atoi(buff);
+                                                bytes_sent = send(client_sock, "ok", strlen("ok"), 0);
+
+                                                if (waitingRoomNum == 0) {
+                                                    foundRoomState = 0;
+
+                                                } else {
+                                                    for (int i = 1; i <= waitingRoomNum; i ++) {
+                                                        bytes_received =recv(client_sock, buff, sizeof(buff), 0);
+                                                        foundRoomState ++;
+                                                        int id, state,  first_player_id, second_player_id;
+                                                        extractAndChangeValues(buff, &id, &state, &first_player_id, &second_player_id);
+                                                        room_nums ++;
+                                                        initRoom(&rooms[room_nums], id, state, first_player_id, second_player_id);
+                                                    }
+                                                }
+                                                state = CHOOSE_ROOM;
                                             }
 
                                             break;
@@ -554,118 +586,151 @@ int main(){
                                         moveLeft(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &single_controlRect, 8 , 5, single_map_1);
                                         myTank = meLeft;
                                         break;
-                                    case SDLK_RETURN:
-                                        break;
                                     case SDLK_SPACE:
+                                        break;
+                                    case SDLK_RETURN:
                                         singleShot(myTank, single_controlRect, meUp, meDown, meRight, meLeft, 1);
                                         break;
                                 }
-                                break;
+                            break;
                             case CHANGING_TO_SINGLE_MAP_2:
                                 switch (e.key.keysym.sym) {
                                     case SDLK_RETURN:
-                                    state = PLAY_SINGLE_MAP_2;
+                                        state = PLAY_SINGLE_MAP_2;
                                     break;
                                 }
-                                break;
                             break;
                                 case PLAY_SINGLE_MAP_2:
-                                switch (e.key.keysym.sym) {
-                                    case SDLK_DOWN:
-                                        moveDown(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8, 5, single_map_2);
-                                        myTank = meDown;
-                                        break;
-                                    case SDLK_UP:
-                                        moveUp(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8, 5, single_map_2);
-                                        myTank = meUp;
-                                        break;
-                                    case SDLK_RIGHT:
-                                        moveRight(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8, 5, single_map_2);
-                                        myTank = meRight;
-                                        break;
-                                    case SDLK_LEFT:
-                                        moveLeft(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8 , 5, single_map_2);
-                                        myTank = meLeft;
-                                        break;
-                                    case SDLK_RETURN:
-                                        break;
-                                    case SDLK_SPACE:
-                                        singleShot(myTank, single_controlRect, meUp, meDown, meRight, meLeft, 1);
-                                        break;
-                                }
+                                    switch (e.key.keysym.sym) {
+                                        case SDLK_DOWN:
+                                            moveDown(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8, 5, single_map_2);
+                                            myTank = meDown;
+                                            break;
+                                        case SDLK_UP:
+                                            moveUp(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8, 5, single_map_2);
+                                            myTank = meUp;
+                                            break;
+                                        case SDLK_RIGHT:
+                                            moveRight(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8, 5, single_map_2);
+                                            myTank = meRight;
+                                            break;
+                                        case SDLK_LEFT:
+                                            moveLeft(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8 , 5, single_map_2);
+                                            myTank = meLeft;
+                                            break;
+                                        case SDLK_RETURN:
+                                            singleShot2(myTank, single_controlRect_2, meUp, meDown, meRight, meLeft, 1);
+                                            break;
+                                        case SDLK_SPACE:
+                                            break;
+                                    }
                                 break;
-                //             case PLAY_DUAL_GAME:
-                //                 switch (e.key.keysym.sym) {
-                //                         case SDLK_DOWN:
+                                case CHANGING_TO_SINGLE_MAP_3:
+                                    switch (e.key.keysym.sym) {
+                                        case SDLK_RETURN:
+                                            state = PLAY_SINGLE_MAP_3;
+                                        break;
+                                    }
+                                break;
+                                case PLAY_SINGLE_MAP_3:
+                                    switch (e.key.keysym.sym) {
+                                        case SDLK_DOWN:
+                                            moveDown(&hozirontal_controller_3, &vertical_controller_3, &single_mode_postion_x_3, &single_mode_postion_y_3, &single_controlRect_3, 8, 5, single_map_3);
+                                            myTank = meDown;
+                                            break;
+                                        case SDLK_UP:
+                                            moveUp(&hozirontal_controller_3, &vertical_controller_3, &single_mode_postion_x_3, &single_mode_postion_y_3, &single_controlRect_3, 8, 5, single_map_3);
+                                            myTank = meUp;
+                                            break;
+                                        case SDLK_RIGHT:
+                                            moveRight(&hozirontal_controller_3, &vertical_controller_3, &single_mode_postion_x_3, &single_mode_postion_y_3, &single_controlRect_3, 8, 5, single_map_3);
+                                            myTank = meRight;
+                                            break;
+                                        case SDLK_LEFT:
+                                            moveLeft(&hozirontal_controller_3, &vertical_controller_3, &single_mode_postion_x_3, &single_mode_postion_y_3, &single_controlRect_3, 8 , 5, single_map_3);
+                                            myTank = meLeft;
+                                            break;
+                                        case SDLK_RETURN:
+                                            singleShot3(myTank, single_controlRect_3, meUp, meDown, meRight, meLeft, 1);
+                                            break;
+                                        case SDLK_SPACE:
+                                            break;
+                                    }
+                                break;
+                                case PLAY_DUAL_GAME:
+                                    switch (e.key.keysym.sym) {
+                                        case SDLK_DOWN:
+                                            printf("down\n");
                 //                             positive = 1;
-                //                             if (first_user == 1) {
+                                            if (isFirstUserInRoom == 1) {
+                                                dualMoveDown(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
+                                                myTank = meDown;
+                                            } else {
+                                                dualMoveDown(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
+                                                friendTank = friendDown;
+                                            }
 
-                //                                 moveDown(&hozirontal_controller, &vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &controlRect);
-                //                                 myTank = meDown;
+                                            char directionMessage[BUFF_SIZE];
 
-                //                                 char directionMessage[BUFF_SIZE];
-                //                                 strcpy(directionMessage, createDirectionMessage(in_room_id, myId, DOWN));
-                //                                 bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
-                //                             } else {
-                //                                 moveDown(&hozirontal_controller, &vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &friendRect);
-                //                                 myTank = meDown;
-                //                                  char directionMessage[BUFF_SIZE];
-                //                                 strcpy(directionMessage, createDirectionMessage(in_room_id, myId, DOWN));
-                //                                 bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
-                //                             }
-                //                             break;
-                //                         case SDLK_UP:
+                                            strcpy(directionMessage, createDirectionMessage(in_room_id, myId, DOWN));
+                                            
+                                            bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
+                                        break;
+                                        case SDLK_UP:
+                                            printf("down\n");
                 //                             positive = 1;
-                //                             if (first_user == 1) {
-                //                                 moveUp(&hozirontal_controller, &vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &controlRect);
-                //                                 myTank = meUp;
-                //                                  char directionMessage[BUFF_SIZE];
-                //                                 strcpy(directionMessage, createDirectionMessage(in_room_id, myId, UP));
-                //                                 bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
+                                            if (isFirstUserInRoom == 1) {
+                                                dualMoveUp(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
+                                                myTank = meUp;
+                                            } else {
+                                                dualMoveUp(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
+                                                friendTank = friendUp;
+                                            }
 
-                //                             } else {
-                //                                 moveUp(&hozirontal_controller, &vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &friendRect);
-                //                                 myTank = meUp;
-                //                                  char directionMessage[BUFF_SIZE];
-                //                                 strcpy(directionMessage, createDirectionMessage(in_room_id, myId, UP));
-                //                                 bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
-                //                             }
-                //                             break;
-                //                         case SDLK_RIGHT:
+                                            strcpy(directionMessage, createDirectionMessage(in_room_id, myId, UP));
+                                            
+                                            bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
+                                        break;
+                                        case SDLK_RIGHT:
+                                            printf("right\n");
+
                 //                             positive = 1;
-                //                             if (first_user == 1) {
-                //                                 moveRight(&hozirontal_controller, &vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &controlRect);
-                //                                 myTank = meRight;
-                //                                  char directionMessage[BUFF_SIZE];
-                //                                 strcpy(directionMessage, createDirectionMessage(in_room_id, myId, RIGHT));
-                //                                 bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
-                //                             } else {
-                //                                 moveRight(&hozirontal_controller, &vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &friendRect);
-                //                                 myTank = meRight;
-                //                                  char directionMessage[BUFF_SIZE];
-                //                                 strcpy(directionMessage, createDirectionMessage(in_room_id, myId, RIGHT));
-                //                                 bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
-                //                             }
-                //                             break;
-                //                         case SDLK_LEFT:
+                                            if (isFirstUserInRoom == 1) {
+                                                dualMoveRight(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
+                                                myTank = meRight;
+                                            } else {
+                                                dualMoveRight(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
+                                                friendTank = friendRight;
+                                            }
+                                            
+                                            strcpy(directionMessage, createDirectionMessage(in_room_id, myId, RIGHT));
+                                            
+                                            bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
+                                        break;
+                                        case SDLK_LEFT:
+                                            printf("left\n");
                 //                             positive = 1;
-                //                             if (first_user == 1) {
-                //                                 moveLeft(&hozirontal_controller, &vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &controlRect);
-                //                                 myTank = meLeft;
-                //                                  char directionMessage[BUFF_SIZE];
-                //                                 strcpy(directionMessage, createDirectionMessage(in_room_id, myId, LEFT));
-                //                                 bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
-                //                             } else {
-                //                                 moveLeft(&hozirontal_controller, &vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &friendRect);
-                //                                 myTank = meLeft;
-                //                                  char directionMessage[BUFF_SIZE];
-                //                                 strcpy(directionMessage, createDirectionMessage(in_room_id, myId, LEFT));
-                //                                 bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
-                //                             }
-                //                             break;
+                                            if (isFirstUserInRoom == 1) {
+                                                dualMoveLeft(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
+                                                myTank = meLeft;
+                                            } else {
+                                                dualMoveLeft(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
+                                                friendTank = friendLeft;
+                                            }
+                                           
+                                            strcpy(directionMessage, createDirectionMessage(in_room_id, myId, LEFT));
+                                            
+                                            bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
+
+                                        break;
                 //                     case SDLK_RETURN:
                 //                         break;
-                //                     case SDLK_SPACE:
+                                        case SDLK_RETURN:
+                                            if (isFirstUserInRoom == 1) {
+                                                dualShot(myTank, dual_controlRect, meUp, meDown, meRight, meLeft, 1);
+                                            } else {
+                                                dualShotFriend(friendTank, dual_friendRect, friendUp, friendDown, friendRight, friendLeft, 1);
+                                            }
                 //                         positive = 1;
                 //                         for (int i =0; i < totalBullets; i ++) {
                 //                             if (bullet[i].is_active == 0) {
@@ -701,9 +766,9 @@ int main(){
                 //                                 break;
                 //                             }
                 //                         }
-                //                        break;
-                //                 }
-                //                 break;
+                                            break;
+                                    }
+                                break;
                         }
                     }
                 
@@ -779,115 +844,110 @@ int main(){
                                 }
                             }
                         }
-                // else if (state == CHOOSE_ROOM) {
-                //             SDL_GetMouseState(&mouseX, &mouseY);
-                //             if (mouseX >= 480 && mouseX <= 560 && mouseY >= 110 && mouseY <= 150) {
-                //                 char message[BUFF_SIZE];
+                        else if (state == CHOOSE_ROOM) {
+                            SDL_GetMouseState(&mouseX, &mouseY);
+                            if (mouseX >= 480 && mouseX <= 520 && mouseY >= 110 && mouseY <= 150) {
+                                char createRommMessage[BUFF_SIZE];
 
-                //                 strcpy(message , createCreateRoomMessage(myId));
-                //                 bytes_sent = send(client_sock, message, strlen(message), 0);
-                //                 if (bytes_sent < 0) {
-                //                     perror("Error sending message: ");
-                //                 }
-                        
-                //                 bytes_received = recv(client_sock, buff, sizeof(buff), 0);    
-                //                 if (bytes_received < 0) {
-                //                     perror("Error: ");
-                //                     close(client_sock);
-                //                 }
-                //                 buff[bytes_received] = '\0';
-                //                 in_room_id = atoi(buff);
+                                strcpy(createRommMessage , createCreateRoomMessage(myId));
 
-                //                 rooms[in_room_id].status = 1;
-                //                 rooms[in_room_id].first_player_id = myId;
-                //                 state = WAITING_OTHER;
-                //                 first_user = 1;
-                //                 dual_mode_position_x = 4;
-                //                 dual_mode_position_y = 11;
+                                bytes_sent = send(client_sock, createRommMessage, strlen(createRommMessage), 0);
 
-                //                 dual_mode_position_x_friend = 8;
-                //                 dual_mode_position_y_friend = 11;
-                //                 vertical_controller_friend = 88;
-                //                 hozirontal_controller_friend = 64;
+                                bytes_received = recv(client_sock, buff, sizeof(buff), 0);    
 
-                //                 if (pthread_create(&tid, NULL, receiveThread, (void*)&client_sock) != 0) {
-                //                     perror("Error creating thread");
-                //                     return 1;
-                //                 }
+                                buff[bytes_received] = '\0';
+                                in_room_id = atoi(buff);
 
-                //                 receiveThreadCreated = 1;  // Set the flag to indicate that the thread is created
-                //                 pthread_detach(tid);
-                //             } else {
-                //                 SDL_GetMouseState(&mouseX, &mouseY);
-                //                 int row = (mouseY - 200) /100;
-                //                 int col = (mouseX - 100) / 80;
-                //                 dual_mode_position_x = 8;
-                //                 dual_mode_position_y = 11;
-                //                 vertical_controller = 88;
-                //                 hozirontal_controller = 64;
+                                rooms[in_room_id].status = 1;
+                                rooms[in_room_id].first_player_id = myId;
 
-                //                 dual_mode_position_x_friend = 4;
-                //                 dual_mode_position_y_friend = 11;
-                //                 vertical_controller_friend = 88;
-                //                 hozirontal_controller_friend = 32;
+                                state = WAITING_OTHER;
+
+                                isFirstUserInRoom = 1;
+
+                                // dual_mode_position_x = 4;
+                                // dual_mode_position_y = 11;
+
+                                // dual_mode_position_x_friend = 8;
+                                // dual_mode_position_y_friend = 11;
+                                // vertical_controller_friend = 88;
+                                // hozirontal_controller_friend = 64;
+
+                                if (pthread_create(&tid, NULL, receiveThread, (void*)&client_sock) != 0) {
+                                    perror("Error creating thread");
+                                    return 1;
+                                }
+
+                                receiveThreadCreated1 = 1;  // Set the flag to indicate that the thread is created
+                                pthread_detach(tid);
+                        } else {
+                            SDL_GetMouseState(&mouseX, &mouseY);
+
+                            int row = (mouseY - 200) /100;
+                            int col = (mouseX - 100) / 120;
+
+                            // dual_mode_position_x = 8;
+                            // dual_mode_position_y = 11;
+                            // vertical_controller = 88;
+                            // hozirontal_controller = 64;
+
+                            // dual_mode_position_x_friend = 4;
+                            // dual_mode_position_y_friend = 11;
+                            // vertical_controller_friend = 88;
+                            // hozirontal_controller_friend = 32;
                                 
-                //                 if (mouseX > 100 && mouseY > 200) {
-                //                     in_room_id = 1 + row*4 + col;
+                            if (mouseX > 100 && mouseY > 200) {
+                                in_room_id = 1 + row*4 + col;
+                                
+                                if (in_room_id > 0 && in_room_id <= room_nums) {
                                     
-                //                     if (in_room_id > 0 && in_room_id <= room_nums) {
-                                        
-                //                         if (rooms[in_room_id].status == 1) {
-                //                             char joinRoomMessage[BUFF_SIZE];
-                //                             strcpy(joinRoomMessage, createJoinRoomMessage(myId, in_room_id));
+                                    if (rooms[in_room_id].status == 1) {
 
-                //                             bytes_sent = send(client_sock, joinRoomMessage, strlen(joinRoomMessage), 0);
-                //                             if (bytes_sent < 0) {
-                //                                 perror("Error sending message: ");
-                //                             }
-                //                             bytes_received = recv(client_sock, buff, sizeof(buff), 0);    
-                //                             if (bytes_received < 0) {
-                //                                 perror("Error: ");
-                //                                 close(client_sock);
-                //                             }
+                                        char joinRoomMessage[BUFF_SIZE];
 
-                //                             buff[bytes_received] = '\0';
+                                        strcpy(joinRoomMessage, createJoinRoomMessage(myId, in_room_id));
 
-                //                             if (strcmp(buff, "join success") == 0) {
-                //                                 state = IN_ROOM;
-                //                                 if (pthread_create(&tid, NULL, receiveThread, (void*)&client_sock) != 0) {
-                //                                     perror("Error creating thread");
-                //                                     return 1;
-                //                                 }
+                                        bytes_sent = send(client_sock, joinRoomMessage, strlen(joinRoomMessage), 0);
 
-                //                                 receiveThreadCreated = 1;  // Set the flag to indicate that the thread is created
-                //                                 pthread_detach(tid);
-                //                                 ready_to_start = 1;
-                //                             }
-                //                         }
-                //                     }
-                //                 }
+                                        bytes_received = recv(client_sock, buff, sizeof(buff), 0);    
 
+                                        buff[bytes_received] = '\0';
+
+                                        if (strcmp(buff, "ok") == 0) {
+                                            state = READY_TO_PLAY_DUAL;
+
+                                            if (pthread_create(&pid, NULL, receiveThread1, (void*)&client_sock) != 0) {
+                                                perror("Error creating thread");
+                                                return 1;
+                                            }
+
+                                            receiveThreadCreated2 = 1;  // Set the flag to indicate that the thread is created
+                                            pthread_detach(pid);
+                            //                 ready_to_start = 1;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } 
+                    else if (state == READY_TO_PLAY_DUAL) {
+                            SDL_GetMouseState(&mouseX, &mouseY);
+
+                            if (mouseX > 245 && mouseX < 385 && mouseY > 300 && mouseY < 400) {
                                 
-                //             }
-                //         } else if (state == IN_ROOM && ready_to_start == 1) {
-                //             SDL_GetMouseState(&mouseX, &mouseY);
+                                // myTank = meUp;
+                                state = PLAY_DUAL_GAME;
 
-                //             if (mouseX > 220 && mouseX < 420 && mouseY > 370 && mouseY < 410) {
-                //                 myTank = meUp;
-                //                 state = PLAY_DUAL_GAME;
+                                char startDualGameMessage[BUFF_SIZE];
+                            
+                                strcpy(startDualGameMessage, createStartGameMessage(in_room_id));
 
-                //                 char startGameMessage[BUFF_SIZE];
-                //                 strcpy(startGameMessage, createStartGameMessage(in_room_id));
-
-                //                 bytes_sent = send(client_sock, startGameMessage, strlen(startGameMessage), 0);
-                //                 if (bytes_sent < 0) {
-                //                     perror("Error sending message: ");
-                //                 }
-                //             }
+                                bytes_sent = send(client_sock, startDualGameMessage, strlen(startDualGameMessage), 0);
                             }
                         }
                     }
-            // }
+                }
+            }
         }
     }
  
@@ -901,176 +961,263 @@ int main(){
 	return 0;
 }
 
-// void extractAndChangeValues(const char *input, int *id, int *state, int *first_player_id, int *second_player_id) {
-//     if (input != NULL && id != NULL && state != NULL && first_player_id != NULL && second_player_id != NULL) {
-//         // Use sscanf to extract all four values from the input string
-//         int parsed = sscanf(input, "%d*%d*%d*%d", id, state, first_player_id, second_player_id);
+void extractAndChangeValues(const char *input, int *id, int *state, int *first_player_id, int *second_player_id) {
+    if (input != NULL && id != NULL && state != NULL && first_player_id != NULL && second_player_id != NULL) {
+        // Use sscanf to extract all four values from the input string
+        int parsed = sscanf(input, "%d*%d*%d*%d", id, state, first_player_id, second_player_id);
 
-//         if (parsed != 4) {
-//             // Handle the case where parsing was unsuccessful (e.g., invalid input)
-//             // You can set default values or handle errors here as needed.
-//             *id = -1;
-//             *state = -1;
-//             *first_player_id = -1;
-//             *second_player_id = -1;
-//         } 
-//     }
-// }
+        if (parsed != 4) {
+            // Handle the case where parsing was unsuccessful (e.g., invalid input)
+            // You can set default values or handle errors here as needed.
+            *id = -1;
+            *state = -1;
+            *first_player_id = -1;
+            *second_player_id = -1;
+        } 
+    }
+}
 
 
-// void renderRooms(SDL_Renderer *renderer, SDL_Texture *roomTexture, TTF_Font *font) {
-//     int roomWidth = 100;
-//     int roomHeight = 80;
-//     int spacingX = 20; // Adjust the horizontal spacing between rooms
-//     int spacingY = 20; // Adjust the vertical spacing between rooms
+void renderRooms(SDL_Renderer *renderer, SDL_Texture *roomTexture, TTF_Font *font) {
+    int roomWidth = 100;
+    int roomHeight = 80;
+    int spacingX = 20; // Adjust the horizontal spacing between rooms
+    int spacingY = 20; // Adjust the vertical spacing between rooms
 
-//     for (int i = 1; i <= room_nums; i++) {
-//         int row = (i - 1) / 4;
-//         int col = (i - 1) % 4;
+    for (int i = 1; i <= room_nums; i++) {
+        int row = (i - 1) / 4;
+        int col = (i - 1) % 4;
 
-//         SDL_Rect roomRect = {
-//             100 + col * (roomWidth + spacingX),
-//             200 + row * (roomHeight + spacingY),
-//             roomWidth,
-//             roomHeight
-//         };
+        SDL_Rect roomRect = {
+            100 + col * (roomWidth + spacingX),
+            200 + row * (roomHeight + spacingY),
+            roomWidth,
+            roomHeight
+        };
 
-//         SDL_RenderCopy(renderer, roomTexture, NULL, &roomRect);
+        SDL_RenderCopy(renderer, roomTexture, NULL, &roomRect);
 
-//         // Render room id in the top left corner
-//         char roomIdText[2]; // Adjust the size as needed
-//         snprintf(roomIdText, sizeof(roomIdText), "%d", rooms[i].id);
+        char roomIdText[2];
+        snprintf(roomIdText, sizeof(roomIdText), "%d", rooms[i].id);
 
-//         SDL_Surface *textSurface = TTF_RenderText_Solid(font, roomIdText, (SDL_Color){0, 0, 0, 255});
-//         SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-//         SDL_FreeSurface(textSurface);
+        SDL_Surface *textSurface = TTF_RenderText_Solid(font, roomIdText, (SDL_Color){0, 0, 0, 255});
+        SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+        SDL_FreeSurface(textSurface);
 
-//         int textWidth, textHeight;
-//         SDL_QueryTexture(textTexture, NULL, NULL, &textWidth, &textHeight);
+        int textWidth, textHeight;
+        SDL_QueryTexture(textTexture, NULL, NULL, &textWidth, &textHeight);
 
-//         SDL_Rect textRect = {
-//             roomRect.x,
-//             roomRect.y,
-//             textWidth,
-//             textHeight
-//         };
+        SDL_Rect textRect = {
+            roomRect.x,
+            roomRect.y,
+            textWidth,
+            textHeight
+        };
 
-//         SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+        SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
 
-//         char roomStatusText[2]; // Adjust the size as needed
-//         snprintf(roomStatusText, sizeof(roomIdText), "%d", rooms[i].status);
+        char roomStatusText[2]; // Adjust the size as needed
+        snprintf(roomStatusText, sizeof(roomIdText), "%d", rooms[i].status);
 
-//         SDL_Surface *roomStatusTextSurface = TTF_RenderText_Solid(TINY_FONT, roomStatusText, (SDL_Color){0, 0, 0, 255});
-//         SDL_Texture *roomStatusTextTexture = SDL_CreateTextureFromSurface(renderer, roomStatusTextSurface);
-//         SDL_FreeSurface(roomStatusTextSurface);
+        SDL_Surface *roomStatusTextSurface = TTF_RenderText_Solid(TINY_FONT, roomStatusText, (SDL_Color){0, 0, 0, 255});
+        SDL_Texture *roomStatusTextTexture = SDL_CreateTextureFromSurface(renderer, roomStatusTextSurface);
+        SDL_FreeSurface(roomStatusTextSurface);
 
-//         SDL_Rect roomStatusRect = {
-//             roomRect.x+18,
-//             roomRect.y+25,
-//             roomStatusTextSurface->w,
-//             roomStatusTextSurface->h
-//         };
+        SDL_Rect roomStatusRect = {
+            roomRect.x+18,
+            roomRect.y+25,
+            roomStatusTextSurface->w,
+            roomStatusTextSurface->h
+        };
 
-//         SDL_RenderCopy(renderer, roomStatusTextTexture, NULL, &roomStatusRect);
-//         SDL_Texture *personTexture = IMG_LoadTexture(renderer, "images/person.jpg");
+        SDL_RenderCopy(renderer, roomStatusTextTexture, NULL, &roomStatusRect);
+        SDL_Texture *personTexture = IMG_LoadTexture(renderer, "images/person.jpg");
 
-//         SDL_Rect personRect = {
-//             roomRect.x+35,
-//             roomRect.y+25,
-//             15,15
-//         };
+        SDL_Rect personRect = {
+            roomRect.x+35,
+            roomRect.y+25,
+            15,15
+        };
 
-//         SDL_RenderCopy(renderer, personTexture, NULL, &personRect);
-//     }
-// }
+        SDL_RenderCopy(renderer, personTexture, NULL, &personRect);
+    }
+}
 
-// void* receiveThread(void* arg) {
-//     int client_sock = *((int*)arg);
-//     char buff[BUFF_SIZE];
-//     int bytes_received;
+void* receiveThread(void* arg) {
+    int client_sock = *((int*)arg);
+    char buff[BUFF_SIZE];
+    int bytes_received;
 
-//     while (1) {
-//         // Receive messages from the server
-//         bytes_received = recv(client_sock, buff, BUFF_SIZE - 1, 0);
-//         if (bytes_received <= 0) {
-//             printf("\nConnection closed!\n");
-//             break;
-//         }
-//         buff[bytes_received] = '\0';
-//         // Print received messages only when the chat has started
-//         if (strcmp(buff, "other joined") == 0) {
-//             ready_to_start = 1;
-//             state = IN_ROOM;
-//         } else if (strcmp(buff, "start game") == 0) {
-//             state = PLAY_DUAL_GAME;
-//         } else if (buff[0] == 0x07) {
-//             positive = 0;
-//             int direction;
-//             sscanf(buff + 1, "%d", &direction); // Skip the first byte (0x05) and read the integer.
+    while (1) {
+        bytes_received = recv(client_sock, buff, BUFF_SIZE - 1, 0);
 
-//             if (first_user == 1) {
-                
-//                 if (direction == UP) {
-//                     friendTank = meUp;
-//                     moveUp(&hozirontal_controller_friend, &vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &friendRect);
-//                 } else if (direction == DOWN) {
-//                     friendTank = meDown;
-//                     moveDown(&hozirontal_controller_friend, &vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &friendRect);
-//                 } else if (direction == RIGHT) {
-//                     friendTank = meRight;
-//                     moveRight(&hozirontal_controller_friend, &vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &friendRect);
-//                 } else {
-//                     friendTank = meLeft;
-//                     moveLeft(&hozirontal_controller_friend, &vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &friendRect);
-//                 }
-//             } else {
-//                 if (direction == UP) {
-//                     friendTank = meUp;
-//                     moveUp(&hozirontal_controller_friend, &vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &controlRect);
-//                 } else if (direction == DOWN) {
-//                     friendTank = meDown;
-//                     moveDown(&hozirontal_controller_friend, &vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &controlRect);
-//                 } else if (direction == RIGHT) {
-//                     friendTank = meRight;
-//                     moveRight(&hozirontal_controller_friend, &vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &controlRect);
-//                 } else {
-//                     friendTank = meLeft;
-//                     moveLeft(&hozirontal_controller_friend, &vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &controlRect);
-//                 }
-//             }
-//         } else if (buff[0] == 0x09) {
-//             positive = 0;
-//             int direction;
+        buff[bytes_received] = '\0';
 
-//             sscanf(buff + 1, "%d", &direction); // Skip the first byte (0x05) and read the integer.
-//            for (int i =0; i < totalBullets; i ++) {
-//                 if (bullet[i].is_active == 0) {
-//                     bullet[i].is_active = 1;
+        if (buff[0] == 0x0a) { // ready to play
+            readyToStart = 1;
+            state = READY_TO_PLAY_DUAL;
+
+        } else if (buff[0] == 0x0b) {
+            
+            printf("receive to start message\n");
+            state = PLAY_DUAL_GAME;
+
+        } else if (buff[0] == 0x08) {
+            int direction;
+
+            sscanf(buff + 1, "%d", &direction); // Skip the first byte (0x05) and read the integer.
+
+            printf("receive direction: %d\n", direction);
+            if (isFirstUserInRoom == 1) {
+                if (direction == UP) {
+                    friendTank = friendUp;
+                    dualMoveUp(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
+                } else if (direction == DOWN) {
+                    friendTank = friendDown;
+                    dualMoveDown(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
+                } else if (direction == RIGHT) {
+                    friendTank = friendRight;
+                    dualMoveRight(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
+                } else {
+                    friendTank = friendLeft;
+                    dualMoveLeft(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
+                }
+            } 
+            else {
+                if (direction == UP) {
+                    myTank = meUp;
+                    dualMoveUp(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
+                } else if (direction == DOWN) {
+                    myTank = meDown;
+                    dualMoveDown(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
+                } else if (direction == RIGHT) {
+                    myTank = meRight;
+                    dualMoveRight(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
+                } else {
+                    myTank = meLeft;
+                    dualMoveLeft(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
+                }
+            }
+        } else if (buff[0] == 0x09) {
+        //     positive = 0;
+        //     int direction;
+
+        //     sscanf(buff + 1, "%d", &direction); // Skip the first byte (0x05) and read the integer.
+        //    for (int i =0; i < totalBullets; i ++) {
+        //         if (bullet[i].is_active == 0) {
+        //             bullet[i].is_active = 1;
                     
-//                     if (first_user == 1 && positive == 0) {
-//                         bulletRect[i].x = friendRect.x;
-//                         bulletRect[i].y = friendRect.y;
-//                     } else {
-//                         bulletRect[i].x = controlRect.x;
-//                         bulletRect[i].y = controlRect.y;
-//                     }
-//                     if (direction == UP) {
-//                             bullet[i].direction = UP;
-//                     } else if (direction == DOWN) {
-//                             bullet[i].direction = DOWN;
-//                     } else if (direction == RIGHT) {
-//                             bullet[i].direction = RIGHT;
-//                     } else {
-//                             bullet[i].direction = LEFT;
-//                     }
-//                     break;
-//                 }
-//             }
-//         }   
-//     }
+        //             if (first_user == 1 && positive == 0) {
+        //                 bulletRect[i].x = friendRect.x;
+        //                 bulletRect[i].y = friendRect.y;
+        //             } else {
+        //                 bulletRect[i].x = controlRect.x;
+        //                 bulletRect[i].y = controlRect.y;
+        //             }
+        //             if (direction == UP) {
+        //                     bullet[i].direction = UP;
+        //             } else if (direction == DOWN) {
+        //                     bullet[i].direction = DOWN;
+        //             } else if (direction == RIGHT) {
+        //                     bullet[i].direction = RIGHT;
+        //             } else {
+        //                     bullet[i].direction = LEFT;
+        //             }
+        //             break;
+        //         }
+        //     }
+        }   
+    }
 
-//     pthread_exit(NULL);
-// }
+    pthread_exit(NULL);
+}
+
+void* receiveThread1(void* arg) {
+    int client_sock = *((int*)arg);
+    char buff[BUFF_SIZE];
+    int bytes_received;
+
+    while (1) {
+        bytes_received = recv(client_sock, buff, BUFF_SIZE - 1, 0);
+
+        buff[bytes_received] = '\0';
+
+        if (buff[0] == 0x0a) { // ready to play
+            readyToStart = 1;
+            state = READY_TO_PLAY_DUAL;
+
+        } else if (buff[0] == 0x0b) {
+            
+            state = PLAY_DUAL_GAME;
+
+        } else if (buff[0] == 0x08) {
+            int direction;
+
+            sscanf(buff + 1, "%d", &direction); // Skip the first byte (0x05) and read the integer.
+
+            if (isFirstUserInRoom == 1) {
+                if (direction == UP) {
+                    friendTank = friendUp;
+                    dualMoveUp(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
+                } else if (direction == DOWN) {
+                    friendTank = friendDown;
+                    dualMoveDown(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
+                } else if (direction == RIGHT) {
+                    friendTank = friendRight;
+                    dualMoveRight(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
+                } else {
+                    friendTank = friendLeft;
+                    dualMoveLeft(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
+                }
+            } 
+            else {
+                if (direction == UP) {
+                    myTank = meUp;
+                    dualMoveUp(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
+                } else if (direction == DOWN) {
+                    myTank = meDown;
+                    dualMoveDown(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
+                } else if (direction == RIGHT) {
+                    myTank = meRight;
+                    dualMoveRight(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
+                } else {
+                    myTank = meLeft;
+                    dualMoveLeft(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
+                }
+            }
+        } else if (buff[0] == 0x09) {
+        //     positive = 0;
+        //     int direction;
+
+        //     sscanf(buff + 1, "%d", &direction); // Skip the first byte (0x05) and read the integer.
+        //    for (int i =0; i < totalBullets; i ++) {
+        //         if (bullet[i].is_active == 0) {
+        //             bullet[i].is_active = 1;
+                    
+        //             if (first_user == 1 && positive == 0) {
+        //                 bulletRect[i].x = friendRect.x;
+        //                 bulletRect[i].y = friendRect.y;
+        //             } else {
+        //                 bulletRect[i].x = controlRect.x;
+        //                 bulletRect[i].y = controlRect.y;
+        //             }
+        //             if (direction == UP) {
+        //                     bullet[i].direction = UP;
+        //             } else if (direction == DOWN) {
+        //                     bullet[i].direction = DOWN;
+        //             } else if (direction == RIGHT) {
+        //                     bullet[i].direction = RIGHT;
+        //             } else {
+        //                     bullet[i].direction = LEFT;
+        //             }
+        //             break;
+        //         }
+        //     }
+        }   
+    }
+
+    pthread_exit(NULL);
+}
 
 // void renderDualModeGame(SDL_Renderer *renderer, SDL_Texture *myTank, SDL_Texture *friendTank, SDL_Texture* bulletTexture[]) {
 
