@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <openssl/sha.h>
 
 typedef struct
 {
-	char username[20];
-	char password[20];
+	char username[256];
+	char password[256];
 	int status;
 	int logged;
 	int id;
@@ -52,7 +53,7 @@ void readDatatoList(singleLinkedList *list) {
 
 node* findAccount(singleLinkedList *list, char username[]) {
 
-	// readDatatoList(list);									//read data to list
+	readDatatoList(list);									//read data to list
 	list->cur = list->root;
 
 	while (list->cur != NULL) {													// traverse till find out matching account
@@ -116,6 +117,32 @@ int checkBlock(singleLinkedList *list, char username[]) {
 	return -1;													    // case: not found this user, return -1
 }
 
+// Hash a password using SHA-256
+void hashPassword(const char *password, char *hashedPassword) {
+    SHA256_CTX sha256;
+    SHA256_Init(&sha256);
+    SHA256_Update(&sha256, password, strlen(password));
+    unsigned char digest[SHA256_DIGEST_LENGTH];
+    SHA256_Final(digest, &sha256);
+
+    for (int i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+        sprintf(hashedPassword + (i * 2), "%02x", digest[i]);
+    }
+
+    hashedPassword[SHA256_DIGEST_LENGTH * 2] = '\0'; // Null terminator
+}
+
+// Ham giai ma hash
+int validatePassword(const char *inputPassword, const char *hashedPassword) {
+    char hashedInput[SHA256_DIGEST_LENGTH];
+
+	// hash chuoi duoc nhap vao 
+    hashPassword(inputPassword, hashedInput);
+
+    // so sanh chuoi hash duoc tao voi chuoi hash duoc luu tru
+    return memcmp(hashedInput, hashedPassword, SHA256_DIGEST_LENGTH) == 0;
+}
+
 /*
 	appendAccountToFile: write new user to account file
 */
@@ -128,7 +155,10 @@ void appendAccountToFile(char username[], char password[], int id) {
 		return;
 	}
 
-	fprintf(fp, "\n%s %s 1 0 %d 0", username, password, id); 					// new user's state is active
+	char hashedPassword[SHA256_DIGEST_LENGTH * 2 + 1];
+    hashPassword(password, hashedPassword);
+
+	fprintf(fp, "\n%s %s 1 0 %d 0", username, hashedPassword, id); 					// new user's state is active
 
 	fclose(fp); 													// close file
 }
@@ -228,7 +258,8 @@ int registerUser(singleLinkedList *list, char *username, char*password, int id) 
 	if (findAccount(list, username)) { 							// check if username existed in account file
 		return 0;
 	} else {
-		appendAccountToFile(username, password, id); 				// save new user infomation to file
+		//readDatatoList(list);							// save new user infomation to file
+		appendAccountToFile(username, password, id); 	
 		return 1;
 	}
 

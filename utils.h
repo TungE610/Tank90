@@ -87,6 +87,14 @@ int round_integer_division(int numerator, int denominator) {
     return round(result); // Sử dụng hàm round để làm tròn
 }
 
+
+int isMouseClickOnTexture(int mouseX, int mouseY, SDL_Texture *texture, SDL_Rect renderQuad) {
+    int texW, texH;
+    SDL_QueryTexture(texture, NULL, NULL, &texW, &texH);
+
+    return (mouseX >= renderQuad.x && mouseX <= renderQuad.x + texW && mouseY >= renderQuad.y && mouseY <= renderQuad.y + texH);
+}
+
 int compare_scores(const void *a, const void *b) {
     return (*(node**)b)->element.score - (*(node**)a)->element.score;
 }

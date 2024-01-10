@@ -66,6 +66,8 @@ SDL_Texture *singleModeTextTexture;
 SDL_Texture *dualModeTextTexture;
 SDL_Texture *showPasswordTexture;
 SDL_Texture *hidePasswordTexture;
+SDL_Texture *showRetypePasswordTexture;
+SDL_Texture *hideRetypePasswordTexture;
 SDL_Texture *hittedTexture;
 SDL_Texture *single_1_enermyTexture[4];
 SDL_Texture *single_2_enermyTexture[5];
@@ -118,6 +120,8 @@ void loadTextures(SDL_Renderer *renderer) {
     enermy_6_down = IMG_LoadTexture(renderer, "images/enermy_down.png");
     showPasswordTexture = IMG_LoadTexture(renderer, "images/show_password.png");
     hidePasswordTexture = IMG_LoadTexture(renderer, "images/hide_password.png");
+    showRetypePasswordTexture = IMG_LoadTexture(renderer, "images/show_password.png");
+    hideRetypePasswordTexture = IMG_LoadTexture(renderer, "images/hide_password.png");
     hittedTexture = IMG_LoadTexture(renderer, "images/hitted.png");
     single_1_enermyTexture[0] = IMG_LoadTexture(renderer, "images/enermy_left.png");
     single_1_enermyTexture[1] = IMG_LoadTexture(renderer, "images/enermy_left.png");
