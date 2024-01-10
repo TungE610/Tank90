@@ -154,6 +154,8 @@ int main(){
             initTextbox(&usernameRegisterTextbox, 300, 195, 200, 30);
             initTextbox(&passwordRegisterTextbox, 300, 245, 200, 30);
             initTextbox(&retypePasswordRegisterTextbox, 410, 295, 200, 30);
+            SDL_Rect showPasswordRenderQuad = {passwordRegisterTextbox.boxRect.x + 300, passwordRegisterTextbox.boxRect.y-2, 28, 28};
+            SDL_Rect showRetypedPasswordRenderQuad = {passwordRegisterTextbox.boxRect.x + 300, passwordRegisterTextbox.boxRect.y+60, 28, 28};
 
             initValueForSingle1();
             while( quit == false ){
@@ -188,14 +190,43 @@ int main(){
                     int usernameTextHeight = usernameBoxTextSurface->h;
                     SDL_Rect usernameBoxRenderQuad = { usernameLoginTextbox.boxRect.x + 5, usernameLoginTextbox.boxRect.y + 5, usernameTextWidth, usernameTextHeight };
 
+
+                    /////
+                    void renderPassword(SDL_Renderer *renderer, TTF_Font *font, const char *password, SDL_Rect renderQuad, int showPassword) {
+                        SDL_Surface *passwordTextSurface;
+                        if (showPassword) {
+                            // hien thi mat khau 
+                            passwordTextSurface = TTF_RenderText_Solid(font, password, WHITE);
+                        } else {
+                            // hien thi mat khau duoi dang *
+                            size_t passwordLength = strlen(password);
+                            char obscuredPassword[passwordLength ];
+                            for (size_t i = 1; i < passwordLength; ++i) {
+                                obscuredPassword[i] = '*';
+                            }
+                            obscuredPassword[0] = ' ';
+                            obscuredPassword[passwordLength] = '\0';
+                            passwordTextSurface = TTF_RenderText_Solid(font, obscuredPassword, WHITE);
+                        }
+
+                        SDL_Texture *passwordTextTexture = SDL_CreateTextureFromSurface(renderer, passwordTextSurface);
+                        SDL_RenderCopy(renderer, passwordTextTexture, NULL, &renderQuad);
+
+                        SDL_FreeSurface(passwordTextSurface);
+                        SDL_DestroyTexture(passwordTextTexture);
+                    }
+                    /////
+
+
                     SDL_Surface *passwordBoxTextSurface = TTF_RenderText_Solid(TINY_FONT, passwordLoginTextbox.text, WHITE);
                     SDL_Texture *passwordBoxTextTexture = SDL_CreateTextureFromSurface(renderer, passwordBoxTextSurface);
                     int passwordTextWidth = passwordBoxTextSurface->w;
                     int passwordTextHeight = passwordBoxTextSurface->h;
                     SDL_Rect passwordBoxRenderQuad = { passwordLoginTextbox.boxRect.x + 5, passwordLoginTextbox.boxRect.y + 5, passwordTextWidth, passwordTextHeight };
+                    renderPassword(renderer, TINY_FONT, passwordLoginTextbox.text, passwordBoxRenderQuad, showPasswordLogin);
 
                     SDL_RenderCopy(renderer, usernameBoxTextTexture, NULL, &usernameBoxRenderQuad);
-                    SDL_RenderCopy(renderer, passwordBoxTextTexture, NULL, &passwordBoxRenderQuad);
+                    SDL_RenderCopy(renderer, hidePasswordTexture, NULL, &showPasswordRenderQuad);
 
                     initButton(&loginButton, 230, 330, 200, 40, "Login");
                     SDL_SetRenderDrawColor(renderer, 0, 0, 255, 20);
@@ -212,6 +243,7 @@ int main(){
                 } 
 //-----------------------------------------------------------------------------------------------------------------------------------------------
                 else if (state == REGISTER) {
+                    
                     SDL_RenderCopy(renderer, registerBigTextTexture, NULL, &loginBigTextRenderQuad);
                     SDL_RenderCopy(renderer, usernameTextTexture, NULL, &usernameRenderQuad);
                     SDL_RenderCopy(renderer, passwordTextTexture, NULL, &passwordRenderQuad);
@@ -228,37 +260,68 @@ int main(){
                     int usernameTextWidth = usernameBoxTextSurface->w;
                     int usernameTextHeight = usernameBoxTextSurface->h;
                     SDL_Rect usernameBoxRenderQuad = { usernameRegisterTextbox.boxRect.x + 5, usernameRegisterTextbox.boxRect.y + 5, usernameTextWidth, usernameTextHeight };
+                    
+                    ////////////////////////////
+                    
+                    void renderPassword(SDL_Renderer *renderer, TTF_Font *font, const char *password, SDL_Rect renderQuad, int showPassword) {
+                        SDL_Surface *passwordTextSurface;
+                        if (showPassword) {
+                            // hien thi mat khau 
+                            passwordTextSurface = TTF_RenderText_Solid(font, password, WHITE);
+                        } else {
+                            // hien thi mat khau duoi dang *
+                            size_t passwordLength = strlen(password);
+                            char obscuredPassword[passwordLength ];
+                            for (size_t i = 1; i < passwordLength; ++i) {
+                                obscuredPassword[i] = '*';
+                            }
+                            obscuredPassword[0] = ' ';
+                            obscuredPassword[passwordLength] = '\0';
+                            passwordTextSurface = TTF_RenderText_Solid(font, obscuredPassword, WHITE);
+                        }
+
+                        SDL_Texture *passwordTextTexture = SDL_CreateTextureFromSurface(renderer, passwordTextSurface);
+                        SDL_RenderCopy(renderer, passwordTextTexture, NULL, &renderQuad);
+
+                        SDL_FreeSurface(passwordTextSurface);
+                        SDL_DestroyTexture(passwordTextTexture);
+                    }
+
+                    /////////////////////////////
+                    
+
+                    /////////////////////
+
                     SDL_Surface *passwordBoxTextSurface = TTF_RenderText_Solid(TINY_FONT, passwordRegisterTextbox.text, WHITE);
                     SDL_Texture *passwordBoxTextTexture = SDL_CreateTextureFromSurface(renderer, passwordBoxTextSurface);
 
                     int passwordTextWidth = passwordBoxTextSurface->w;
                     int passwordTextHeight = passwordBoxTextSurface->h;
                     SDL_Rect passwordBoxRenderQuad = { passwordRegisterTextbox.boxRect.x + 5, passwordRegisterTextbox.boxRect.y + 5, passwordTextWidth, passwordTextHeight };
-                    SDL_Rect showPasswordRenderQuad = {passwordRegisterTextbox.boxRect.x + 300, passwordRegisterTextbox.boxRect.y-2, 28, 28};
-                    SDL_Rect showRetypedPasswordRenderQuad = {passwordRegisterTextbox.boxRect.x + 300, passwordRegisterTextbox.boxRect.y+60, 28, 28};
-                    
+                    renderPassword(renderer, TINY_FONT, passwordRegisterTextbox.text, passwordBoxRenderQuad, showPassword);
+        
+
+                    ////////////////////
+
                     SDL_Surface *retypePasswordRegisterBoxTextSurface = TTF_RenderText_Solid(TINY_FONT, retypePasswordRegisterTextbox.text, WHITE);
                     SDL_Texture *retypePasswordBoxTextTexture = SDL_CreateTextureFromSurface(renderer, retypePasswordRegisterBoxTextSurface);
 
                     int retypePasswordTextWidth = retypePasswordRegisterBoxTextSurface->w;
                     int retypePasswordTextHeight = retypePasswordRegisterBoxTextSurface->h;
                     SDL_Rect retypePasswordBoxRenderQuad = { retypePasswordRegisterTextbox.boxRect.x + 5, retypePasswordRegisterTextbox.boxRect.y + 5, retypePasswordTextWidth, retypePasswordTextHeight };
+                    renderPassword(renderer, TINY_FONT, retypePasswordRegisterTextbox.text, retypePasswordBoxRenderQuad, showRetypePassword);
+                    ///////
+
+
 
                     SDL_RenderCopy(renderer, usernameBoxTextTexture, NULL, &usernameBoxRenderQuad);
-                    SDL_RenderCopy(renderer, passwordBoxTextTexture, NULL, &passwordBoxRenderQuad);
-                    SDL_RenderCopy(renderer, retypePasswordBoxTextTexture, NULL, &retypePasswordBoxRenderQuad);
+                    //SDL_RenderCopy(renderer, passwordBoxTextTexture, NULL, &passwordBoxRenderQuad);
+                    //SDL_RenderCopy(renderer, retypePasswordBoxTextTexture, NULL, &retypePasswordBoxRenderQuad);
 
-                    if (showPassword == 0) {
-                        SDL_RenderCopy(renderer, hidePasswordTexture, NULL, &showPasswordRenderQuad);
-                    } else {
-                        SDL_RenderCopy(renderer, showPasswordTexture, NULL, &showPasswordRenderQuad);
-                    }
-
-                    if (showRetypePassword == 0) {
-                        SDL_RenderCopy(renderer, hidePasswordTexture, NULL, &showRetypedPasswordRenderQuad);
-                    } else {
-                        SDL_RenderCopy(renderer, showPasswordTexture, NULL, &showRetypedPasswordRenderQuad);
-                    }
+                  
+                    SDL_RenderCopy(renderer, hidePasswordTexture, NULL, &showPasswordRenderQuad);
+                    SDL_RenderCopy(renderer, hideRetypePasswordTexture, NULL, &showRetypedPasswordRenderQuad);
+                    
 
                     initButton(&regiterButton, 230, 380, 200, 40, "Register");
 
@@ -713,6 +776,10 @@ int main(){
                             setFocusOnTextbox(&usernameLoginTextbox, mouseX, mouseY);
                             setFocusOnTextbox(&passwordLoginTextbox, mouseX, mouseY);
 
+                            if (isMouseClickOnTexture(mouseX, mouseY, showPasswordTexture, showPasswordRenderQuad)) {
+                                showPasswordLogin = !showPasswordLogin;
+                            }
+
                             if (mouseX >= 230 && mouseX <= 430 && mouseY >= 330 && mouseY <= 370) {
                                 char loginMessage[BUFF_SIZE];
                                 strcpy(loginMessage, createLoginMessage(usernameLoginTextbox.text, passwordLoginTextbox.text));
@@ -753,29 +820,43 @@ int main(){
                             setFocusOnTextbox(&passwordRegisterTextbox, mouseX, mouseY);
                             setFocusOnTextbox(&retypePasswordRegisterTextbox, mouseX, mouseY);
 
+                            if (isMouseClickOnTexture(mouseX, mouseY, showRetypePasswordTexture, showRetypedPasswordRenderQuad)) {
+                                showRetypePassword = !showRetypePassword;
+                            }
+                            if (isMouseClickOnTexture(mouseX, mouseY, showPasswordTexture, showPasswordRenderQuad)) {
+                                showPassword = !showPassword;
+                            }
+
                             if (mouseX > 230 && mouseX < 430 && mouseY > 380 && mouseY < 430){
                                 char registerMessage[BUFF_SIZE];
+
+                                
 
                                 if (strlen(usernameRegisterTextbox.text) == 1 || strlen(passwordRegisterTextbox.text) == 1 || strlen(retypePasswordRegisterTextbox.text) == 1) {
                                     strcpy(register_message, "Please input all fields");
                                 } else {
+                                    if(strcmp(passwordRegisterTextbox.text,retypePasswordRegisterTextbox.text)!=0){
+                                        strcpy(register_message, "Password not match!");
+                                    }else{                                      
+                                        strcpy(registerMessage, createRegisterMessage(usernameRegisterTextbox.text, passwordRegisterTextbox.text));
 
-                                    strcpy(registerMessage, createRegisterMessage(usernameRegisterTextbox.text, passwordRegisterTextbox.text));
+                                        bytes_sent = send(client_sock, registerMessage, strlen(registerMessage), 0);
+                                        if (bytes_sent < 0) {
+                                            perror("Error sending message: ");
+                                        }
+                                
+                                        bytes_received = recv(client_sock, buff, sizeof(buff), 0);    
+                                        
+                                        buff[bytes_received] = '\0';
 
-                                    bytes_sent = send(client_sock, registerMessage, strlen(registerMessage), 0);
-                                    if (bytes_sent < 0) {
-                                        perror("Error sending message: ");
+                                        if (strcmp(buff, "existed") == 0 ) {
+                                            strcpy(register_message, "This account existed");
+                                        } else {
+                                            strcpy(register_message, "Successfully registered");
+                                            state = LOGIN;
+                                        }
                                     }
-                            
-                                    bytes_received = recv(client_sock, buff, sizeof(buff), 0);    
-                                    
-                                    buff[bytes_received] = '\0';
 
-                                    if (strcmp(buff, "existed") == 0 ) {
-                                        strcpy(register_message, "This account existed");
-                                    } else {
-                                        strcpy(register_message, "Successfully registered");
-                                    }
                                 }
                             }
                         }

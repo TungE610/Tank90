@@ -206,6 +206,15 @@ void rewriteFile(singleLinkedList *list) {
 	fclose(fp);														//close file
 };
 
+//////////////////////
+
+void reloadAccountList(singleLinkedList *list) {
+    deleteSingleList(list);
+    readDatatoList(list);
+}
+
+/////////////////////
+
 int registerUser(singleLinkedList *list, char *username, char*password, int id) {
 	if (findAccount(list, username)) { 							// check if username existed in account file
 		return 0;
@@ -218,6 +227,7 @@ int registerUser(singleLinkedList *list, char *username, char*password, int id) 
 }
 
 void signin(singleLinkedList* list, char* signedInUser) {
+	reloadAccountList(list);
 	char username[30], password[30];
 	while ((getchar()) != '\n');
 

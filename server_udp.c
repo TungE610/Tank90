@@ -311,7 +311,6 @@ int main() {
     // Step 3: Communicate with clients
     while (1) {
         client_sock = malloc(sizeof(int));
-
         struct Player *player = (struct Player *)malloc(sizeof(struct Player));
         player->id = number_of_players;
         player->list = list;
@@ -324,7 +323,7 @@ int main() {
         printf("check socket: %d\n", player->socket);
 
 		printf("You got a connection from %s\n", inet_ntoa(client->sin_addr) ); /* prints client's IP */
-
+        reloadAccountList(list);   // update list
         pthread_create(&threadIDs[number_of_players], NULL, handleClient, (void *)player);
 
         pthread_detach(threadIDs[number_of_players]);
@@ -382,7 +381,7 @@ void login(singleLinkedList* list,char  message[], int socket, int id){
 }
 
 void registerPlayer(singleLinkedList* list,char  message[], int socket, int id){
-
+    
     char *extractedUsername;
     char *extractedPassword;
     int bytes_sent;
@@ -395,5 +394,6 @@ void registerPlayer(singleLinkedList* list,char  message[], int socket, int id){
         bytes_sent = send(socket, "existed", strlen("existed"), 0);
     } else {
         bytes_sent = send(socket, "success", strlen("success"), 0);
+        reloadAccountList(list);      // update list 
     }
 }

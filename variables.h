@@ -121,5 +121,6 @@ Button loginButton;
 Button regiterButton;
 int showPassword = 0;
 int showRetypePassword = 0;
+int showPasswordLogin = 0;
 
 #endif
