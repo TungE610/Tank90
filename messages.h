@@ -303,6 +303,50 @@ int extractUpdateScoreMessage(const char* message, int* id, int* score) {
     return 1; // Extraction successful
 }
 
+char* createScoreMessage(char username[], int score, int rank) {
+    char message[64]; // Assuming a maximum length for the message
+    
+    // Format the message string
+    snprintf(message, sizeof(message), "%c%s*%d*%d", 0x0f, username, score, rank);
+
+    // Allocate memory for the string and copy the formatted message
+    char* result = (char*)malloc(strlen(message) + 1); // +1 for the null terminator
+    if (result != NULL) {
+        strcpy(result, message);
+    }
+
+    return result;
+}
+
+// char* createLeaveRoomMessage(char username[], int score, int rank) {
+//     char message[64]; // Assuming a maximum length for the message
+    
+//     // Format the message string
+//     snprintf(message, sizeof(message), "%c%s*%d*%d", 0x0f, username, score, rank);
+
+//     // Allocate memory for the string and copy the formatted message
+//     char* result = (char*)malloc(strlen(message) + 1); // +1 for the null terminator
+//     if (result != NULL) {
+//         strcpy(result, message);
+//     }
+
+//     return result;
+// }
+
+int extractScoreMessage(const char* message, char* username, int* score, int *rank) {
+    // Check if the message starts with the expected format
+    if (message[0] != 0x0f) {
+        return 0; // Invalid message format
+    }
+
+    // Use sscanf to parse the ID, username, and score
+    if (sscanf(message + 1, "%s*%d*%d", username, score, rank) != 3) {
+        return 0; // Parsing failed
+    }
+
+    return 1; // Extraction successful
+}
+
 
 
 #endif

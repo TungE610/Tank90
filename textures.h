@@ -76,6 +76,8 @@ SDL_Texture *bullet_right;
 SDL_Texture *bullet_left;
 SDL_Texture *bulletTexture[30];
 
+SDL_Texture *leaveTexture;
+
 void loadTextures(SDL_Renderer *renderer) {
     tank = IMG_LoadTexture(renderer, "images/player_green_up.png");
     block = IMG_LoadTexture(renderer, "images/block.png");
@@ -131,6 +133,8 @@ void loadTextures(SDL_Renderer *renderer) {
     bullet_down = IMG_LoadTexture(renderer, "images/bullet_down.png");
     bullet_right = IMG_LoadTexture(renderer, "images/bullet_right.png");
     bullet_left = IMG_LoadTexture(renderer, "images/bullet.png");
+
+    leaveTexture = IMG_LoadTexture(renderer, "images/leave.png");
 
     friendTank = friendUp;
     myTank = meUp;

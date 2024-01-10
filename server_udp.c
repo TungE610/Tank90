@@ -276,6 +276,42 @@ void *handleClient(void *arg) {
                 extractUpdateScoreMessage(buff, &id, &score);
 
                 updateScore(player->list, id, score);
+            } else if (buff[0] == 0x0e) {                
+                node* root = player->list->root;
+
+                int numPlayers = 0;
+                node* current = root;
+                node **playersArray = NULL;
+
+                while (current != NULL) {
+                    numPlayers++;
+                    current = current->next;
+                }
+
+                playersArray = (struct node**)malloc(numPlayers * sizeof(node*));
+
+                current = root;
+                int i = 0;
+
+                while (current != NULL) {
+                    playersArray[i] = current;
+                    current = current->next;
+                    i++;
+                }
+
+                // Sort the array of player pointers by score in descending order
+                qsort(playersArray, numPlayers, sizeof(node*), compare_scores);
+
+                // Print the IDs and usernames of the top N players
+                for (i = 0; i < 8 && i < numPlayers; i++) {
+                    char usernameScoreMessage[BUFF_SIZE];
+
+                    strcpy(usernameScoreMessage, createScoreMessage(playersArray[i]->element.username, playersArray[i]->element.score, i + 1));
+
+                    bytes_sent = send(player->socket, usernameScoreMessage, strlen(usernameScoreMessage), 0);
+                }
+
+                free(playersArray);
             }
 
             // player->is_choosing_game_mode = 0;

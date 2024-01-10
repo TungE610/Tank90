@@ -154,6 +154,8 @@ int main(){
             SDL_Rect singleModeRenderQuad = { 250, 250, singleModeText->w, singleModeText->h };
             SDL_Rect dualModeRenderQuad = { 250, 300, dualModeText->w, dualModeText->h };
             SDL_Rect tankRectChooseMode = {200, 242, TANK_WIDTH, TANK_HEIGHT};
+            SDL_Rect leaveRenderQuad = {30, 100, 40, 40};
+
 
             initTextbox(&usernameLoginTextbox, 320, 195, 200, 30);
             initTextbox(&passwordLoginTextbox, 320, 245, 200, 30);
@@ -436,6 +438,7 @@ int main(){
                 SDL_Texture *scoreNumTextTexture = SDL_CreateTextureFromSurface(renderer, scoreNumTextSurface);
                 SDL_Rect scoreNumTextRenderQuad = { 610, 290, scoreNumTextSurface->w, scoreNumTextSurface->h };
                 SDL_RenderCopy(renderer, scoreNumTextTexture, NULL, &scoreNumTextRenderQuad);
+
             } 
             else if (state == WAITING_OTHER) {
                 SDL_RenderClear(renderer);
@@ -462,6 +465,7 @@ int main(){
 
                 SDL_RenderCopy(renderer, waitingRoomTextTexture, NULL, &waitingTextRenderQuad);
                 SDL_RenderCopy(renderer, waitingTank, NULL, &waitingTankRect);
+                SDL_RenderCopy(renderer, leaveTexture, NULL, &leaveRenderQuad);
             }
             else if (state == READY_TO_PLAY_DUAL){
                     SDL_RenderClear(renderer);
@@ -496,6 +500,18 @@ int main(){
 
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                 SDL_RenderCopy(renderer, rankingBigTextTexture, NULL, &rankingBigTextRenderQuad);
+                
+                // if (strlen(topPlayer[0].username) > 0) {
+
+                // for (int i = 0; i < 3; i ++) {
+                    // SDL_Surface *usernameSurface = TTF_RenderText_Solid(TINY_FONT, topPlayer[i].username, WHITE);
+                    // SDL_Texture *usernameTexture = SDL_CreateTextureFromSurface(renderer, usernameSurface);
+                    // SDL_Rect usernameRenderQuad = {280, 300 + (i+1) * 40, usernameSurface->w, usernameSurface->h};
+
+                    // SDL_RenderCopy(renderer, usernameTexture, NULL, &usernameRenderQuad);
+                    // for ()
+                // }
+                // }
             } else if (state == GAME_OVER) {
                 SDL_RenderClear(renderer);
 
@@ -943,10 +959,17 @@ int main(){
                             SDL_GetMouseState(&mouseX, &mouseY);
 
                             if (mouseX > 600 && mouseX < 680 && mouseY > 450 && mouseY < 530 ) {
+
+                                char seeRankingMessage[2];
+
+                                snprintf(seeRankingMessage, sizeof(seeRankingMessage), "%c", 0x0e);
+
+                                bytes_sent = send(client_sock, seeRankingMessage, strlen(seeRankingMessage), 0);
+
                                 state = SEEING_RANK;
                             }
 
-                    }else if (state == READY_TO_PLAY_DUAL) {
+                        }else if (state == READY_TO_PLAY_DUAL) {
                             SDL_GetMouseState(&mouseX, &mouseY);
 
                             if (mouseX > 245 && mouseX < 385 && mouseY > 300 && mouseY < 400) {
@@ -959,6 +982,13 @@ int main(){
                                 strcpy(startDualGameMessage, createStartGameMessage(in_room_id));
 
                                 bytes_sent = send(client_sock, startDualGameMessage, strlen(startDualGameMessage), 0);
+                            }
+                        } else if (state = WAITING_OTHER) {
+                            SDL_GetMouseState(&mouseX, &mouseY);
+
+                            if (mouseX > 30 && mouseX < 70 && mouseY > 100 && mouseY < 140) {
+                                
+                               
                             }
                         }
                     }
@@ -1120,9 +1150,17 @@ void* receiveThread(void* arg) {
                 }
             }
         } else if (buff[0] == 0x0c) {
-            printf("receive direction message\n");
             dualShotFriend_positive(friendTank, dual_friendRect, friendUp, friendDown, friendRight, friendLeft, 1);
-        }   
+        } else if (buff[0] == 0x0f) {
+            char username[BUFF_SIZE];
+            int score;
+            int rank;
+
+            extractScoreMessage(buff, username, &score, &rank);
+
+            strcpy(topPlayer[rank-1].username, username);
+            topPlayer[rank-1].score = score;
+        }
     }
 
     pthread_exit(NULL);
