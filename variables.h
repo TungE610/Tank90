@@ -55,6 +55,14 @@ int removeNum_3 = 0;
 
 void initValueForSingle1() {
     removeNum = 0;
+    single_controlRect = (SDL_Rect){ 240, 440, 40, 40 };
+
+    vertical_controller = 88;
+    hozirontal_controller = 32;
+
+    single_mode_postion_x = 4;
+    single_mode_postion_y = 11;
+
     single_1_enermy_react[0] = (SDL_Rect){ 80, 0, 40, 40 };
     single_1_enermy_react[1] = (SDL_Rect){ 520, 200, 40, 40 };
     single_1_enermy_react[2] = (SDL_Rect){ 520, 0, 40, 40 };
@@ -124,6 +132,14 @@ SDL_Rect single_2_enermy_react[5];
 
 void initValueForSingle2() {
     removeNum_2 = 0;
+    single_controlRect_2 = (SDL_Rect){ 240, 440, 40, 40 };
+
+    vertical_controller_2 = 88;
+    hozirontal_controller_2 = 32;
+
+    single_mode_postion_x_2 = 4;
+    single_mode_postion_y_2 = 11;
+
     single_2_enermy_react[0] = (SDL_Rect){ 80, 0, 40, 40 };
     single_2_enermy_react[1] = (SDL_Rect){ 520, 200, 40, 40 };
     single_2_enermy_react[2] = (SDL_Rect){ 520, 0, 40, 40 };
@@ -199,6 +215,14 @@ SDL_Rect single_3_enermy_react[6];
 
 void initValueForSingle3() {
     removeNum_3 = 0;
+    single_controlRect_3 = (SDL_Rect){ 240, 440, 40, 40 };
+
+    vertical_controller_3 = 88;
+    hozirontal_controller_3 = 32;
+
+    single_mode_postion_x_3 = 4;
+    single_mode_postion_y_3 = 11;
+
     single_3_enermy_react[0] = (SDL_Rect){ 80, 0, 40, 40 };
     single_3_enermy_react[1] = (SDL_Rect){ 520, 200, 40, 40 };
     single_3_enermy_react[2] = (SDL_Rect){ 520, 0, 40, 40 };

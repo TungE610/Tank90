@@ -53,11 +53,15 @@ SDL_Texture *myTank;
 
 SDL_Texture *loginBigTextTexture;
 SDL_Texture *registerBigTextTexture;
+SDL_Texture *gameoverBigTextTexture;
 SDL_Texture *roomsBigTextTexture;
+SDL_Texture *rankingBigTextTexture;
+SDL_Texture *rankingBigTextTexture;
 SDL_Texture *usernameTextTexture;
 SDL_Texture *passwordTextTexture;
 SDL_Texture *retypePasswordTextTexture;
 SDL_Texture *chooseModeTextTexture;
+SDL_Texture *rankingTexture;
 SDL_Texture *singleModeTextTexture;
 SDL_Texture *dualModeTextTexture;
 SDL_Texture *showPasswordTexture;
@@ -122,6 +126,7 @@ void loadTextures(SDL_Renderer *renderer) {
     single_2_enermyTexture[2] = IMG_LoadTexture(renderer, "images/enermy_left.png");
     single_2_enermyTexture[3] = IMG_LoadTexture(renderer, "images/enermy_left.png");
     single_2_enermyTexture[4] = IMG_LoadTexture(renderer, "images/enermy_left.png");
+    rankingTexture = IMG_LoadTexture(renderer, "images/ranking.png");
     bullet_up = IMG_LoadTexture(renderer, "images/bullet_up.png");
     bullet_down = IMG_LoadTexture(renderer, "images/bullet_down.png");
     bullet_right = IMG_LoadTexture(renderer, "images/bullet_right.png");
@@ -131,6 +136,8 @@ void loadTextures(SDL_Renderer *renderer) {
     myTank = meUp;
 
     loginBigTextTexture = SDL_CreateTextureFromSurface(renderer, loginBigTextSurface); 
+    rankingBigTextTexture = SDL_CreateTextureFromSurface(renderer, rankingBigTextSurface); 
+    gameoverBigTextTexture = SDL_CreateTextureFromSurface(renderer, gameOverBigTextSurface); 
     registerBigTextTexture = SDL_CreateTextureFromSurface(renderer, registerBigText); 
     roomsBigTextTexture = SDL_CreateTextureFromSurface(renderer, roomsBigText);
     usernameTextTexture = SDL_CreateTextureFromSurface(renderer, usernameText); 

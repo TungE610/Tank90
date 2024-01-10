@@ -507,6 +507,13 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                     }
                 }
 
+                if (single_1_bullet[i].player_id == 0 && single_1_bulletRect[i].y >= single_controlRect.y && single_controlRect.y >= single_1_bulletRect[i].y - 8
+                    && single_1_bulletRect[i].x > single_controlRect.x - 20 && single_1_bulletRect[i].x < single_controlRect.x + 20 ) {
+                        single_scores-= 5;
+                        state = GAME_OVER;
+
+                }
+
                 if (single_1_bulletRect[i].y < 8 || (single_map_1[(single_1_bulletRect[i].y)/40 - 1][round_integer_division(single_1_bulletRect[i].x-80, 40)] != 0 && single_1_bulletRect[i].y % 40 < 15)) {
                     single_1_bullet[i].is_active = 0;
                     single_1_bullet[i].player_id = 0;
@@ -547,6 +554,12 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                         }
                     }
                 }
+                if (single_1_bullet[i].player_id == 0 && single_1_bulletRect[i].y <= single_controlRect.y && single_controlRect.y <= single_1_bulletRect[i].y + 8
+                && single_1_bulletRect[i].x > single_controlRect.x - 20 && single_1_bulletRect[i].x < single_controlRect.x + 20 ) {
+                    single_scores-= 5;
+                    state = GAME_OVER;
+                }
+
                 if (single_1_bulletRect[i].y > 440 || (single_map_1[(single_1_bulletRect[i].y)/40 + 2][round_integer_division(single_1_bulletRect[i].x-80, 40)] != 0 && single_1_bulletRect[i].y % 40 > 15)) {
                     single_1_bullet[i].is_active = 0;
                     single_1_bullet[i].player_id = 0;
@@ -587,6 +600,12 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                         }
                     }
                 }
+                if (single_1_bullet[i].player_id == 0 && single_1_bulletRect[i].x <= single_controlRect.x  && single_controlRect.x <= single_1_bulletRect[i].x + 8
+                    && single_1_bulletRect[i].y > single_controlRect.y - 20 && single_1_bulletRect[i].y < single_controlRect.y + 20 ) {
+                    single_scores-= 5;
+                    state = GAME_OVER;
+                }
+
                 if (single_1_bulletRect[i].x > 520 || (single_map_1[round_integer_division(single_1_bulletRect[i].y,40)][(single_1_bulletRect[i].x-80)/40 + 2] != 0 && single_1_bulletRect[i].x % 40 > 15)) {
                     single_1_bullet[i].is_active = 0;
                     single_1_bullet[i].player_id = 0;
@@ -627,6 +646,12 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                         }
                     }
                 }
+                if (single_1_bullet[i].player_id == 0 && single_1_bulletRect[i].x >= single_controlRect.x  && single_controlRect.x >= single_1_bulletRect[i].x - 8
+                    && single_1_bulletRect[i].y > single_controlRect.y - 20 && single_1_bulletRect[i].y < single_controlRect.y + 20 ) {
+                    single_scores-= 5;
+                    state = GAME_OVER;
+                }
+
                 if (single_1_bulletRect[i].x < 80 || (single_map_1[round_integer_division(single_1_bulletRect[i].y,40)][(single_1_bulletRect[i].x-80)/40 - 1] != 0 && single_1_bulletRect[i].x % 40 < 15)) {
                     single_1_bullet[i].is_active = 0;
                     single_1_bullet[i].player_id = 0;
@@ -743,7 +768,7 @@ void renderSingle2Enermies(SDL_Renderer *renderer, Enermy single_enermies[]) {
                     break;
             }
         }
-        SDL_Delay(5);
+        SDL_Delay(8);
     }
 
     if (end == 1) {
@@ -792,6 +817,12 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                     }
                 }
 
+                if (single_2_bullet[i].player_id == 0 && single_2_bulletRect[i].y >= single_controlRect_2.y && single_controlRect_2.y >= single_2_bulletRect[i].y - 8
+                    && single_2_bulletRect[i].x > single_controlRect_2.x - 20 && single_2_bulletRect[i].x < single_controlRect_2.x + 20 ) {
+                        single_scores-= 5;
+                        state = GAME_OVER;
+                }
+
                 if (single_2_bulletRect[i].y < 8 || (single_map_2[(single_2_bulletRect[i].y)/40 - 1][round_integer_division(single_2_bulletRect[i].x-80, 40)] != 0 && single_2_bulletRect[i].y % 40 < 15)) {
                     single_2_bullet[i].is_active = 0;
                     single_2_bullet[i].player_id = 0;
@@ -832,6 +863,12 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                         }
                     }
                 }
+                if (single_2_bullet[i].player_id == 0 && single_2_bulletRect[i].y <= single_controlRect_2.y && single_controlRect_2.y <= single_2_bulletRect[i].y + 8
+                && single_2_bulletRect[i].x > single_controlRect_2.x - 20 && single_2_bulletRect[i].x < single_controlRect_2.x + 20 ) {
+                    single_scores-= 5;
+                    state = GAME_OVER;
+                }
+
                 if (single_2_bulletRect[i].y > 440 || (single_map_2[(single_2_bulletRect[i].y)/40 + 2][round_integer_division(single_2_bulletRect[i].x-80, 40)] != 0 && single_2_bulletRect[i].y % 40 > 15)) {
                     single_2_bullet[i].is_active = 0;
                     single_2_bullet[i].player_id = 0;
@@ -872,6 +909,12 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                         }
                     }
                 }
+                if (single_2_bullet[i].player_id == 0 && single_2_bulletRect[i].x <= single_controlRect_2.x  && single_controlRect_2.x <= single_2_bulletRect[i].x + 8
+                    && single_2_bulletRect[i].y > single_controlRect_2.y - 20 && single_2_bulletRect[i].y < single_controlRect_2.y + 20 ) {
+                    single_scores-= 5;
+                    state = GAME_OVER;
+                }
+
                 if (single_2_bulletRect[i].x > 520 || (single_map_2[round_integer_division(single_2_bulletRect[i].y,40)][(single_2_bulletRect[i].x-80)/40 + 2] != 0 && single_2_bulletRect[i].x % 40 > 15)) {
                     single_2_bullet[i].is_active = 0;
                     single_2_bullet[i].player_id = 0;
@@ -912,6 +955,12 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                         }
                     }
                 }
+                if (single_2_bullet[i].player_id == 0 && single_2_bulletRect[i].x >= single_controlRect_2.x  && single_controlRect_2.x >= single_2_bulletRect[i].x - 8
+                    && single_2_bulletRect[i].y > single_controlRect_2.y - 20 && single_2_bulletRect[i].y < single_controlRect_2.y + 20 ) {
+                    single_scores-= 5;
+                    state = GAME_OVER;
+                }
+
                 if (single_2_bulletRect[i].x < 80 || (single_map_2[round_integer_division(single_2_bulletRect[i].y,40)][(single_2_bulletRect[i].x-80)/40 - 1] != 0 && single_2_bulletRect[i].x % 40 < 15)) {
                     single_2_bullet[i].is_active = 0;
                     single_2_bullet[i].player_id = 0;
@@ -1027,7 +1076,7 @@ void renderSingle3Enermies(SDL_Renderer *renderer, Enermy single_enermies[]) {
                     break;
             }
         }
-        SDL_Delay(3);
+        SDL_Delay(6);
     }
 
     if (end == 1) {
@@ -1075,6 +1124,12 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                         }
                     }
                 }
+                if (single_3_bullet[i].player_id == 0 && single_3_bulletRect[i].y >= single_controlRect_3.y && single_controlRect_3.y >= single_3_bulletRect[i].y - 8
+                    && single_3_bulletRect[i].x > single_controlRect_3.x - 20 && single_3_bulletRect[i].x < single_controlRect_3.x + 20 ) {
+                        single_scores-= 5;
+                        state = GAME_OVER;
+
+                }
 
                 if (single_3_bulletRect[i].y < 8 || (single_map_3[(single_3_bulletRect[i].y)/40 - 1][round_integer_division(single_3_bulletRect[i].x-80, 40)] != 0 && single_3_bulletRect[i].y % 40 < 15)) {
                     single_3_bullet[i].is_active = 0;
@@ -1116,6 +1171,12 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                         }
                     }
                 }
+                if (single_3_bullet[i].player_id == 0 && single_3_bulletRect[i].y <= single_controlRect_3.y && single_controlRect_3.y <= single_3_bulletRect[i].y + 8
+                && single_3_bulletRect[i].x > single_controlRect_3.x - 20 && single_3_bulletRect[i].x < single_controlRect_3.x + 20 ) {
+                    single_scores-= 5;
+                    state = GAME_OVER;
+                }
+
                 if (single_3_bulletRect[i].y > 440 || (single_map_3[(single_3_bulletRect[i].y)/40 + 2][round_integer_division(single_3_bulletRect[i].x-80, 40)] != 0 && single_3_bulletRect[i].y % 40 > 15)) {
                     single_3_bullet[i].is_active = 0;
                     single_3_bullet[i].player_id = 0;
@@ -1156,6 +1217,12 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                         }
                     }
                 }
+                if (single_3_bullet[i].player_id == 0 && single_3_bulletRect[i].x <= single_controlRect_3.x  && single_controlRect_3.x <= single_3_bulletRect[i].x + 8
+                    && single_3_bulletRect[i].y > single_controlRect_3.y - 20 && single_3_bulletRect[i].y < single_controlRect_3.y + 20 ) {
+                    single_scores-= 5;
+                    state = GAME_OVER;
+                }
+
                 if (single_3_bulletRect[i].x > 520 || (single_map_3[round_integer_division(single_3_bulletRect[i].y,40)][(single_3_bulletRect[i].x-80)/40 + 2] != 0 && single_3_bulletRect[i].x % 40 > 15)) {
                     single_3_bullet[i].is_active = 0;
                     single_3_bullet[i].player_id = 0;
@@ -1195,6 +1262,11 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                             removeNum_3++;
                         }
                     }
+                }
+                if (single_3_bullet[i].player_id == 0 && single_3_bulletRect[i].x >= single_controlRect_3.x  && single_controlRect_3.x >= single_3_bulletRect[i].x - 8
+                    && single_3_bulletRect[i].y > single_controlRect_3.y - 20 && single_3_bulletRect[i].y < single_controlRect_3.y + 20 ) {
+                    single_scores-= 5;
+                    state = GAME_OVER;
                 }
                 if (single_3_bulletRect[i].x < 80 || (single_map_3[round_integer_division(single_3_bulletRect[i].y,40)][(single_3_bulletRect[i].x-80)/40 - 1] != 0 && single_3_bulletRect[i].x % 40 < 15)) {
                     single_3_bullet[i].is_active = 0;
@@ -1823,7 +1895,6 @@ void renderBulletDual_friend(SDL_Renderer *renderer) {
                 }
             
                 if (dual_bulletRect_friend[i].y > 440 || (dual_map_1[(dual_bulletRect_friend[i].y)/40 + 2][round_integer_division(dual_bulletRect_friend[i].x-80, 40)] != 0 && dual_bulletRect_friend[i].y % 40 > 15)) {
-                    printf("come here\n");
                     dual_bullet_friend[i].is_active = 0;
                     dual_bullet_friend[i].player_id = 0;
                 }
@@ -1936,7 +2007,7 @@ void renderBulletDual_friend_positive(SDL_Renderer *renderer) {
                 }
             
                 if (dual_bulletRect_friend[i].y > 440 || (dual_map_1[(dual_bulletRect_friend[i].y)/40 + 2][round_integer_division(dual_bulletRect_friend[i].x-80, 40)] != 0 && dual_bulletRect_friend[i].y % 40 > 15)) {
-                    printf("come here\n");
+
                     dual_bullet_friend[i].is_active = 0;
                     dual_bullet_friend[i].player_id = 0;
                 }

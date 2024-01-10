@@ -143,11 +143,14 @@ int main(){
 
             // // Render the text texture
             SDL_Rect loginBigTextRenderQuad = { 195, 100, loginBigTextSurface->w, loginBigTextSurface->h };
+            SDL_Rect rankingBigTextRenderQuad = { 195, 100, rankingBigTextSurface->w, rankingBigTextSurface->h };
+            SDL_Rect gameOverBigTextRenderQuad = { 150, 250, gameOverBigTextSurface->w, gameOverBigTextSurface->h };
             SDL_Rect roomsBigTextRenderQuad = { 195, 100, roomsBigText->w, roomsBigText->h };
             SDL_Rect usernameRenderQuad = { 120, 200, usernameText->w, usernameText->h };
             SDL_Rect passwordRenderQuad = { 120, 250, passwordText->w, passwordText->h };
             SDL_Rect retypePasswordRenderQuad = { 120, 300, retypePasswordText->w, retypePasswordText->h };
             SDL_Rect chooseModeRenderQuad = { 50, 100, chooseModeText->w, chooseModeText->h };
+            SDL_Rect rankingRenderQuad = { 600, 450, 80, 80};
             SDL_Rect singleModeRenderQuad = { 250, 250, singleModeText->w, singleModeText->h };
             SDL_Rect dualModeRenderQuad = { 250, 300, dualModeText->w, dualModeText->h };
             SDL_Rect tankRectChooseMode = {200, 242, TANK_WIDTH, TANK_HEIGHT};
@@ -167,10 +170,6 @@ int main(){
             initValueForDual_friend();
 
             while( quit == false ){
-                    // for (int i = 0; i < 30; i ++) {
-                    //     printf("%d-%d ", dual_bullet[i].is_active, dual_bullet[i].player_id);
-                    // }
-                    // printf("\n");
                     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 25);  // Black background
                     SDL_RenderClear(renderer);
 
@@ -285,11 +284,18 @@ int main(){
 // //-------------------------------------------------------------------------------------------------------------------------------------------
                 else if (state == CHOOSE_MODE) {
                     SDL_RenderCopy(renderer, chooseModeTextTexture, NULL, &chooseModeRenderQuad);
+                    SDL_RenderCopy(renderer, rankingTexture, NULL, &rankingRenderQuad);
                     SDL_RenderCopy(renderer, singleModeTextTexture, NULL, &singleModeRenderQuad);
                     SDL_RenderCopy(renderer, dualModeTextTexture, NULL, &dualModeRenderQuad);
                     SDL_RenderCopy(renderer, tank, NULL, &tankRectChooseMode);
 
                     if (scoreUpdated == 0) {
+                        initValueForSingle1();
+                        initValueForSingle2();
+                        initValueForSingle3();
+
+                        initValueForDual();
+                        initValueForDual_friend();
                         char updateScoreMessage[BUFF_SIZE];
                         strcpy(updateScoreMessage, createUpdateScoreMessage(myId, single_scores));
 
@@ -320,6 +326,7 @@ int main(){
                 SDL_Texture *scoreNumTextTexture = SDL_CreateTextureFromSurface(renderer, scoreNumTextSurface);
                 SDL_Rect scoreNumTextRenderQuad = { 610, 290, scoreNumTextSurface->w, scoreNumTextSurface->h };
                 SDL_RenderCopy(renderer, scoreNumTextTexture, NULL, &scoreNumTextRenderQuad);
+
             } else if (state == CHANGING_TO_SINGLE_MAP_2) {
                 SDL_RenderClear(renderer);
                 renderChangeMapScreen(renderer, 2);
@@ -484,6 +491,16 @@ int main(){
                     SDL_Rect startRenderQuad = {245, 300, 140, 100};
 
                     SDL_RenderCopy(renderer, startTexture, NULL, &startRenderQuad);
+            } else if (state == SEEING_RANK) {
+                SDL_RenderClear(renderer);
+
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                SDL_RenderCopy(renderer, rankingBigTextTexture, NULL, &rankingBigTextRenderQuad);
+            } else if (state == GAME_OVER) {
+                SDL_RenderClear(renderer);
+
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                SDL_RenderCopy(renderer, gameoverBigTextTexture, NULL, &gameOverBigTextRenderQuad);
             }
 
             SDL_RenderPresent(renderer);
@@ -768,6 +785,13 @@ int main(){
                                             break;
                                     }
                                 break;
+                                case GAME_OVER:
+                                    switch (e.key.keysym.sym) {
+                                        case SDLK_RETURN:
+                                            state = CHOOSE_MODE;
+                                        break;
+                                    }
+                                break;
                         }
                     }
                 
@@ -869,14 +893,6 @@ int main(){
 
                                 isFirstUserInRoom = 1;
 
-                                // dual_mode_position_x = 4;
-                                // dual_mode_position_y = 11;
-
-                                // dual_mode_position_x_friend = 8;
-                                // dual_mode_position_y_friend = 11;
-                                // vertical_controller_friend = 88;
-                                // hozirontal_controller_friend = 64;
-
                                 if (pthread_create(&tid, NULL, receiveThread, (void*)&client_sock) != 0) {
                                     perror("Error creating thread");
                                     return 1;
@@ -890,16 +906,6 @@ int main(){
                             int row = (mouseY - 200) /100;
                             int col = (mouseX - 100) / 120;
 
-                            // dual_mode_position_x = 8;
-                            // dual_mode_position_y = 11;
-                            // vertical_controller = 88;
-                            // hozirontal_controller = 64;
-
-                            // dual_mode_position_x_friend = 4;
-                            // dual_mode_position_y_friend = 11;
-                            // vertical_controller_friend = 88;
-                            // hozirontal_controller_friend = 32;
-                                
                             if (mouseX > 100 && mouseY > 200) {
                                 in_room_id = 1 + row*4 + col;
                                 
@@ -933,8 +939,14 @@ int main(){
                                 }
                             }
                         }
-                    } 
-                    else if (state == READY_TO_PLAY_DUAL) {
+                    } else if (state == CHOOSE_MODE) {
+                            SDL_GetMouseState(&mouseX, &mouseY);
+
+                            if (mouseX > 600 && mouseX < 680 && mouseY > 450 && mouseY < 530 ) {
+                                state = SEEING_RANK;
+                            }
+
+                    }else if (state == READY_TO_PLAY_DUAL) {
                             SDL_GetMouseState(&mouseX, &mouseY);
 
                             if (mouseX > 245 && mouseX < 385 && mouseY > 300 && mouseY < 400) {

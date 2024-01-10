@@ -27,6 +27,7 @@ enum AppState {
     SELECT_DUAL_MAPS,
     PLAY_DUAL_GAME,
     SEEING_RANK,
+    GAME_OVER,
 };
 
 enum AppState state = MAIN_MENU; // Start in the main menu state
