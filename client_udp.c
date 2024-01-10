@@ -939,7 +939,9 @@ int main(){
 
                                         buff[bytes_received] = '\0';
 
-                                        if (strcmp(buff, "ok") == 0) {
+                                        friendId = atoi(buff);
+                                        
+                                        if (strlen(buff) > 0) {
                                             state = READY_TO_PLAY_DUAL;
 
                                             if (pthread_create(&pid, NULL, receiveThread1, (void*)&client_sock) != 0) {
@@ -983,7 +985,7 @@ int main(){
 
                                 bytes_sent = send(client_sock, startDualGameMessage, strlen(startDualGameMessage), 0);
                             }
-                        } else if (state = WAITING_OTHER) {
+                        } else if (state == WAITING_OTHER) {
                             SDL_GetMouseState(&mouseX, &mouseY);
 
                             if (mouseX > 30 && mouseX < 70 && mouseY > 100 && mouseY < 140) {
