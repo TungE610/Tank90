@@ -21,10 +21,13 @@ enum AppState {
     PLAY_SINGLE_MAP_3,
     CHANGING_TO_SINGLE_MAP_4,
     PLAY_SINGLE_MAP_4,
-    PLAY_DUAL_GAME,
     CHOOSE_ROOM,
-    IN_ROOM,
     WAITING_OTHER,
+    READY_TO_PLAY_DUAL,
+    SELECT_DUAL_MAPS,
+    PLAY_DUAL_GAME,
+    SEEING_RANK,
+    GAME_OVER,
 };
 
 enum AppState state = MAIN_MENU; // Start in the main menu state

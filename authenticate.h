@@ -10,6 +10,7 @@ typedef struct
 	int status;
 	int logged;
 	int id;
+	int score;
 } ListElementType;
 #define BUFF_SIZE 1024
 #include "linkedlist.h"
@@ -24,6 +25,7 @@ void signin(singleLinkedList *list, char *signedInUser);
 void signout(singleLinkedList *list, char *signedInUser);
 void searchUser(singleLinkedList *list);
 int accountNum(singleLinkedList *list);
+void updateScore(singleLinkedList *list, int id, int score);
 /*
 	readDatatoList: read data from file to list
 */
@@ -38,7 +40,7 @@ void readDatatoList(singleLinkedList *list) {
         return;
     }
 
-    while (fscanf(fp, "%s %s %d %d %d", element.username, element.password, &element.status, &element.logged, &element.id) == 5) {
+    while (fscanf(fp, "%s %s %d %d %d %d", element.username, element.password, &element.status, &element.logged, &element.id, &element.score) == 6) {
         insertEnd(list, element);
     }
 
@@ -156,7 +158,7 @@ void appendAccountToFile(char username[], char password[], int id) {
 	char hashedPassword[SHA256_DIGEST_LENGTH * 2 + 1];
     hashPassword(password, hashedPassword);
 
-	fprintf(fp, "\n%s %s 1 0 %d", username, hashedPassword, id); 					// new user's state is active
+	fprintf(fp, "\n%s %s 1 0 %d 0", username, hashedPassword, id); 					// new user's state is active
 
 	fclose(fp); 													// close file
 }
@@ -178,6 +180,22 @@ void blockUser(singleLinkedList *list, char username[]) {
 
 	rewriteFile(list);												//rewrite file to update active state
 	printf("Account %s is blocked", username);
+}
+
+void updateScore(singleLinkedList *list, int id, int score){
+	list->cur = list->root;
+
+	while (list->cur != NULL) {										//traverse till find out user which has username matching
+
+		if (list->cur->element.id == id) {
+			list->cur->element.score = score;
+			break;
+		}
+
+		list->cur = list->cur->next;
+	}
+
+	rewriteFile(list);												//rewrite file to update active state
 }
 
 void userIsLoggin(singleLinkedList *list, char username[]) {
@@ -229,7 +247,7 @@ void rewriteFile(singleLinkedList *list) {
 	}
 
 	while (list->cur != NULL) {									// traverse till end to rewrite
-		fprintf(fp, "%s %s %d %d %d \n", list->cur->element.username, list->cur->element.password, list->cur->element.status, list->cur->element.logged, list->cur->element.id);
+		fprintf(fp, "%s %s %d %d %d %d\n", list->cur->element.username, list->cur->element.password, list->cur->element.status, list->cur->element.logged, list->cur->element.id, list->cur->element.score);
 		list->cur = list->cur->next;
 	}
 

@@ -87,7 +87,7 @@ int round_integer_division(int numerator, int denominator) {
     return round(result); // Sử dụng hàm round để làm tròn
 }
 
-// Xu ly khi nhan vao icon
+
 int isMouseClickOnTexture(int mouseX, int mouseY, SDL_Texture *texture, SDL_Rect renderQuad) {
     int texW, texH;
     SDL_QueryTexture(texture, NULL, NULL, &texW, &texH);
@@ -95,25 +95,9 @@ int isMouseClickOnTexture(int mouseX, int mouseY, SDL_Texture *texture, SDL_Rect
     return (mouseX >= renderQuad.x && mouseX <= renderQuad.x + texW && mouseY >= renderQuad.y && mouseY <= renderQuad.y + texH);
 }
 
+int compare_scores(const void *a, const void *b) {
+    return (*(node**)b)->element.score - (*(node**)a)->element.score;
+}
 
 
-// char* generate_star_string(int n) {
-//     if (n <= 0) {
-//         return NULL;
-//     }
-
-//     char* result = (char*)malloc(n + 1);  // +1 for the null terminator
-//     if (result == NULL) {
-//         fprintf(stderr, "Memory allocation failed\n");
-//         exit(1);
-//     }
-
-//     result[0] = ' ';
-//     for (int i = 1; i < n; i++) {
-//         result[0] = 'L';
-//     }
-//     result[n] = '\0';  // Null-terminate the string
-
-//     return result;
-// }
 #endif

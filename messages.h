@@ -92,11 +92,11 @@ char *createCreateRoomMessage(int id) {
 char *createChooseRoomMessage() {
     unsigned char *message = (unsigned char *)malloc(1);
 
-    // Construct the message
     message[0] = 0x04;
 
     return message;
 }
+
 char* createRoomStateMessage(int id, int state, int first_player_id, int second_player_id) {
     // Calculate the length of the message string based on state
     int len;
@@ -170,7 +170,7 @@ char* createDirectionMessage(int roomId, int playerId, int direction) {
     return result;
 }
 
-char *createBulletDirectionMessage(int roomId, int playerId, int direction) {
+char *createDualShotMessage(int roomId, int playerId, int direction) {
     char message[64]; // Assuming a maximum length for the message
     
     // Format the message string
@@ -185,8 +185,8 @@ char *createBulletDirectionMessage(int roomId, int playerId, int direction) {
     return result;
 }
 
-int extractBulletDirectionMessage(const char* message, int *roomId, int *playerId, int *direction) {
-    if (message[0] != 0x08) {
+int extractDualShotMessage(const char* message, int *roomId, int *playerId, int *direction) {
+    if (message[0] != 0x09) {
         return 0; // Invalid message format
     }
 
@@ -199,7 +199,7 @@ int extractBulletDirectionMessage(const char* message, int *roomId, int *playerI
 }
 
 int extractDirectionMessage(const char* message, int *roomId, int *playerId, int *direction) {
-    if (message[0] != 0x06) {
+    if (message[0] != 0x07) {
         return 0; // Invalid message format
     }
 
@@ -212,7 +212,7 @@ int extractDirectionMessage(const char* message, int *roomId, int *playerId, int
 }
 
 int extractStartGameMessage(const char* message) {
-    if (message == NULL || message[0] != 0x05) {
+    if (message == NULL || message[0] != 0x06) {
         // Invalid message or message format
         return -1; // You can return a specific error code or value to indicate failure.
     }
@@ -225,7 +225,7 @@ int extractStartGameMessage(const char* message) {
 
 int extractJoinRoomMessage(const char* message, int* playerId, int* roomId) {
     // Check if the message starts with the expected format
-    if (message[0] != 0x04) {
+    if (message[0] != 0x05) {
         return 0; // Invalid message format
     }
 
@@ -236,6 +236,117 @@ int extractJoinRoomMessage(const char* message, int* playerId, int* roomId) {
 
     return 1; // Extraction successful
 }
+
+char *createReadyToStartMessage(int friendId) {
+    char message[64]; // Assuming a maximum length for the message
+    
+    // Format the message string
+    snprintf(message, sizeof(message), "%c%d", 0x0a, friendId);
+
+    // Allocate memory for the string and copy the formatted message
+    char* result = (char*)malloc(strlen(message) + 1); // +1 for the null terminator
+    if (result != NULL) {
+        strcpy(result, message);
+    }
+
+    return result;
+}
+
+int extractReadyToStartMessage(const char* message, int* friendId) {
+    // Check if the message starts with the expected format
+    if (message[0] != 0x0a) {
+        return 0; // Invalid message format
+    }
+
+    // Use sscanf to parse the player and room IDs
+    if (sscanf(message + 1, "%d", friendId) != 2) {
+        return 0; // Parsing failed
+    }
+
+    return 1; // Extraction successful
+}
+
+char *createNotifyStartMessage() {
+    unsigned char *message = (unsigned char *)malloc(1);
+
+    message[0] = 0x0b;
+
+    return message;
+}
+
+char *createUpdateScoreMessage(int id, int score) {
+    char message[64]; // Assuming a maximum length for the message
+    
+    // Format the message string
+    snprintf(message, sizeof(message), "%c%d*%d", 0x0d, id, score);
+
+    // Allocate memory for the string and copy the formatted message
+    char* result = (char*)malloc(strlen(message) + 1); // +1 for the null terminator
+    if (result != NULL) {
+        strcpy(result, message);
+    }
+
+    return result;
+}
+
+int extractUpdateScoreMessage(const char* message, int* id, int* score) {
+    // Check if the message starts with the expected format
+    if (message[0] != 0x0d) {
+        return 0; // Invalid message format
+    }
+
+    // Use sscanf to parse the player and room IDs
+    if (sscanf(message + 1, "%d*%d", id, score) != 2) {
+        return 0; // Parsing failed
+    }
+
+    return 1; // Extraction successful
+}
+
+char* createScoreMessage(char username[], int score, int rank) {
+    char message[64]; // Assuming a maximum length for the message
+    
+    // Format the message string
+    snprintf(message, sizeof(message), "%c%s*%d*%d", 0x0f, username, score, rank);
+
+    // Allocate memory for the string and copy the formatted message
+    char* result = (char*)malloc(strlen(message) + 1); // +1 for the null terminator
+    if (result != NULL) {
+        strcpy(result, message);
+    }
+
+    return result;
+}
+
+// char* createLeaveRoomMessage(char username[], int score, int rank) {
+//     char message[64]; // Assuming a maximum length for the message
+    
+//     // Format the message string
+//     snprintf(message, sizeof(message), "%c%s*%d*%d", 0x0f, username, score, rank);
+
+//     // Allocate memory for the string and copy the formatted message
+//     char* result = (char*)malloc(strlen(message) + 1); // +1 for the null terminator
+//     if (result != NULL) {
+//         strcpy(result, message);
+//     }
+
+//     return result;
+// }
+
+int extractScoreMessage(const char* message, char* username, int* score, int *rank) {
+    // Check if the message starts with the expected format
+    if (message[0] != 0x0f) {
+        return 0; // Invalid message format
+    }
+
+    // Use sscanf to parse the ID, username, and score
+    if (sscanf(message + 1, "%s*%d*%d", username, score, rank) != 3) {
+        return 0; // Parsing failed
+    }
+
+    return 1; // Extraction successful
+}
+
 
 
 #endif
