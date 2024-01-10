@@ -288,9 +288,17 @@ int main(){
                     SDL_RenderCopy(renderer, singleModeTextTexture, NULL, &singleModeRenderQuad);
                     SDL_RenderCopy(renderer, dualModeTextTexture, NULL, &dualModeRenderQuad);
                     SDL_RenderCopy(renderer, tank, NULL, &tankRectChooseMode);
+
+                    if (scoreUpdated == 0) {
+                        char updateScoreMessage[BUFF_SIZE];
+                        strcpy(updateScoreMessage, createUpdateScoreMessage(myId, single_scores));
+
+                        bytes_sent = send(client_sock, updateScoreMessage, strlen(updateScoreMessage), 0);
+                        scoreUpdated = 1;
+                    }
                 }
                 else if (state == PLAY_SINGLE_MAP_1) {
-
+                scoreUpdated = 0;
                 SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
                 SDL_RenderClear(renderer);
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -394,6 +402,7 @@ int main(){
                 }
             } 
             else if (state == PLAY_DUAL_GAME) {
+                scoreUpdated = 0;
                 // renderDualModeGame(renderer, myTank, friendTank, bulletTexture);
                 SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
                 SDL_RenderClear(renderer);
@@ -797,7 +806,12 @@ int main(){
                                     strcpy(login_message, "username or password incorrect");
                                 } else {
                                    state = CHOOSE_MODE;
-                                   myId = atoi(buff);
+                                   int id, score;
+
+                                   sscanf(buff, "%d*%d", &id, &score);
+
+                                   myId = id;
+                                   single_scores = score;
                                 }
                             }
                         }

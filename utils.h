@@ -87,6 +87,9 @@ int round_integer_division(int numerator, int denominator) {
     return round(result); // Sử dụng hàm round để làm tròn
 }
 
+void saveScoreToFile() {
+    
+}
 
 
 // char* generate_star_string(int n) {

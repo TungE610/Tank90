@@ -24,6 +24,7 @@ void signin(singleLinkedList *list, char *signedInUser);
 void signout(singleLinkedList *list, char *signedInUser);
 void searchUser(singleLinkedList *list);
 int accountNum(singleLinkedList *list);
+void updateScore(singleLinkedList *list, int id, int score);
 /*
 	readDatatoList: read data from file to list
 */
@@ -149,6 +150,22 @@ void blockUser(singleLinkedList *list, char username[]) {
 
 	rewriteFile(list);												//rewrite file to update active state
 	printf("Account %s is blocked", username);
+}
+
+void updateScore(singleLinkedList *list, int id, int score){
+	list->cur = list->root;
+
+	while (list->cur != NULL) {										//traverse till find out user which has username matching
+
+		if (list->cur->element.id == id) {
+			list->cur->element.score = score;
+			break;
+		}
+
+		list->cur = list->cur->next;
+	}
+
+	rewriteFile(list);												//rewrite file to update active state
 }
 
 void userIsLoggin(singleLinkedList *list, char username[]) {
