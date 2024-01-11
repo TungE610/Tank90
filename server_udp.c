@@ -78,6 +78,7 @@ void *handleClient(void *arg) {
             buff[bytes_received] = '\0';
 
             if (buff[0] == 0x01) {
+                //printf("%s",buff);
                 login(player->list, buff, player->socket, player->id);
 
             } else if (buff[0] == 0x02) {
@@ -88,7 +89,7 @@ void *handleClient(void *arg) {
                     count ++;
                     root = root->next;
                 }
-                
+                //printf("%s",buff);
                 registerPlayer(player->list, buff, player->socket,  count + 1);
 
             } else if (buff[0] == 0x03) {
@@ -389,6 +390,7 @@ int main() {
     int *client_sock;
     singleLinkedList *list = createSingleList();
     readDatatoList(list);
+    logoutUser(list);
     pthread_mutex_init(&room_nums_mutex, NULL);
 
     // Create an array to store thread IDs for each client
@@ -478,6 +480,7 @@ void login(singleLinkedList* list,char  message[], int socket, int id){
 
             if (strcmp(foundPlayer->element.password, hashedInput)==0) {
                 bytes_sent = send(socket, sid, strlen(sid), 0);
+                userIsLoggin(list,extractedUsername);
             } else {
                 bytes_sent = send(socket, "invalid", strlen("invalid"), 0);
             }
