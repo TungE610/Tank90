@@ -145,6 +145,8 @@ int main(){
             SDL_Rect loginBigTextRenderQuad = { 195, 100, loginBigTextSurface->w, loginBigTextSurface->h };
             SDL_Rect rankingBigTextRenderQuad = { 195, 100, rankingBigTextSurface->w, rankingBigTextSurface->h };
             SDL_Rect gameOverBigTextRenderQuad = { 150, 250, gameOverBigTextSurface->w, gameOverBigTextSurface->h };
+            SDL_Rect wonOverBigTextRenderQuad = { 240, 250, wonBigTextSurface->w, wonBigTextSurface->h };\
+            SDL_Rect pauseTextRenderQuad = {300, 300, pauseTextSurface->w, pauseTextSurface->h};
             SDL_Rect roomsBigTextRenderQuad = { 195, 100, roomsBigText->w, roomsBigText->h };
             SDL_Rect usernameRenderQuad = { 120, 200, usernameText->w, usernameText->h };
             SDL_Rect passwordRenderQuad = { 120, 250, passwordText->w, passwordText->h };
@@ -370,8 +372,10 @@ int main(){
                 }
                 else if (state == PLAY_SINGLE_MAP_1) {
                 scoreUpdated = 0;
+
                 SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
                 SDL_RenderClear(renderer);
+
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
                 renderSingle(renderer, single_map_1, 1);
@@ -502,6 +506,10 @@ int main(){
                 SDL_Rect scoreNumTextRenderQuad = { 610, 290, scoreNumTextSurface->w, scoreNumTextSurface->h };
                 SDL_RenderCopy(renderer, scoreNumTextTexture, NULL, &scoreNumTextRenderQuad);
 
+                if (dual_game_pause == 1 || dual_game_paused == 1) {
+                    SDL_RenderCopy(renderer, pauseTextTexture, NULL, &pauseTextRenderQuad);
+                }
+
             } 
             else if (state == WAITING_OTHER) {
                 SDL_RenderClear(renderer);
@@ -580,6 +588,12 @@ int main(){
 
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                 SDL_RenderCopy(renderer, gameoverBigTextTexture, NULL, &gameOverBigTextRenderQuad);
+
+            } else if (state == WON) {
+                SDL_RenderClear(renderer);
+
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                SDL_RenderCopy(renderer, wonBigTextTexture, NULL, &wonOverBigTextRenderQuad);
             }
 
             SDL_RenderPresent(renderer);
@@ -697,7 +711,12 @@ int main(){
                                         moveLeft(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &single_controlRect, 8 , 5, single_map_1);
                                         myTank = meLeft;
                                         break;
-                                    case SDLK_SPACE:
+                                    case SDLK_RCTRL:
+                                        if (single_game_1_pause == 0) {
+                                            single_game_1_pause = 1;
+                                        } else {
+                                            single_game_1_pause = 0;
+                                        }
                                         break;
                                     case SDLK_RETURN:
                                         singleShot(myTank, single_controlRect, meUp, meDown, meRight, meLeft, 1);
@@ -732,7 +751,12 @@ int main(){
                                         case SDLK_RETURN:
                                             singleShot2(myTank, single_controlRect_2, meUp, meDown, meRight, meLeft, 1);
                                             break;
-                                        case SDLK_SPACE:
+                                        case SDLK_RCTRL:
+                                            if (single_game_2_pause == 0) {
+                                                single_game_2_pause = 1;
+                                            } else {
+                                                single_game_2_pause = 0;
+                                            }
                                             break;
                                     }
                                 break;
@@ -764,107 +788,151 @@ int main(){
                                         case SDLK_RETURN:
                                             singleShot3(myTank, single_controlRect_3, meUp, meDown, meRight, meLeft, 1);
                                             break;
-                                        case SDLK_SPACE:
+                                        case SDLK_RCTRL:
+                                            if (single_game_3_pause == 0) {
+                                                single_game_3_pause = 1;
+                                            } else {
+                                                single_game_3_pause = 0;
+                                            }
                                             break;
                                     }
                                 break;
                                 case PLAY_DUAL_GAME:
-                                    switch (e.key.keysym.sym) {
-                                        case SDLK_DOWN:
-                //                             positive = 1;
-                                            if (isFirstUserInRoom == 1) {
-                                                dualMoveDown(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
-                                                myTank = meDown;
-                                            } else {
-                                                dualMoveDown(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
-                                                friendTank = friendDown;
-                                            }
 
-                                            char directionMessage[BUFF_SIZE];
+                                        switch (e.key.keysym.sym) {
+                                            case SDLK_DOWN:
+                                                if (dual_game_pause == 0 && dual_game_paused == 0) {
+                                                    if (isFirstUserInRoom == 1) {
+                                                        dualMoveDown(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
+                                                        myTank = meDown;
+                                                    } else {
+                                                        dualMoveDown(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
+                                                        friendTank = friendDown;
+                                                    }
 
-                                            strcpy(directionMessage, createDirectionMessage(in_room_id, myId, DOWN));
-                                            
-                                            bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
-                                        break;
-                                        case SDLK_UP:
-                //                             positive = 1;
-                                            if (isFirstUserInRoom == 1) {
-                                                dualMoveUp(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
-                                                myTank = meUp;
-                                            } else {
-                                                dualMoveUp(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
-                                                friendTank = friendUp;
-                                            }
+                                                    char directionMessage[BUFF_SIZE];
 
-                                            strcpy(directionMessage, createDirectionMessage(in_room_id, myId, UP));
-                                            
-                                            bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
-                                        break;
-                                        case SDLK_RIGHT:
-                                            if (isFirstUserInRoom == 1) {
-                                                dualMoveRight(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
-                                                myTank = meRight;
-                                            } else {
-                                                dualMoveRight(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
-                                                friendTank = friendRight;
-                                            }
-                                            
-                                            strcpy(directionMessage, createDirectionMessage(in_room_id, myId, RIGHT));
-                                            
-                                            bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
-                                        break;
-                                        case SDLK_LEFT:
-                                            if (isFirstUserInRoom == 1) {
-                                                dualMoveLeft(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
-                                                myTank = meLeft;
-                                            } else {
-                                                dualMoveLeft(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
-                                                friendTank = friendLeft;
-                                            }
-                                           
-                                            strcpy(directionMessage, createDirectionMessage(in_room_id, myId, LEFT));
-                                            
-                                            bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
-
-                                        break;
-                //                     case SDLK_RETURN:
-                //                         break;
-                                        case SDLK_RETURN:
-                                            if (isFirstUserInRoom == 1) {
-                                                dualShot(myTank, dual_controlRect, meUp, meDown, meRight, meLeft, 1);
-
-                                                char dualShotMessage[BUFF_SIZE];
-                                                if (myTank == meUp) {
-                                                    strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, UP));
-                                                } else if (myTank == meDown) {
-                                                    strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, DOWN));
-                                                } else if (myTank == meRight) {
-                                                    strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, RIGHT));
-                                                } else {
-                                                    strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, LEFT));
+                                                    strcpy(directionMessage, createDirectionMessage(in_room_id, myId, DOWN));
+                                                    
+                                                    bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
                                                 }
-                                                bytes_sent = send(client_sock, dualShotMessage, strlen(dualShotMessage), 0);
+                                            break;
+                                            case SDLK_UP:
+                                            
+                                                if (dual_game_pause == 0 && dual_game_paused == 0) {
+                                            
+                                                    if (isFirstUserInRoom == 1) {
+                                                        dualMoveUp(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
+                                                        myTank = meUp;
+                                                    } else {
+                                                        dualMoveUp(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
+                                                        friendTank = friendUp;
+                                                    }
+
+                                                    char directionMessage[BUFF_SIZE];
+
+                                                    strcpy(directionMessage, createDirectionMessage(in_room_id, myId, UP));
+                                                    
+                                                    bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
+                                                }
+                                            break;
+                                            case SDLK_RIGHT:
+                                                if (dual_game_pause == 0 && dual_game_paused == 0) {
+
+                                                    if (isFirstUserInRoom == 1) {
+                                                        dualMoveRight(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
+                                                        myTank = meRight;
+                                                    } else {
+                                                        dualMoveRight(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
+                                                        friendTank = friendRight;
+                                                    }
+                                                    char directionMessage[BUFF_SIZE];
+
+                                                    strcpy(directionMessage, createDirectionMessage(in_room_id, myId, RIGHT));
+                                                    
+                                                    bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
+                                                }
+                                            break;
+                                            case SDLK_LEFT:
+                                                if (dual_game_pause == 0 && dual_game_paused == 0) {
+
+                                                    if (isFirstUserInRoom == 1) {
+                                                        dualMoveLeft(&dual_control_hozirontal_controller, &dual_control_vertical_controller, &dual_mode_position_x, &dual_mode_position_y, &dual_controlRect, 8, 5, dual_map_1);
+                                                        myTank = meLeft;
+                                                    } else {
+                                                        dualMoveLeft(&dual_control_hozirontal_controller_friend, &dual_control_vertical_controller_friend, &dual_mode_position_x_friend, &dual_mode_position_y_friend, &dual_friendRect, 8, 5, dual_map_1);
+                                                        friendTank = friendLeft;
+                                                    }
+                                                    char directionMessage[BUFF_SIZE];
                                                 
-                                            } else {
-                                                dualShotFriend(friendTank, dual_friendRect, friendUp, friendDown, friendRight, friendLeft, 1);
-                                            
-                                            char dualShotMessage[BUFF_SIZE];
-                                                if (friendTank == friendUp) {
-                                                    strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, UP));
-                                                } else if (friendTank == friendDown) {
-                                                    strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, DOWN));
-                                                } else if (friendTank == friendRight) {
-                                                    strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, RIGHT));
-                                                } else {
-                                                    strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, LEFT));
+                                                    strcpy(directionMessage, createDirectionMessage(in_room_id, myId, LEFT));
+                                                    
+                                                    bytes_sent = send(client_sock, directionMessage, strlen(directionMessage), 0);
                                                 }
-                                                 bytes_sent = send(client_sock, dualShotMessage, strlen(dualShotMessage), 0);
-                                            }
 
                                             break;
-                                    }
+                                            case SDLK_RETURN:
+                                                if (dual_game_pause == 0 && dual_game_paused == 0) {
+                                                    if (isFirstUserInRoom == 1) {
+                                                        dualShot(myTank, dual_controlRect, meUp, meDown, meRight, meLeft, 1);
+        
+                                                        char dualShotMessage[BUFF_SIZE];
+                                                        if (myTank == meUp) {
+                                                            strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, UP));
+                                                        } else if (myTank == meDown) {
+                                                            strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, DOWN));
+                                                        } else if (myTank == meRight) {
+                                                            strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, RIGHT));
+                                                        } else {
+                                                            strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, LEFT));
+                                                        }
+                                                        bytes_sent = send(client_sock, dualShotMessage, strlen(dualShotMessage), 0);
+                                                        
+                                                    } else {
+                                                        dualShotFriend(friendTank, dual_friendRect, friendUp, friendDown, friendRight, friendLeft, 1);
+                                                    
+                                                        char dualShotMessage[BUFF_SIZE];
+                                                        if (friendTank == friendUp) {
+                                                            strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, UP));
+                                                        } else if (friendTank == friendDown) {
+                                                            strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, DOWN));
+                                                        } else if (friendTank == friendRight) {
+                                                            strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, RIGHT));
+                                                        } else {
+                                                            strcpy(dualShotMessage, createDualShotMessage(in_room_id, myId, LEFT));
+                                                        }
+                                                        bytes_sent = send(client_sock, dualShotMessage, strlen(dualShotMessage), 0);
+                                                    }
+                                                }
+
+                                                break;
+                                            case SDLK_RCTRL:
+
+                                                if (dual_game_paused == 0) {
+                                                    if (dual_game_pause == 0) {
+                                                        dual_game_pause = 1;
+                                                    } else {
+                                                        dual_game_pause = 0;
+                                                    }
+
+                                                    char pauseGameMessage[BUFF_SIZE];
+
+                                                    strcpy(pauseGameMessage, createPauseMessage(in_room_id, myId));
+
+                                                    bytes_sent = send(client_sock, pauseGameMessage, strlen(pauseGameMessage), 0);
+                                                }
+                                            break;
+                                        }
+                                    
                                 break;
                                 case GAME_OVER:
+                                    switch (e.key.keysym.sym) {
+                                        case SDLK_RETURN:
+                                            state = CHOOSE_MODE;
+                                        break;
+                                    }
+                                break;
+                                case WON:
                                     switch (e.key.keysym.sym) {
                                         case SDLK_RETURN:
                                             state = CHOOSE_MODE;
@@ -1243,6 +1311,12 @@ void* receiveThread(void* arg) {
 
             strcpy(topPlayer[rank-1].username, username);
             topPlayer[rank-1].score = score;
+        } else if (buff[0] == 0x11) {
+            if (dual_game_paused == 0) {
+                dual_game_paused = 1;
+            } else {
+                dual_game_paused = 0;
+            }
         }
     }
 
@@ -1304,7 +1378,13 @@ void* receiveThread1(void* arg) {
             }
         } else if (buff[0] == 0x0c) {
             dualShot_positive(myTank, dual_controlRect, meUp, meDown, meRight, meLeft, 1);
-        }   
+        } else if (buff[0] == 0x11) {
+            if (dual_game_pause == 0) {
+                dual_game_pause = 1;
+            } else {
+                dual_game_pause = 0;
+            }
+        }
     }
 
     pthread_exit(NULL);
