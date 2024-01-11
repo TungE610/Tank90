@@ -386,76 +386,81 @@ void renderSingle1Enermies(SDL_Renderer *renderer, Enermy single_enermies[]) {
                 single_1_direction[i] = single_1_previousDirection[i];
                 single_1_consecutive_count[i]++;
             } else {
-                do {
-                    single_1_direction[i] = rand() % 4;
-                } while (single_1_direction[i] == single_1_previousDirection[i]);
 
-                single_1_consecutive_count[i] = 0; // Reset consecutive_count
-                if ( i == 1) {
-                    singleShot(single_1_enermyTexture[i], single_1_enermy_react[i], enermy_1_up, enermy_1_down, enermy_1_right, enermy_1_left, 0);
-                } else if (i == 2) {
-                    singleShot(single_1_enermyTexture[i], single_1_enermy_react[i], enermy_2_up, enermy_2_down, enermy_2_right, enermy_2_left, 0);
-                } else if (i == 3) {
-                    singleShot(single_1_enermyTexture[i], single_1_enermy_react[i], enermy_3_up, enermy_3_down, enermy_3_right, enermy_3_left, 0);
-                } else {
-                    singleShot(single_1_enermyTexture[i], single_1_enermy_react[i], enermy_4_up, enermy_4_down, enermy_4_right, enermy_4_left, 0);
+                if (single_game_1_pause == 0) {
+                    do {
+                        single_1_direction[i] = rand() % 4;
+                    } while (single_1_direction[i] == single_1_previousDirection[i]);
+
+                    single_1_consecutive_count[i] = 0; // Reset consecutive_count
+                    if ( i == 1) {
+                        singleShot(single_1_enermyTexture[i], single_1_enermy_react[i], enermy_1_up, enermy_1_down, enermy_1_right, enermy_1_left, 0);
+                    } else if (i == 2) {
+                        singleShot(single_1_enermyTexture[i], single_1_enermy_react[i], enermy_2_up, enermy_2_down, enermy_2_right, enermy_2_left, 0);
+                    } else if (i == 3) {
+                        singleShot(single_1_enermyTexture[i], single_1_enermy_react[i], enermy_3_up, enermy_3_down, enermy_3_right, enermy_3_left, 0);
+                    } else {
+                        singleShot(single_1_enermyTexture[i], single_1_enermy_react[i], enermy_4_up, enermy_4_down, enermy_4_right, enermy_4_left, 0);
+                    }
                 }
             }
 
             single_1_previousDirection[i] = single_1_direction[i];
-        //                             // Update the enermyRect based on the chosen direction
-            switch (single_1_direction[i]) {
-                case 0:    
-                    moveDown(&single_1_enermy_hozirontal_controller[i], &single_1_enermy_vertical_controller[i], &single_1_mode_enermy_postion_x[i], &single_1_mode_enermy_postion_y[i] , &single_1_enermy_react[i], 40, 1, single_map_1);
-                    if ( i == 1) {
-                        single_1_enermyTexture[i] = enermy_1_down;
-                    } else if ( i == 2) {
-                        single_1_enermyTexture[i] = enermy_2_down;
-                    } else if ( i == 3) {
-                        single_1_enermyTexture[i] = enermy_3_down;
-                    } else {
-                        single_1_enermyTexture[i] = enermy_4_down;
-                    }
-                    break;
-                case 1: // Move down
-                    moveUp(&single_1_enermy_hozirontal_controller[i], &single_1_enermy_vertical_controller[i], &single_1_mode_enermy_postion_x[i], &single_1_mode_enermy_postion_y[i], &single_1_enermy_react[i], 40, 1, single_map_1);
-                    if ( i == 1) {
-                        single_1_enermyTexture[i] = enermy_1_up;
-                    } else if ( i == 2) {
-                        single_1_enermyTexture[i] = enermy_2_up;
-                    } else if ( i == 3) {
-                        single_1_enermyTexture[i] = enermy_3_up;
-                    } else {
-                        single_1_enermyTexture[i] = enermy_4_up;
-                    }
-                    break;
-                case 2: // Move left
-                    moveLeft(&single_1_enermy_hozirontal_controller[i], &single_1_enermy_vertical_controller[i], &single_1_mode_enermy_postion_x[i], &single_1_mode_enermy_postion_y[i], &single_1_enermy_react[i], 40, 1, single_map_1);
-                    if ( i == 1) {
-                        single_1_enermyTexture[i] = enermy_1_left;
-                    } else if ( i == 2) {
-                        single_1_enermyTexture[i] = enermy_2_left;
-                    } else if ( i == 3) {
-                        single_1_enermyTexture[i] = enermy_3_left;
-                    } else {
-                        single_1_enermyTexture[i] = enermy_4_left;
-                    }
-                
-                    break;
-                case 3:
-                    moveRight(&single_1_enermy_hozirontal_controller[i], &single_1_enermy_vertical_controller[i], &single_1_mode_enermy_postion_x[i], &single_1_mode_enermy_postion_y[i], &single_1_enermy_react[i], 40, 1, single_map_1);
-                    if ( i == 1) {
-                        single_1_enermyTexture[i] = enermy_1_right;
-                    } else if ( i == 2) {
-                        single_1_enermyTexture[i] = enermy_2_right;
-                    } else if ( i == 3) {
-                        single_1_enermyTexture[i] = enermy_3_right;
-                    } else {
-                        single_1_enermyTexture[i] = enermy_4_right;
-                    }
-                    break;
-                default:
-                    break;
+
+            if (single_game_1_pause == 0) {
+                switch (single_1_direction[i]) {
+                    case 0:    
+                        moveDown(&single_1_enermy_hozirontal_controller[i], &single_1_enermy_vertical_controller[i], &single_1_mode_enermy_postion_x[i], &single_1_mode_enermy_postion_y[i] , &single_1_enermy_react[i], 40, 1, single_map_1);
+                        if ( i == 1) {
+                            single_1_enermyTexture[i] = enermy_1_down;
+                        } else if ( i == 2) {
+                            single_1_enermyTexture[i] = enermy_2_down;
+                        } else if ( i == 3) {
+                            single_1_enermyTexture[i] = enermy_3_down;
+                        } else {
+                            single_1_enermyTexture[i] = enermy_4_down;
+                        }
+                        break;
+                    case 1: // Move down
+                        moveUp(&single_1_enermy_hozirontal_controller[i], &single_1_enermy_vertical_controller[i], &single_1_mode_enermy_postion_x[i], &single_1_mode_enermy_postion_y[i], &single_1_enermy_react[i], 40, 1, single_map_1);
+                        if ( i == 1) {
+                            single_1_enermyTexture[i] = enermy_1_up;
+                        } else if ( i == 2) {
+                            single_1_enermyTexture[i] = enermy_2_up;
+                        } else if ( i == 3) {
+                            single_1_enermyTexture[i] = enermy_3_up;
+                        } else {
+                            single_1_enermyTexture[i] = enermy_4_up;
+                        }
+                        break;
+                    case 2: // Move left
+                        moveLeft(&single_1_enermy_hozirontal_controller[i], &single_1_enermy_vertical_controller[i], &single_1_mode_enermy_postion_x[i], &single_1_mode_enermy_postion_y[i], &single_1_enermy_react[i], 40, 1, single_map_1);
+                        if ( i == 1) {
+                            single_1_enermyTexture[i] = enermy_1_left;
+                        } else if ( i == 2) {
+                            single_1_enermyTexture[i] = enermy_2_left;
+                        } else if ( i == 3) {
+                            single_1_enermyTexture[i] = enermy_3_left;
+                        } else {
+                            single_1_enermyTexture[i] = enermy_4_left;
+                        }
+                    
+                        break;
+                    case 3:
+                        moveRight(&single_1_enermy_hozirontal_controller[i], &single_1_enermy_vertical_controller[i], &single_1_mode_enermy_postion_x[i], &single_1_mode_enermy_postion_y[i], &single_1_enermy_react[i], 40, 1, single_map_1);
+                        if ( i == 1) {
+                            single_1_enermyTexture[i] = enermy_1_right;
+                        } else if ( i == 2) {
+                            single_1_enermyTexture[i] = enermy_2_right;
+                        } else if ( i == 3) {
+                            single_1_enermyTexture[i] = enermy_3_right;
+                        } else {
+                            single_1_enermyTexture[i] = enermy_4_right;
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         SDL_Delay(10);
@@ -484,7 +489,7 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                     if (alreadyRemoved) {
                         continue;
                     } else {
-                        if (single_1_bullet[i].player_id == myId && single_1_bulletRect[i].y >= single_1_enermy_react[j].y && single_1_enermy_react[j].y >= single_1_bulletRect[i].y - 8
+                        if (single_1_bullet[i].player_id == myId && single_1_bulletRect[i].y >= single_1_enermy_react[j].y + 40 && single_1_enermy_react[j].y >= single_1_bulletRect[i].y - 48
                             && single_1_bulletRect[i].x > single_1_enermy_react[j].x - 20 && single_1_bulletRect[i].x < single_1_enermy_react[j].x + 20 && myId != 0
                         ) {
                             single_1_enermies[j].blood--;
@@ -507,7 +512,7 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                     }
                 }
 
-                if (single_1_bullet[i].player_id == 0 && single_1_bulletRect[i].y >= single_controlRect.y && single_controlRect.y >= single_1_bulletRect[i].y - 8
+                if (single_1_bullet[i].player_id == 0 && single_1_bulletRect[i].y >= single_controlRect.y + 40 && single_controlRect.y >= single_1_bulletRect[i].y - 48
                     && single_1_bulletRect[i].x > single_controlRect.x - 20 && single_1_bulletRect[i].x < single_controlRect.x + 20 ) {
                         single_scores-= 5;
                         state = GAME_OVER;
@@ -534,7 +539,7 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                     if (alreadyRemoved) {
                         continue;
                     }
-                    if (single_1_bullet[i].player_id == myId && single_1_bulletRect[i].y <= single_1_enermy_react[j].y && single_1_enermy_react[j].y <= single_1_bulletRect[i].y + 8
+                    if (single_1_bullet[i].player_id == myId && single_1_bulletRect[i].y <= single_1_enermy_react[j].y - 40 && single_1_enermy_react[j].y <= single_1_bulletRect[i].y + 48
                         && single_1_bulletRect[i].x > single_1_enermy_react[j].x - 20 && single_1_bulletRect[i].x < single_1_enermy_react[j].x + 20 && myId != 0
                     ) {
 
@@ -554,7 +559,7 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                         }
                     }
                 }
-                if (single_1_bullet[i].player_id == 0 && single_1_bulletRect[i].y <= single_controlRect.y && single_controlRect.y <= single_1_bulletRect[i].y + 8
+                if (single_1_bullet[i].player_id == 0 && single_1_bulletRect[i].y <= single_controlRect.y - 40 && single_controlRect.y <= single_1_bulletRect[i].y + 48
                 && single_1_bulletRect[i].x > single_controlRect.x - 20 && single_1_bulletRect[i].x < single_controlRect.x + 20 ) {
                     single_scores-= 5;
                     state = GAME_OVER;
@@ -580,7 +585,7 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                     if (alreadyRemoved) {
                         continue;
                     }
-                    if (single_1_bullet[i].player_id == myId && single_1_bulletRect[i].x <= single_1_enermy_react[j].x  && single_1_enermy_react[j].x <= single_1_bulletRect[i].x + 8
+                    if (single_1_bullet[i].player_id == myId && single_1_bulletRect[i].x <= single_1_enermy_react[j].x - 40  && single_1_enermy_react[j].x <= single_1_bulletRect[i].x + 48
                         && single_1_bulletRect[i].y > single_1_enermy_react[j].y - 20 && single_1_bulletRect[i].y < single_1_enermy_react[j].y + 20 && myId != 0
                     ) {
 
@@ -600,7 +605,7 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                         }
                     }
                 }
-                if (single_1_bullet[i].player_id == 0 && single_1_bulletRect[i].x <= single_controlRect.x  && single_controlRect.x <= single_1_bulletRect[i].x + 8
+                if (single_1_bullet[i].player_id == 0 && single_1_bulletRect[i].x <= single_controlRect.x - 40  && single_controlRect.x <= single_1_bulletRect[i].x - 48
                     && single_1_bulletRect[i].y > single_controlRect.y - 20 && single_1_bulletRect[i].y < single_controlRect.y + 20 ) {
                     single_scores-= 5;
                     state = GAME_OVER;
@@ -626,7 +631,8 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                     if (alreadyRemoved) {
                         continue;
                     }
-                    if (single_1_bullet[i].player_id == myId && single_1_bulletRect[i].x >= single_1_enermy_react[j].x && single_1_enermy_react[j].x >= single_1_bulletRect[i].x - 8
+
+                    if (single_1_bullet[i].player_id == myId && single_1_bulletRect[i].x >= single_1_enermy_react[j].x + 40 && single_1_enermy_react[j].x >= single_1_bulletRect[i].x - 48
                         && single_1_bulletRect[i].y > single_1_enermy_react[j].y - 20 && single_1_bulletRect[i].y < single_1_enermy_react[j].y + 20 && myId != 0
                     ) {
 
@@ -646,7 +652,7 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                         }
                     }
                 }
-                if (single_1_bullet[i].player_id == 0 && single_1_bulletRect[i].x >= single_controlRect.x  && single_controlRect.x >= single_1_bulletRect[i].x - 8
+                if (single_1_bullet[i].player_id == 0 && single_1_bulletRect[i].x >= single_controlRect.x + 40  && single_controlRect.x >= single_1_bulletRect[i].x - 48
                     && single_1_bulletRect[i].y > single_controlRect.y - 20 && single_1_bulletRect[i].y < single_controlRect.y + 20 ) {
                     single_scores-= 5;
                     state = GAME_OVER;
@@ -686,86 +692,91 @@ void renderSingle2Enermies(SDL_Renderer *renderer, Enermy single_enermies[]) {
                 single_2_direction[i] = single_2_previousDirection[i];
                 single_2_consecutive_count[i]++;
             } else {
-                do {
-                    single_2_direction[i] = rand() % 4;
-                } while (single_2_direction[i] == single_2_previousDirection[i]);
+                if (single_game_2_pause == 0) {
+                    do {
+                        single_2_direction[i] = rand() % 4;
+                    } while (single_2_direction[i] == single_2_previousDirection[i]);
 
-                single_2_consecutive_count[i] = 0; // Reset consecutive_count
-                if ( i == 1) {
-                    singleShot2(single_2_enermyTexture[i], single_2_enermy_react[i], enermy_1_up, enermy_1_down, enermy_1_right, enermy_1_left, 0);
-                } else if (i == 2) {
-                    singleShot2(single_2_enermyTexture[i], single_2_enermy_react[i], enermy_2_up, enermy_2_down, enermy_2_right, enermy_2_left, 0);
-                } else if (i == 3) {
-                    singleShot2(single_2_enermyTexture[i], single_2_enermy_react[i], enermy_3_up, enermy_3_down, enermy_3_right, enermy_3_left, 0);
-                } else if ( i == 4) {
-                    singleShot2(single_2_enermyTexture[i], single_2_enermy_react[i], enermy_4_up, enermy_4_down, enermy_4_right, enermy_4_left, 0);
-                } else {
-                    singleShot2(single_2_enermyTexture[i], single_2_enermy_react[i], enermy_5_up, enermy_5_down, enermy_5_right, enermy_5_left, 0);
+                    single_2_consecutive_count[i] = 0; // Reset consecutive_count
+                    if ( i == 1) {
+                        singleShot2(single_2_enermyTexture[i], single_2_enermy_react[i], enermy_1_up, enermy_1_down, enermy_1_right, enermy_1_left, 0);
+                    } else if (i == 2) {
+                        singleShot2(single_2_enermyTexture[i], single_2_enermy_react[i], enermy_2_up, enermy_2_down, enermy_2_right, enermy_2_left, 0);
+                    } else if (i == 3) {
+                        singleShot2(single_2_enermyTexture[i], single_2_enermy_react[i], enermy_3_up, enermy_3_down, enermy_3_right, enermy_3_left, 0);
+                    } else if ( i == 4) {
+                        singleShot2(single_2_enermyTexture[i], single_2_enermy_react[i], enermy_4_up, enermy_4_down, enermy_4_right, enermy_4_left, 0);
+                    } else {
+                        singleShot2(single_2_enermyTexture[i], single_2_enermy_react[i], enermy_5_up, enermy_5_down, enermy_5_right, enermy_5_left, 0);
+                    }
                 }
             }
 
             single_2_previousDirection[i] = single_2_direction[i];
         //                             // Update the enermyRect based on the chosen direction
-            switch (single_2_direction[i]) {
-                case 0:    
-                    moveDown(&single_2_enermy_hozirontal_controller[i], &single_2_enermy_vertical_controller[i], &single_2_mode_enermy_postion_x[i], &single_2_mode_enermy_postion_y[i] , &single_2_enermy_react[i], 40, 1, single_map_2);
-                    if ( i == 1) {
-                        single_2_enermyTexture[i] = enermy_1_down;
-                    } else if ( i == 2) {
-                        single_2_enermyTexture[i] = enermy_2_down;
-                    } else if ( i == 3) {
-                        single_2_enermyTexture[i] = enermy_3_down;
-                    }  else if ( i == 4) {
-                        single_2_enermyTexture[i] = enermy_4_down;
-                    } else {
-                        single_2_enermyTexture[i] = enermy_5_down;
-                    }
-                    break;
-                case 1: // Move down
-                    moveUp(&single_2_enermy_hozirontal_controller[i], &single_2_enermy_vertical_controller[i], &single_2_mode_enermy_postion_x[i], &single_2_mode_enermy_postion_y[i], &single_2_enermy_react[i], 40, 1, single_map_2);
-                    if ( i == 1) {
-                        single_2_enermyTexture[i] = enermy_1_up;
-                    } else if ( i == 2) {
-                        single_2_enermyTexture[i] = enermy_2_up;
-                    } else if ( i == 3) {
-                        single_2_enermyTexture[i] = enermy_3_up;
-                    } else if ( i == 4) {
-                        single_2_enermyTexture[i] = enermy_4_up;
-                    } else {
-                        single_2_enermyTexture[i] = enermy_5_up;
-                    }
-                    break;
-                case 2: // Move left
-                    moveLeft(&single_2_enermy_hozirontal_controller[i], &single_2_enermy_vertical_controller[i], &single_2_mode_enermy_postion_x[i], &single_2_mode_enermy_postion_y[i], &single_2_enermy_react[i], 40, 1, single_map_2);
-                    if ( i == 1) {
-                        single_2_enermyTexture[i] = enermy_1_left;
-                    } else if ( i == 2) {
-                        single_2_enermyTexture[i] = enermy_2_left;
-                    } else if ( i == 3) {
-                        single_2_enermyTexture[i] = enermy_3_left;
-                    } else if ( i == 4) {
-                        single_2_enermyTexture[i] = enermy_4_left;
-                    } else {
-                        single_2_enermyTexture[i] = enermy_5_left;
-                    }
-                
-                    break;
-                case 3:
-                    moveRight(&single_2_enermy_hozirontal_controller[i], &single_2_enermy_vertical_controller[i], &single_2_mode_enermy_postion_x[i], &single_2_mode_enermy_postion_y[i], &single_2_enermy_react[i], 40, 1, single_map_2);
-                    if ( i == 1) {
-                        single_2_enermyTexture[i] = enermy_1_right;
-                    } else if ( i == 2) {
-                        single_2_enermyTexture[i] = enermy_2_right;
-                    } else if ( i == 3) {
-                        single_2_enermyTexture[i] = enermy_3_right;
-                    } else if ( i == 4) {
-                        single_2_enermyTexture[i] = enermy_4_right;
-                    } else {
-                        single_2_enermyTexture[i] = enermy_5_right;
-                    }
-                    break;
-                default:
-                    break;
+            if (single_game_2_pause == 0) {
+
+                switch (single_2_direction[i]) {
+                    case 0:    
+                        moveDown(&single_2_enermy_hozirontal_controller[i], &single_2_enermy_vertical_controller[i], &single_2_mode_enermy_postion_x[i], &single_2_mode_enermy_postion_y[i] , &single_2_enermy_react[i], 40, 1, single_map_2);
+                        if ( i == 1) {
+                            single_2_enermyTexture[i] = enermy_1_down;
+                        } else if ( i == 2) {
+                            single_2_enermyTexture[i] = enermy_2_down;
+                        } else if ( i == 3) {
+                            single_2_enermyTexture[i] = enermy_3_down;
+                        }  else if ( i == 4) {
+                            single_2_enermyTexture[i] = enermy_4_down;
+                        } else {
+                            single_2_enermyTexture[i] = enermy_5_down;
+                        }
+                        break;
+                    case 1: // Move down
+                        moveUp(&single_2_enermy_hozirontal_controller[i], &single_2_enermy_vertical_controller[i], &single_2_mode_enermy_postion_x[i], &single_2_mode_enermy_postion_y[i], &single_2_enermy_react[i], 40, 1, single_map_2);
+                        if ( i == 1) {
+                            single_2_enermyTexture[i] = enermy_1_up;
+                        } else if ( i == 2) {
+                            single_2_enermyTexture[i] = enermy_2_up;
+                        } else if ( i == 3) {
+                            single_2_enermyTexture[i] = enermy_3_up;
+                        } else if ( i == 4) {
+                            single_2_enermyTexture[i] = enermy_4_up;
+                        } else {
+                            single_2_enermyTexture[i] = enermy_5_up;
+                        }
+                        break;
+                    case 2: // Move left
+                        moveLeft(&single_2_enermy_hozirontal_controller[i], &single_2_enermy_vertical_controller[i], &single_2_mode_enermy_postion_x[i], &single_2_mode_enermy_postion_y[i], &single_2_enermy_react[i], 40, 1, single_map_2);
+                        if ( i == 1) {
+                            single_2_enermyTexture[i] = enermy_1_left;
+                        } else if ( i == 2) {
+                            single_2_enermyTexture[i] = enermy_2_left;
+                        } else if ( i == 3) {
+                            single_2_enermyTexture[i] = enermy_3_left;
+                        } else if ( i == 4) {
+                            single_2_enermyTexture[i] = enermy_4_left;
+                        } else {
+                            single_2_enermyTexture[i] = enermy_5_left;
+                        }
+                    
+                        break;
+                    case 3:
+                        moveRight(&single_2_enermy_hozirontal_controller[i], &single_2_enermy_vertical_controller[i], &single_2_mode_enermy_postion_x[i], &single_2_mode_enermy_postion_y[i], &single_2_enermy_react[i], 40, 1, single_map_2);
+                        if ( i == 1) {
+                            single_2_enermyTexture[i] = enermy_1_right;
+                        } else if ( i == 2) {
+                            single_2_enermyTexture[i] = enermy_2_right;
+                        } else if ( i == 3) {
+                            single_2_enermyTexture[i] = enermy_3_right;
+                        } else if ( i == 4) {
+                            single_2_enermyTexture[i] = enermy_4_right;
+                        } else {
+                            single_2_enermyTexture[i] = enermy_5_right;
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         SDL_Delay(8);
@@ -794,7 +805,7 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                     if (alreadyRemoved) {
                         continue;
                     } else {
-                        if (single_2_bullet[i].player_id == myId && single_2_bulletRect[i].y >= single_2_enermy_react[j].y && single_2_enermy_react[j].y >= single_2_bulletRect[i].y - 8
+                        if (single_2_bullet[i].player_id == myId && single_2_bulletRect[i].y >= single_2_enermy_react[j].y + 40 && single_2_enermy_react[j].y >= single_2_bulletRect[i].y - 48
                             && single_2_bulletRect[i].x > single_2_enermy_react[j].x - 20 && single_2_bulletRect[i].x < single_2_enermy_react[j].x + 20 && myId != 0
                         ) {
                             single_2_enermies[j].blood--;
@@ -817,7 +828,7 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                     }
                 }
 
-                if (single_2_bullet[i].player_id == 0 && single_2_bulletRect[i].y >= single_controlRect_2.y && single_controlRect_2.y >= single_2_bulletRect[i].y - 8
+                if (single_2_bullet[i].player_id == 0 && single_2_bulletRect[i].y >= single_controlRect_2.y + 40 && single_controlRect_2.y >= single_2_bulletRect[i].y - 48
                     && single_2_bulletRect[i].x > single_controlRect_2.x - 20 && single_2_bulletRect[i].x < single_controlRect_2.x + 20 ) {
                         single_scores-= 5;
                         state = GAME_OVER;
@@ -843,7 +854,7 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                     if (alreadyRemoved) {
                         continue;
                     }
-                    if (single_2_bullet[i].player_id == myId && single_2_bulletRect[i].y <= single_2_enermy_react[j].y && single_2_enermy_react[j].y <= single_2_bulletRect[i].y + 8
+                    if (single_2_bullet[i].player_id == myId && single_2_bulletRect[i].y <= single_2_enermy_react[j].y - 40 && single_2_enermy_react[j].y <= single_2_bulletRect[i].y + 48
                         && single_2_bulletRect[i].x > single_2_enermy_react[j].x - 20 && single_2_bulletRect[i].x < single_2_enermy_react[j].x + 20 && myId != 0
                     ) {
 
@@ -863,7 +874,7 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                         }
                     }
                 }
-                if (single_2_bullet[i].player_id == 0 && single_2_bulletRect[i].y <= single_controlRect_2.y && single_controlRect_2.y <= single_2_bulletRect[i].y + 8
+                if (single_2_bullet[i].player_id == 0 && single_2_bulletRect[i].y <= single_controlRect_2.y - 40 && single_controlRect_2.y <= single_2_bulletRect[i].y + 48
                 && single_2_bulletRect[i].x > single_controlRect_2.x - 20 && single_2_bulletRect[i].x < single_controlRect_2.x + 20 ) {
                     single_scores-= 5;
                     state = GAME_OVER;
@@ -889,7 +900,7 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                     if (alreadyRemoved) {
                         continue;
                     }
-                    if (single_2_bullet[i].player_id == myId && single_2_bulletRect[i].x <= single_2_enermy_react[j].x  && single_2_enermy_react[j].x <= single_2_bulletRect[i].x + 8
+                    if (single_2_bullet[i].player_id == myId && single_2_bulletRect[i].x <= single_2_enermy_react[j].x - 40 && single_2_enermy_react[j].x <= single_2_bulletRect[i].x + 48
                         && single_2_bulletRect[i].y > single_2_enermy_react[j].y - 20 && single_2_bulletRect[i].y < single_2_enermy_react[j].y + 20 && myId != 0
                     ) {
 
@@ -909,7 +920,7 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                         }
                     }
                 }
-                if (single_2_bullet[i].player_id == 0 && single_2_bulletRect[i].x <= single_controlRect_2.x  && single_controlRect_2.x <= single_2_bulletRect[i].x + 8
+                if (single_2_bullet[i].player_id == 0 && single_2_bulletRect[i].x <= single_controlRect_2.x -40  && single_controlRect_2.x <= single_2_bulletRect[i].x + 48
                     && single_2_bulletRect[i].y > single_controlRect_2.y - 20 && single_2_bulletRect[i].y < single_controlRect_2.y + 20 ) {
                     single_scores-= 5;
                     state = GAME_OVER;
@@ -935,7 +946,7 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                     if (alreadyRemoved) {
                         continue;
                     }
-                    if (single_2_bullet[i].player_id == myId && single_2_bulletRect[i].x >= single_2_enermy_react[j].x && single_2_enermy_react[j].x >= single_2_bulletRect[i].x - 8
+                    if (single_2_bullet[i].player_id == myId && single_2_bulletRect[i].x >= single_2_enermy_react[j].x + 40 && single_2_enermy_react[j].x >= single_2_bulletRect[i].x - 48
                         && single_2_bulletRect[i].y > single_2_enermy_react[j].y - 20 && single_2_bulletRect[i].y < single_2_enermy_react[j].y + 20 && myId != 0
                     ) {
 
@@ -984,96 +995,101 @@ void renderSingle3Enermies(SDL_Renderer *renderer, Enermy single_enermies[]) {
                 single_3_direction[i] = single_3_previousDirection[i];
                 single_3_consecutive_count[i]++;
             } else {
-                do {
-                    single_3_direction[i] = rand() % 4;
-                } while (single_3_direction[i] == single_3_previousDirection[i]);
+                if (single_game_3_pause == 0) {
+                    do {
+                        single_3_direction[i] = rand() % 4;
+                    } while (single_3_direction[i] == single_3_previousDirection[i]);
 
-                single_3_consecutive_count[i] = 0; // Reset consecutive_count
-                if ( i == 1) {
-                    singleShot3(single_3_enermyTexture[i], single_3_enermy_react[i], enermy_1_up, enermy_1_down, enermy_1_right, enermy_1_left, 0);
-                } else if (i == 2) {
-                    singleShot3(single_3_enermyTexture[i], single_3_enermy_react[i], enermy_2_up, enermy_2_down, enermy_2_right, enermy_2_left, 0);
-                } else if (i == 3) {
-                    singleShot3(single_3_enermyTexture[i], single_3_enermy_react[i], enermy_3_up, enermy_3_down, enermy_3_right, enermy_3_left, 0);
-                } else if ( i == 4) {
-                    singleShot3(single_3_enermyTexture[i], single_3_enermy_react[i], enermy_4_up, enermy_4_down, enermy_4_right, enermy_4_left, 0);
-                } else if ( i == 5) {
-                    singleShot3(single_3_enermyTexture[i], single_3_enermy_react[i], enermy_5_up, enermy_5_down, enermy_5_right, enermy_5_left, 0);
-                } else {
-                    singleShot3(single_3_enermyTexture[i], single_3_enermy_react[i], enermy_6_up, enermy_6_down, enermy_6_right, enermy_6_left, 0);
+                    single_3_consecutive_count[i] = 0; // Reset consecutive_count
+                    if ( i == 1) {
+                        singleShot3(single_3_enermyTexture[i], single_3_enermy_react[i], enermy_1_up, enermy_1_down, enermy_1_right, enermy_1_left, 0);
+                    } else if (i == 2) {
+                        singleShot3(single_3_enermyTexture[i], single_3_enermy_react[i], enermy_2_up, enermy_2_down, enermy_2_right, enermy_2_left, 0);
+                    } else if (i == 3) {
+                        singleShot3(single_3_enermyTexture[i], single_3_enermy_react[i], enermy_3_up, enermy_3_down, enermy_3_right, enermy_3_left, 0);
+                    } else if ( i == 4) {
+                        singleShot3(single_3_enermyTexture[i], single_3_enermy_react[i], enermy_4_up, enermy_4_down, enermy_4_right, enermy_4_left, 0);
+                    } else if ( i == 5) {
+                        singleShot3(single_3_enermyTexture[i], single_3_enermy_react[i], enermy_5_up, enermy_5_down, enermy_5_right, enermy_5_left, 0);
+                    } else {
+                        singleShot3(single_3_enermyTexture[i], single_3_enermy_react[i], enermy_6_up, enermy_6_down, enermy_6_right, enermy_6_left, 0);
+                    }
                 }
             }
 
             single_3_previousDirection[i] = single_3_direction[i];
         //                             // Update the enermyRect based on the chosen direction
-            switch (single_3_direction[i]) {
-                case 0:    
-                    moveDown(&single_3_enermy_hozirontal_controller[i], &single_3_enermy_vertical_controller[i], &single_3_mode_enermy_postion_x[i], &single_3_mode_enermy_postion_y[i] , &single_3_enermy_react[i], 40, 1, single_map_3);
-                    if ( i == 1) {
-                        single_3_enermyTexture[i] = enermy_1_down;
-                    } else if ( i == 2) {
-                        single_3_enermyTexture[i] = enermy_2_down;
-                    } else if ( i == 3) {
-                        single_3_enermyTexture[i] = enermy_3_down;
-                    }  else if ( i == 4) {
-                        single_3_enermyTexture[i] = enermy_4_down;
-                    }  else if ( i == 5) {
-                        single_3_enermyTexture[i] = enermy_5_down;
-                    } else {
-                        single_3_enermyTexture[i] = enermy_6_down;
-                    }
-                    break;
-                case 1: // Move down
-                    moveUp(&single_3_enermy_hozirontal_controller[i], &single_3_enermy_vertical_controller[i], &single_3_mode_enermy_postion_x[i], &single_3_mode_enermy_postion_y[i], &single_3_enermy_react[i], 40, 1, single_map_3);
-                    if ( i == 1) {
-                        single_3_enermyTexture[i] = enermy_1_up;
-                    } else if ( i == 2) {
-                        single_3_enermyTexture[i] = enermy_2_up;
-                    } else if ( i == 3) {
-                        single_3_enermyTexture[i] = enermy_3_up;
-                    } else if ( i == 4) {
-                        single_3_enermyTexture[i] = enermy_4_up;
-                    } else if ( i == 5) {
-                        single_3_enermyTexture[i] = enermy_5_up;
-                    } else {
-                        single_3_enermyTexture[i] = enermy_6_up;
-                    }
-                    break;
-                case 2: // Move left
-                    moveLeft(&single_3_enermy_hozirontal_controller[i], &single_3_enermy_vertical_controller[i], &single_3_mode_enermy_postion_x[i], &single_3_mode_enermy_postion_y[i], &single_3_enermy_react[i], 40, 1, single_map_3);
-                    if ( i == 1) {
-                        single_3_enermyTexture[i] = enermy_1_left;
-                    } else if ( i == 2) {
-                        single_3_enermyTexture[i] = enermy_2_left;
-                    } else if ( i == 3) {
-                        single_3_enermyTexture[i] = enermy_3_left;
-                    } else if ( i == 4) {
-                        single_3_enermyTexture[i] = enermy_4_left;
-                    } else if ( i == 5) {
-                        single_3_enermyTexture[i] = enermy_5_left;
-                    } else {
-                        single_3_enermyTexture[i] = enermy_6_left;
-                    }
-                
-                    break;
-                case 3:
-                    moveRight(&single_3_enermy_hozirontal_controller[i], &single_3_enermy_vertical_controller[i], &single_3_mode_enermy_postion_x[i], &single_3_mode_enermy_postion_y[i], &single_3_enermy_react[i], 40, 1, single_map_3);
-                    if ( i == 1) {
-                        single_3_enermyTexture[i] = enermy_1_right;
-                    } else if ( i == 2) {
-                        single_3_enermyTexture[i] = enermy_2_right;
-                    } else if ( i == 3) {
-                        single_3_enermyTexture[i] = enermy_3_right;
-                    } else if ( i == 4) {
-                        single_3_enermyTexture[i] = enermy_4_right;
-                    } else if ( i == 5) {
-                        single_3_enermyTexture[i] = enermy_5_right;
-                    } else {
-                        single_3_enermyTexture[i] = enermy_6_right;
-                    }
-                    break;
-                default:
-                    break;
+        if (single_game_3_pause == 0) {
+
+                switch (single_3_direction[i]) {
+                    case 0:    
+                        moveDown(&single_3_enermy_hozirontal_controller[i], &single_3_enermy_vertical_controller[i], &single_3_mode_enermy_postion_x[i], &single_3_mode_enermy_postion_y[i] , &single_3_enermy_react[i], 40, 1, single_map_3);
+                        if ( i == 1) {
+                            single_3_enermyTexture[i] = enermy_1_down;
+                        } else if ( i == 2) {
+                            single_3_enermyTexture[i] = enermy_2_down;
+                        } else if ( i == 3) {
+                            single_3_enermyTexture[i] = enermy_3_down;
+                        }  else if ( i == 4) {
+                            single_3_enermyTexture[i] = enermy_4_down;
+                        }  else if ( i == 5) {
+                            single_3_enermyTexture[i] = enermy_5_down;
+                        } else {
+                            single_3_enermyTexture[i] = enermy_6_down;
+                        }
+                        break;
+                    case 1: // Move down
+                        moveUp(&single_3_enermy_hozirontal_controller[i], &single_3_enermy_vertical_controller[i], &single_3_mode_enermy_postion_x[i], &single_3_mode_enermy_postion_y[i], &single_3_enermy_react[i], 40, 1, single_map_3);
+                        if ( i == 1) {
+                            single_3_enermyTexture[i] = enermy_1_up;
+                        } else if ( i == 2) {
+                            single_3_enermyTexture[i] = enermy_2_up;
+                        } else if ( i == 3) {
+                            single_3_enermyTexture[i] = enermy_3_up;
+                        } else if ( i == 4) {
+                            single_3_enermyTexture[i] = enermy_4_up;
+                        } else if ( i == 5) {
+                            single_3_enermyTexture[i] = enermy_5_up;
+                        } else {
+                            single_3_enermyTexture[i] = enermy_6_up;
+                        }
+                        break;
+                    case 2: // Move left
+                        moveLeft(&single_3_enermy_hozirontal_controller[i], &single_3_enermy_vertical_controller[i], &single_3_mode_enermy_postion_x[i], &single_3_mode_enermy_postion_y[i], &single_3_enermy_react[i], 40, 1, single_map_3);
+                        if ( i == 1) {
+                            single_3_enermyTexture[i] = enermy_1_left;
+                        } else if ( i == 2) {
+                            single_3_enermyTexture[i] = enermy_2_left;
+                        } else if ( i == 3) {
+                            single_3_enermyTexture[i] = enermy_3_left;
+                        } else if ( i == 4) {
+                            single_3_enermyTexture[i] = enermy_4_left;
+                        } else if ( i == 5) {
+                            single_3_enermyTexture[i] = enermy_5_left;
+                        } else {
+                            single_3_enermyTexture[i] = enermy_6_left;
+                        }
+                    
+                        break;
+                    case 3:
+                        moveRight(&single_3_enermy_hozirontal_controller[i], &single_3_enermy_vertical_controller[i], &single_3_mode_enermy_postion_x[i], &single_3_mode_enermy_postion_y[i], &single_3_enermy_react[i], 40, 1, single_map_3);
+                        if ( i == 1) {
+                            single_3_enermyTexture[i] = enermy_1_right;
+                        } else if ( i == 2) {
+                            single_3_enermyTexture[i] = enermy_2_right;
+                        } else if ( i == 3) {
+                            single_3_enermyTexture[i] = enermy_3_right;
+                        } else if ( i == 4) {
+                            single_3_enermyTexture[i] = enermy_4_right;
+                        } else if ( i == 5) {
+                            single_3_enermyTexture[i] = enermy_5_right;
+                        } else {
+                            single_3_enermyTexture[i] = enermy_6_right;
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
         }
         SDL_Delay(6);
@@ -1102,7 +1118,7 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                     if (alreadyRemoved) {
                         continue;
                     } else {
-                        if (single_3_bullet[i].player_id == myId && single_3_bulletRect[i].y >= single_3_enermy_react[j].y && single_3_enermy_react[j].y >= single_3_bulletRect[i].y - 8
+                        if (single_3_bullet[i].player_id == myId && single_3_bulletRect[i].y >= single_3_enermy_react[j].y + 40 && single_3_enermy_react[j].y >= single_3_bulletRect[i].y - 48
                             && single_3_bulletRect[i].x > single_3_enermy_react[j].x - 20 && single_3_bulletRect[i].x < single_3_enermy_react[j].x + 20 && myId != 0
                         ) {
                             single_3_enermies[j].blood--;
@@ -1124,7 +1140,7 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                         }
                     }
                 }
-                if (single_3_bullet[i].player_id == 0 && single_3_bulletRect[i].y >= single_controlRect_3.y && single_controlRect_3.y >= single_3_bulletRect[i].y - 8
+                if (single_3_bullet[i].player_id == 0 && single_3_bulletRect[i].y >= single_controlRect_3.y + 40 && single_controlRect_3.y >= single_3_bulletRect[i].y - 48
                     && single_3_bulletRect[i].x > single_controlRect_3.x - 20 && single_3_bulletRect[i].x < single_controlRect_3.x + 20 ) {
                         single_scores-= 5;
                         state = GAME_OVER;
@@ -1151,7 +1167,7 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                     if (alreadyRemoved) {
                         continue;
                     }
-                    if (single_3_bullet[i].player_id == myId && single_3_bulletRect[i].y <= single_3_enermy_react[j].y && single_3_enermy_react[j].y <= single_3_bulletRect[i].y + 8
+                    if (single_3_bullet[i].player_id == myId && single_3_bulletRect[i].y <= single_3_enermy_react[j].y - 40 && single_3_enermy_react[j].y <= single_3_bulletRect[i].y + 48
                         && single_3_bulletRect[i].x > single_3_enermy_react[j].x - 20 && single_3_bulletRect[i].x < single_3_enermy_react[j].x + 20 && myId != 0
                     ) {
 
@@ -1171,7 +1187,7 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                         }
                     }
                 }
-                if (single_3_bullet[i].player_id == 0 && single_3_bulletRect[i].y <= single_controlRect_3.y && single_controlRect_3.y <= single_3_bulletRect[i].y + 8
+                if (single_3_bullet[i].player_id == 0 && single_3_bulletRect[i].y <= single_controlRect_3.y && single_controlRect_3.y - 40 <= single_3_bulletRect[i].y + 48
                 && single_3_bulletRect[i].x > single_controlRect_3.x - 20 && single_3_bulletRect[i].x < single_controlRect_3.x + 20 ) {
                     single_scores-= 5;
                     state = GAME_OVER;
@@ -1197,7 +1213,7 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                     if (alreadyRemoved) {
                         continue;
                     }
-                    if (single_3_bullet[i].player_id == myId && single_3_bulletRect[i].x <= single_3_enermy_react[j].x  && single_3_enermy_react[j].x <= single_3_bulletRect[i].x + 8
+                    if (single_3_bullet[i].player_id == myId && single_3_bulletRect[i].x <= single_3_enermy_react[j].x - 40 && single_3_enermy_react[j].x <= single_3_bulletRect[i].x + 48
                         && single_3_bulletRect[i].y > single_3_enermy_react[j].y - 20 && single_3_bulletRect[i].y < single_3_enermy_react[j].y + 20 && myId != 0
                     ) {
 
@@ -1217,7 +1233,7 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                         }
                     }
                 }
-                if (single_3_bullet[i].player_id == 0 && single_3_bulletRect[i].x <= single_controlRect_3.x  && single_controlRect_3.x <= single_3_bulletRect[i].x + 8
+                if (single_3_bullet[i].player_id == 0 && single_3_bulletRect[i].x <= single_controlRect_3.x - 40 && single_controlRect_3.x <= single_3_bulletRect[i].x + 48
                     && single_3_bulletRect[i].y > single_controlRect_3.y - 20 && single_3_bulletRect[i].y < single_controlRect_3.y + 20 ) {
                     single_scores-= 5;
                     state = GAME_OVER;
@@ -1243,7 +1259,7 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                     if (alreadyRemoved) {
                         continue;
                     }
-                    if (single_3_bullet[i].player_id == myId && single_3_bulletRect[i].x >= single_3_enermy_react[j].x && single_3_enermy_react[j].x >= single_3_bulletRect[i].x - 8
+                    if (single_3_bullet[i].player_id == myId && single_3_bulletRect[i].x >= single_3_enermy_react[j].x + 40 && single_3_enermy_react[j].x >= single_3_bulletRect[i].x - 48
                         && single_3_bulletRect[i].y > single_3_enermy_react[j].y - 20 && single_3_bulletRect[i].y < single_3_enermy_react[j].y + 20 && myId != 0
                     ) {
 
@@ -1279,7 +1295,6 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
         }
     }
 }
-
 
 
 //// DUAL

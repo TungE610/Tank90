@@ -18,6 +18,13 @@ int me_revival = 3;
 int friend_revival = 3;
 int scoreUpdated = 1;
 int topN = 8;
+int single_game_1_pause = 0;
+int single_game_2_pause = 0;
+int single_game_3_pause = 0;
+
+int dual_game_pause = 0;
+int dual_game_paused = 0;
+
 TopPlayer topPlayer[8];
 
 SDL_Rect single_controlRect = { 240, 440, 40, 40 };
