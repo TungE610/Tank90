@@ -309,6 +309,8 @@ void *handleClient(void *arg) {
                     strcpy(usernameScoreMessage, createScoreMessage(playersArray[i]->element.username, playersArray[i]->element.score, i + 1));
 
                     bytes_sent = send(player->socket, usernameScoreMessage, strlen(usernameScoreMessage), 0);
+
+                    bytes_received = recv(player->socket, buff, BUFF_SIZE, 0);
                 }
 
                 free(playersArray);

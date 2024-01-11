@@ -477,6 +477,7 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
             SDL_RenderCopy(renderer, bulletTexture[i], NULL, &single_1_bulletRect[i]);
         }
         if (single_1_bullet[i].is_active == 1) {
+            int hit = 0;
             if (single_1_bullet[i].direction == UP) {
                 for (int j = 0; j < 4; j++) {
                     int alreadyRemoved = 0;
@@ -493,6 +494,7 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                             && single_1_bulletRect[i].x > single_1_enermy_react[j].x - 20 && single_1_bulletRect[i].x < single_1_enermy_react[j].x + 20 && myId != 0
                         ) {
                             single_1_enermies[j].blood--;
+                            hit = 1;
                             if (single_1_enermies[j].blood <= 0) {
                                 single_scores++;
 
@@ -518,11 +520,14 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                         state = GAME_OVER;
 
                 }
-
-                if (single_1_bulletRect[i].y < 8 || (single_map_1[(single_1_bulletRect[i].y)/40 - 1][round_integer_division(single_1_bulletRect[i].x-80, 40)] != 0 && single_1_bulletRect[i].y % 40 < 15)) {
-                    single_1_bullet[i].is_active = 0;
-                    single_1_bullet[i].player_id = 0;
-                }
+                
+                if(hit == 0) {
+                    if (single_1_bulletRect[i].y < 8 || (single_map_1[(single_1_bulletRect[i].y)/40 - 1][round_integer_division(single_1_bulletRect[i].x-80, 40)] != 0 && single_1_bulletRect[i].y % 40 < 15)) {
+                        single_1_bullet[i].is_active = 0;
+                        single_1_bullet[i].player_id = 0;
+                    }
+                } 
+                
 
                 if (single_1_bullet[i].is_active == 1) {
                     single_1_bulletRect[i].y -= 8;
