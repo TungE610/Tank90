@@ -146,7 +146,7 @@ int main(){
             SDL_Rect rankingBigTextRenderQuad = { 195, 100, rankingBigTextSurface->w, rankingBigTextSurface->h };
             SDL_Rect gameOverBigTextRenderQuad = { 150, 250, gameOverBigTextSurface->w, gameOverBigTextSurface->h };
             SDL_Rect wonOverBigTextRenderQuad = { 240, 250, wonBigTextSurface->w, wonBigTextSurface->h };\
-            SDL_Rect pauseTextRenderQuad = {300, 300, pauseTextSurface->w, pauseTextSurface->h};
+            SDL_Rect pauseTextRenderQuad = {250, 250, pauseTextSurface->w, pauseTextSurface->h};
             SDL_Rect roomsBigTextRenderQuad = { 195, 100, roomsBigText->w, roomsBigText->h };
             SDL_Rect usernameRenderQuad = { 120, 200, usernameText->w, usernameText->h };
             SDL_Rect passwordRenderQuad = { 120, 250, passwordText->w, passwordText->h };
@@ -1311,6 +1311,7 @@ void* receiveThread(void* arg) {
 
             strcpy(topPlayer[rank-1].username, username);
             topPlayer[rank-1].score = score;
+            
         } else if (buff[0] == 0x11) {
             if (dual_game_paused == 0) {
                 dual_game_paused = 1;
