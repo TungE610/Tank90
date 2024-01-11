@@ -269,7 +269,7 @@ void signin(singleLinkedList* list, char* signedInUser) {
 	char username[30], password[30];
 	while ((getchar()) != '\n');
 
-	readDatatoList(list);										//read data to list
+	// readDatatoList(list);										//read data to list
 
 	printf("\n---------Sign In---------\n");
 	printf("Username : ");

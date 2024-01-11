@@ -318,6 +318,33 @@ char* createScoreMessage(char username[], int score, int rank) {
     return result;
 }
 
+char* createPauseMessage(int roomId,int playerId) {
+    char message[64]; // Assuming a maximum length for the message
+    
+    // Format the message string
+    snprintf(message, sizeof(message), "%c%d*%d", 0x10, roomId, playerId);
+
+    // Allocate memory for the string and copy the formatted message
+    char* result = (char*)malloc(strlen(message) + 1); // +1 for the null terminator
+    if (result != NULL) {
+        strcpy(result, message);
+    }
+
+    return result;
+}
+
+int extractPauseMessage(const char* message, int* roomId, int *playerId){
+    if (message[0] != 0x10) {
+        return 0; // Invalid message format
+    }
+
+    if (sscanf(message + 1, "%d*%d", roomId, playerId) != 2) {
+        return 0; // Parsing failed
+    }
+
+    return 1; // Extraction successful
+}
+
 // char* createLeaveRoomMessage(char username[], int score, int rank) {
 //     char message[64]; // Assuming a maximum length for the message
     
@@ -333,20 +360,43 @@ char* createScoreMessage(char username[], int score, int rank) {
 //     return result;
 // }
 
-int extractScoreMessage(const char* message, char* username, int* score, int *rank) {
-    // Check if the message starts with the expected format
+void extractScoreMessage(const char* message, char* username, int* score, int* rank) {
+    // Check if the message starts with the expected header (0x0f)
     if (message[0] != 0x0f) {
-        return 0; // Invalid message format
+        fprintf(stderr, "Invalid message header.\n");
+        return;
     }
 
-    // Use sscanf to parse the ID, username, and score
-    if (sscanf(message + 1, "%s*%d*%d", username, score, rank) != 3) {
-        return 0; // Parsing failed
+    // Use strtok to split the message into tokens based on '*' and '$' delimiters
+    char* token;
+    char* context;
+    char temp_message[strlen(message) + 1]; // Make a copy of the message to avoid modifying the original
+    strcpy(temp_message, message);
+
+    token = strtok_r(temp_message + 1, "*", &context); // Skip the first character (0x0f)
+    if (token == NULL) {
+        fprintf(stderr, "Invalid message format.\n");
+        return;
     }
 
-    return 1; // Extraction successful
+    strncpy(username, token, 64);
+
+    token = strtok_r(NULL, "*", &context);
+    if (token == NULL) {
+        fprintf(stderr, "Invalid message format.\n");
+        return;
+    }
+
+    sscanf(token, "%d", score);
+
+    token = strtok_r(NULL, "*", &context);
+    if (token == NULL) {
+        fprintf(stderr, "Invalid message format.\n");
+        return;
+    }
+
+    sscanf(token, "%d", rank);
 }
-
 
 
 #endif

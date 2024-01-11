@@ -54,6 +54,8 @@ SDL_Texture *myTank;
 SDL_Texture *loginBigTextTexture;
 SDL_Texture *registerBigTextTexture;
 SDL_Texture *gameoverBigTextTexture;
+SDL_Texture *wonBigTextTexture;
+SDL_Texture *pauseTextTexture;
 SDL_Texture *roomsBigTextTexture;
 SDL_Texture *rankingBigTextTexture;
 SDL_Texture *rankingBigTextTexture;
@@ -77,6 +79,15 @@ SDL_Texture *bullet_down;
 SDL_Texture *bullet_right;
 SDL_Texture *bullet_left;
 SDL_Texture *bulletTexture[30];
+
+SDL_Texture *firstTexture;
+SDL_Texture *secondTexture;
+SDL_Texture *thirdTexture;
+SDL_Texture *fourTexture;
+SDL_Texture *fiveTexture;
+SDL_Texture *sixTexture;
+SDL_Texture *sevenTexture;
+SDL_Texture *eightTexture;
 
 SDL_Texture *leaveTexture;
 
@@ -139,6 +150,15 @@ void loadTextures(SDL_Renderer *renderer) {
     bullet_left = IMG_LoadTexture(renderer, "images/bullet.png");
 
     leaveTexture = IMG_LoadTexture(renderer, "images/leave.png");
+    firstTexture = IMG_LoadTexture(renderer, "images/first.png");
+    secondTexture = IMG_LoadTexture(renderer, "images/second.png");
+    thirdTexture = IMG_LoadTexture(renderer, "images/third.png");
+    fourTexture = IMG_LoadTexture(renderer, "images/four.png");
+    fiveTexture = IMG_LoadTexture(renderer, "images/five.png");
+    sixTexture = IMG_LoadTexture(renderer, "images/six.png");
+    sevenTexture = IMG_LoadTexture(renderer, "images/seven.png");
+    eightTexture = IMG_LoadTexture(renderer, "images/eight.png");
+
 
     friendTank = friendUp;
     myTank = meUp;
@@ -146,6 +166,8 @@ void loadTextures(SDL_Renderer *renderer) {
     loginBigTextTexture = SDL_CreateTextureFromSurface(renderer, loginBigTextSurface); 
     rankingBigTextTexture = SDL_CreateTextureFromSurface(renderer, rankingBigTextSurface); 
     gameoverBigTextTexture = SDL_CreateTextureFromSurface(renderer, gameOverBigTextSurface); 
+    wonBigTextTexture = SDL_CreateTextureFromSurface(renderer, wonBigTextSurface); 
+    pauseTextTexture = SDL_CreateTextureFromSurface(renderer, pauseTextSurface); 
     registerBigTextTexture = SDL_CreateTextureFromSurface(renderer, registerBigText); 
     roomsBigTextTexture = SDL_CreateTextureFromSurface(renderer, roomsBigText);
     usernameTextTexture = SDL_CreateTextureFromSurface(renderer, usernameText); 

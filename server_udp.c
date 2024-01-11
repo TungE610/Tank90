@@ -247,8 +247,6 @@ void *handleClient(void *arg) {
                 int roomId, playerId, direction;
                 extractDualShotMessage(buff, &roomId, &playerId, &direction);
 
-                printf("check direction: %d %d %d\n", roomId, playerId, direction);
-
                 if (rooms[roomId].first_player_id == playerId) {
 
                     for (int i = 0; i < number_of_players; i ++) {
@@ -312,9 +310,40 @@ void *handleClient(void *arg) {
                     strcpy(usernameScoreMessage, createScoreMessage(playersArray[i]->element.username, playersArray[i]->element.score, i + 1));
 
                     bytes_sent = send(player->socket, usernameScoreMessage, strlen(usernameScoreMessage), 0);
+
+                    bytes_received = recv(player->socket, buff, BUFF_SIZE, 0);
                 }
 
                 free(playersArray);
+            } else if (buff[0] == 0x10) {
+                int roomId, playerId;
+
+                extractPauseMessage(buff, &roomId, &playerId);
+                
+                if (rooms[roomId].first_player_id == playerId) {
+
+                    for (int i = 0; i < number_of_players; i ++) {
+
+                        if (players[i]->system_id == rooms[roomId].second_player_id) {
+
+                            char spause[BUFF_SIZE];
+                            sprintf(spause, "%c", 0x11);
+                            bytes_sent = send(players[i]->socket, spause, strlen(spause), 0);
+                            break;
+                        }
+                    }
+                } else {
+                     for (int i = 0; i < number_of_players; i ++) {
+
+                        if (players[i]->system_id == rooms[roomId].first_player_id) {
+
+                            char spause[BUFF_SIZE];
+                            sprintf(spause, "%c", 0x11);
+                            bytes_sent = send(players[i]->socket, spause, strlen(spause), 0);
+                            break;
+                        }
+                    }
+                }
             }
 
             // player->is_choosing_game_mode = 0;
