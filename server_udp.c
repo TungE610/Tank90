@@ -31,7 +31,6 @@ void registerPlayer(singleLinkedList* list,char message[], int socket, int id);
 void login(singleLinkedList* list,char message[], int socket, int id);
 
 void initRoom(Room *room, int first_player_id) {
-    room->id = room_nums;
     room->first_player_id = first_player_id;
     room->second_player_id = 0;
     room->status = 1;
@@ -103,12 +102,20 @@ void *handleClient(void *arg) {
 
                 int iplayer_id = atoi(player_id);
 
-                // Room *new_room = malloc(sizeof(Room)); // Allocate memory for new_room
-                initRoom(&rooms[room_nums], iplayer_id);
-                // &rooms[room_nums] = new_room;
+                int selectedRoomId = 0;
+
+
+                for (int i = 1; i <= room_nums; i ++) {
+                    if (rooms[i].status == 0){
+                        selectedRoomId = i;
+                    }
+                }
+
+                initRoom(&rooms[selectedRoomId], iplayer_id);
+
                 char snum[2];
 
-                sprintf(snum, "%d", room_nums);
+                sprintf(snum, "%d", selectedRoomId);
 
                 bytes_sent = send(player->socket, snum, strlen(snum), 0);
 
@@ -116,19 +123,17 @@ void *handleClient(void *arg) {
                 
                 int waitingRoom = 0;
 
-                for (int i =0 ;i <= room_nums; i ++) {
+                for (int i = 1 ;i <= room_nums; i ++) {
                     if (rooms[i].status == 1 || rooms[i].status == 2) {
                         waitingRoom++;
                     }
                 }
 
-                char swaitingRoom[BUFF_SIZE];
+                printf("waiting room: %d\n", waitingRoom);
 
-                if (waitingRoom == 0) {
-                    sprintf(swaitingRoom, "%d", 0);
-                } else {
-                    sprintf(swaitingRoom, "%d", waitingRoom);
-                }
+                char swaitingRoom[2];
+
+                sprintf(swaitingRoom, "%d", waitingRoom);
                 
                 bytes_sent = send(player->socket, swaitingRoom, strlen(swaitingRoom), 0);
 
@@ -136,9 +141,13 @@ void *handleClient(void *arg) {
 
                 buff[bytes_received] = '\0';
 
+                printf ("check ok: %s\n", buff);
+
                 if (strcmp(buff, "ok") == 0) {
                     if (waitingRoom > 0) {
-                        for (int i = 0 ;i <= room_nums; i ++) {
+                        for (int i = 1 ;i <= waitingRoom; i ++) {
+
+                            printf("room status id %d: %d\n", i, rooms[i].status);
 
                             if (rooms[i].status == 1 || rooms[i].status == 2) {
                                 char roomStateMessage[BUFF_SIZE];
@@ -150,6 +159,7 @@ void *handleClient(void *arg) {
                                     strcpy(roomStateMessage, createRoomStateMessage(i, rooms[i].status, rooms[i].first_player_id, rooms[i].second_player_id));
 
                                 }
+
                                 bytes_sent = send(player->socket, roomStateMessage, strlen(roomStateMessage), 0);
                             }
                         }
@@ -159,6 +169,9 @@ void *handleClient(void *arg) {
                 int playerId, roomId;
 
                 int res = extractJoinRoomMessage(buff, &playerId, &roomId);
+
+                printf("player id: %d\n", playerId);
+                printf("roomId: %d\n", roomId);
 
                 rooms[roomId].second_player_id = playerId;
 
@@ -194,7 +207,7 @@ void *handleClient(void *arg) {
 
                 for (int i = 0; i < number_of_players; i ++) {
 
-                    if (players[i]->system_id == rooms[roomId].first_player_id) {
+                    if (players[i]->system_id == rooms[roomId].first_player_id || players[i]->system_id == rooms[roomId].second_player_id) {
 
                         knownPlayer++;
 
@@ -343,6 +356,59 @@ void *handleClient(void *arg) {
                             break;
                         }
                     }
+                }
+            } else if (buff[0] == 0x12) {
+                int roomId, playerId;
+
+                extractCancelRoomMessage(buff, &roomId, &playerId);
+
+                rooms[roomId].first_player_id = 0;
+                rooms[roomId].status = 0;
+
+                room_nums --;
+
+                char sRoomNum[BUFF_SIZE];
+                sprintf(sRoomNum, "%d", room_nums);
+                bytes_sent = send(player->socket, sRoomNum, strlen(sRoomNum), 0);
+
+            } else if (buff[0] == 0x13) {
+
+                int roomId, playerId;
+
+                extractLeaveRoomMessage(buff, &roomId, &playerId);
+
+                rooms[roomId].status = 1;
+
+                if (rooms[roomId].first_player_id == playerId) {
+
+
+                    for (int i = 0; i < number_of_players; i ++) {
+
+                        if (players[i]->system_id == rooms[roomId].second_player_id) {
+
+                            char spause[BUFF_SIZE];
+                            sprintf(spause, "%c", 0x14);
+                            bytes_sent = send(players[i]->socket, spause, strlen(spause), 0);
+                            break;
+                        }
+                    }
+
+                    rooms[roomId].first_player_id = rooms[roomId].second_player_id;
+                    rooms[roomId].second_player_id = 0;
+                } else {
+
+
+                    for (int i = 0; i < number_of_players; i ++) {
+
+                        if (players[i]->system_id == rooms[roomId].first_player_id) {
+
+                            char spause[BUFF_SIZE];
+                            sprintf(spause, "%c", 0x15);
+                            bytes_sent = send(players[i]->socket, spause, strlen(spause), 0);
+                            break;
+                        }
+                    }
+                    rooms[roomId].second_player_id = 0;
                 }
             }
 

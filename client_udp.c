@@ -150,13 +150,13 @@ int main(){
             SDL_Rect loginBigTextRenderQuad = { 195, 100, loginBigTextSurface->w, loginBigTextSurface->h };
             SDL_Rect rankingBigTextRenderQuad = { 195, 100, rankingBigTextSurface->w, rankingBigTextSurface->h };
             SDL_Rect gameOverBigTextRenderQuad = { 150, 250, gameOverBigTextSurface->w, gameOverBigTextSurface->h };
-            SDL_Rect wonOverBigTextRenderQuad = { 240, 250, wonBigTextSurface->w, wonBigTextSurface->h };\
+            SDL_Rect wonOverBigTextRenderQuad = { 270, 250, wonBigTextSurface->w, wonBigTextSurface->h };\
             SDL_Rect pauseTextRenderQuad = {250, 250, pauseTextSurface->w, pauseTextSurface->h};
-            SDL_Rect roomsBigTextRenderQuad = { 195, 100, roomsBigText->w, roomsBigText->h };
+            SDL_Rect roomsBigTextRenderQuad = { 210, 100, roomsBigText->w, roomsBigText->h };
             SDL_Rect usernameRenderQuad = { 120, 200, usernameText->w, usernameText->h };
             SDL_Rect passwordRenderQuad = { 120, 250, passwordText->w, passwordText->h };
             SDL_Rect retypePasswordRenderQuad = { 120, 300, retypePasswordText->w, retypePasswordText->h };
-            SDL_Rect chooseModeRenderQuad = { 50, 100, chooseModeText->w, chooseModeText->h };
+            SDL_Rect chooseModeRenderQuad = { 70, 100, chooseModeText->w, chooseModeText->h };
             SDL_Rect rankingRenderQuad = { 600, 450, 80, 80};
             SDL_Rect singleModeRenderQuad = { 250, 250, singleModeText->w, singleModeText->h };
             SDL_Rect dualModeRenderQuad = { 250, 300, dualModeText->w, dualModeText->h };
@@ -483,9 +483,10 @@ int main(){
                 SDL_RenderCopy(renderer, roomsBigTextTexture, NULL, &roomsBigTextRenderQuad);
 
                 SDL_Texture *createRoomButton = IMG_LoadTexture(renderer, "./images/plus.png");
-                SDL_Rect createRoomRenderQuad = {480, 110, 40, 40};
+                SDL_Rect createRoomRenderQuad = {490, 110, 40, 40};
 
                 SDL_RenderCopy(renderer, createRoomButton, NULL, &createRoomRenderQuad);
+                SDL_RenderCopy(renderer, leaveTexture, NULL, &leaveRenderQuad);
 
                 if (foundRoomState == 0) {
                     SDL_Texture *notfoundTexture = IMG_LoadTexture(renderer, "images/nothingfound.png");
@@ -580,6 +581,16 @@ int main(){
 
                     SDL_RenderCopy(renderer, roomIdBigTextTexture, NULL, &roomIdBigTextRenderQuad);
 
+                    char sfriendId[BUFF_SIZE] = "opponent id:";
+                    char friendIdString[BUFF_SIZE];
+                    sprintf(friendIdString, "%d", friendId);
+                    strcat(sfriendId, friendIdString);
+
+                    SDL_Surface *opponentIdText = TTF_RenderText_Solid(TINY_FONT, sfriendId, WHITE);
+                    SDL_Texture *opponentIdTextTexture = SDL_CreateTextureFromSurface(renderer, opponentIdText);
+                    SDL_Rect opponentIdTextRenderQuad = { 110, 200, opponentIdText->w, opponentIdText->h };
+
+                    SDL_RenderCopy(renderer, opponentIdTextTexture, NULL, &opponentIdTextRenderQuad);
                 
                     SDL_Texture *readyTank = IMG_LoadTexture(renderer, "./images/readyTank.png");
                     SDL_Rect readyTankRect = {245, 210, 140, 100};
@@ -590,6 +601,8 @@ int main(){
                     SDL_Rect startRenderQuad = {245, 300, 140, 100};
 
                     SDL_RenderCopy(renderer, startTexture, NULL, &startRenderQuad);
+                    SDL_RenderCopy(renderer, leaveTexture, NULL, &leaveRenderQuad);
+
             } else if (state == SEEING_RANK) {
                 SDL_RenderClear(renderer);
 
@@ -710,6 +723,9 @@ int main(){
                                             if (chooseMode == 1) {
                                                 state = PLAY_SINGLE_MAP_1;
                                             } else {
+                                                printf("run here\n");
+                                                
+
                                                 char chooseRoomMessage[BUFF_SIZE];
 
                                                 strcpy(chooseRoomMessage, createChooseRoomMessage()); // 0x04
@@ -720,24 +736,31 @@ int main(){
                                                 buff[bytes_received] = '\0';
 
                                                 int waitingRoomNum = atoi(buff);
+                                                printf("waiting: %d\n", waitingRoomNum);
+                                                
                                                 bytes_sent = send(client_sock, "ok", strlen("ok"), 0);
 
                                                 if (waitingRoomNum == 0) {
                                                     foundRoomState = 0;
 
                                                 } else {
+                                                    room_nums = 0;
+                                                    foundRoomState ++;
+
                                                     for (int i = 1; i <= waitingRoomNum; i ++) {
                                                         bytes_received =recv(client_sock, buff, sizeof(buff), 0);
-                                                        foundRoomState ++;
+
                                                         int id, state,  first_player_id, second_player_id;
                                                         extractAndChangeValues(buff, &id, &state, &first_player_id, &second_player_id);
                                                         room_nums ++;
+                                                        printf("get room info %d\n", room_nums);
                                                         initRoom(&rooms[room_nums], id, state, first_player_id, second_player_id);
+                                                        
                                                     }
                                                 }
+
                                                 state = CHOOSE_ROOM;
                                             }
-
                                             break;
                                 }
 
@@ -1007,14 +1030,60 @@ int main(){
                                 case GAME_OVER:
                                     switch (e.key.keysym.sym) {
                                         case SDLK_RETURN:
-                                            state = CHOOSE_MODE;
+                                            state = READY_TO_PLAY_DUAL;
+                                            me_revival = 3;
+                                            friend_revival = 3;
+
+                                            dual_control_vertical_controller = 88;
+                                            dual_control_hozirontal_controller = 32;
+
+                                            dual_control_vertical_controller_friend = 88;
+                                            dual_control_hozirontal_controller_friend = 64;
+
+                                            dual_mode_position_x = 4;
+                                            dual_mode_position_y = 11;
+                                            dual_mode_position_x_friend = 8;
+                                            dual_mode_position_y_friend = 11;
+                                            dual_controlRect.x = 240;
+                                            dual_controlRect.y = 440;
+
+                                            dual_friendRect.x = 400;
+                                            dual_friendRect.y = 440;
+
+                                            char updateScoreMessage[BUFF_SIZE];
+                                            strcpy(updateScoreMessage, createUpdateScoreMessage(myId, single_scores));
+
+                                            bytes_sent = send(client_sock, updateScoreMessage, strlen(updateScoreMessage), 0);
                                         break;
                                     }
                                 break;
                                 case WON:
                                     switch (e.key.keysym.sym) {
                                         case SDLK_RETURN:
-                                            state = CHOOSE_MODE;
+                                            state = READY_TO_PLAY_DUAL;
+                                            me_revival = 3;
+                                            friend_revival = 3;
+                                            dual_control_vertical_controller = 88;
+                                            dual_control_hozirontal_controller = 32;
+
+                                            dual_control_vertical_controller_friend = 88;
+                                            dual_control_hozirontal_controller_friend = 64;
+
+                                            dual_mode_position_x = 4;
+                                            dual_mode_position_y = 11;
+                                            dual_mode_position_x_friend = 8;
+                                            dual_mode_position_y_friend = 11;
+
+                                            dual_controlRect.x = 240;
+                                            dual_controlRect.y = 440;
+
+                                            dual_friendRect.x = 400;
+                                            dual_friendRect.y = 440;
+
+                                            char updateScoreMessage[BUFF_SIZE];
+                                            strcpy(updateScoreMessage, createUpdateScoreMessage(myId, single_scores));
+
+                                            bytes_sent = send(client_sock, updateScoreMessage, strlen(updateScoreMessage), 0);
                                         break;
                                     }
                                 break;
@@ -1119,6 +1188,8 @@ int main(){
                         else if (state == CHOOSE_ROOM) {
                             SDL_GetMouseState(&mouseX, &mouseY);
                             if (mouseX >= 480 && mouseX <= 520 && mouseY >= 110 && mouseY <= 150) {
+                                state = WAITING_OTHER;
+
                                 char createRommMessage[BUFF_SIZE];
 
                                 strcpy(createRommMessage , createCreateRoomMessage(myId));
@@ -1130,10 +1201,7 @@ int main(){
                                 buff[bytes_received] = '\0';
                                 in_room_id = atoi(buff);
 
-                                rooms[in_room_id].status = 1;
-                                rooms[in_room_id].first_player_id = myId;
-
-                                state = WAITING_OTHER;
+                                printf("recreated id: %d\n", in_room_id);
 
                                 isFirstUserInRoom = 1;
 
@@ -1144,8 +1212,10 @@ int main(){
 
                                 receiveThreadCreated1 = 1;  // Set the flag to indicate that the thread is created
                                 pthread_detach(tid);
+                        } else if (mouseX > 30 && mouseX < 70 && mouseY > 100 && mouseY < 140) {
+                                state = CHOOSE_MODE;
+
                         } else {
-                            SDL_GetMouseState(&mouseX, &mouseY);
 
                             int row = (mouseY - 200) /100;
                             int col = (mouseX - 100) / 120;
@@ -1168,8 +1238,10 @@ int main(){
                                         buff[bytes_received] = '\0';
 
                                         friendId = atoi(buff);
+
+                                        printf("friend id: %d\n", friendId);
                                         
-                                        if (strlen(buff) > 0) {
+                                        if (friendId > 0) {
                                             state = READY_TO_PLAY_DUAL;
 
                                             if (pthread_create(&pid, NULL, receiveThread1, (void*)&client_sock) != 0) {
@@ -1179,7 +1251,6 @@ int main(){
 
                                             receiveThreadCreated2 = 1;  // Set the flag to indicate that the thread is created
                                             pthread_detach(pid);
-                            //                 ready_to_start = 1;
                                         }
                                     }
                                 }
@@ -1213,12 +1284,41 @@ int main(){
 
                                 bytes_sent = send(client_sock, startDualGameMessage, strlen(startDualGameMessage), 0);
                             }
+
+                            if (mouseX > 30 && mouseX < 70 && mouseY > 100 && mouseY < 140) {
+                                
+                                state = CHOOSE_ROOM;
+                                
+                                rooms[in_room_id].status = 1;
+                                
+                                isFirstUserInRoom = 0;
+                                friendId = 0;
+                                
+                                char leaveRoomMessage[BUFF_SIZE];
+
+                                strcpy(leaveRoomMessage, createLeaveRoomMessage(in_room_id, myId));
+                                
+                                bytes_sent = send(client_sock, leaveRoomMessage, strlen(leaveRoomMessage), 0);
+
+                                in_room_id = 0;
+                            }
                         } else if (state == WAITING_OTHER) {
                             SDL_GetMouseState(&mouseX, &mouseY);
 
                             if (mouseX > 30 && mouseX < 70 && mouseY > 100 && mouseY < 140) {
-                                
-                               
+                                state = CHOOSE_ROOM;
+
+                                isFirstUserInRoom = 0;
+                                rooms[in_room_id].status = 0;
+                                rooms[in_room_id].first_player_id = 0;
+
+                                char cancelRoomMessage[BUFF_SIZE];
+
+                                strcpy(cancelRoomMessage, createCancelMessage(in_room_id, myId));
+
+                                bytes_sent = send(client_sock, cancelRoomMessage, strlen(cancelRoomMessage), 0);
+                                in_room_id = 0;
+                                isFirstUserInRoom = 0;
                             }
                         } else if (state == SEEING_RANK) {
                             SDL_GetMouseState(&mouseX, &mouseY);
@@ -1280,10 +1380,12 @@ void renderRooms(SDL_Renderer *renderer, SDL_Texture *roomTexture, TTF_Font *fon
 
         SDL_RenderCopy(renderer, roomTexture, NULL, &roomRect);
 
-        char roomIdText[2];
-        snprintf(roomIdText, sizeof(roomIdText), "%d", rooms[i].id);
+        char roomIdText[6] = "Id:";
+        char sid[2];
+        snprintf(sid, sizeof(sid), "%d", rooms[i].id);
+        strcat(roomIdText, sid);
 
-        SDL_Surface *textSurface = TTF_RenderText_Solid(font, roomIdText, (SDL_Color){255, 255, 255, 255});
+        SDL_Surface *textSurface = TTF_RenderText_Solid(MINI_FONT, roomIdText, (SDL_Color){255, 255, 255, 255});
         SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
         SDL_FreeSurface(textSurface);
 
@@ -1291,8 +1393,8 @@ void renderRooms(SDL_Renderer *renderer, SDL_Texture *roomTexture, TTF_Font *fon
         SDL_QueryTexture(textTexture, NULL, NULL, &textWidth, &textHeight);
 
         SDL_Rect textRect = {
-            roomRect.x+35,
-            roomRect.y-25,
+            roomRect.x+15,
+            roomRect.y-15,
             textWidth,
             textHeight
         };
@@ -1302,23 +1404,23 @@ void renderRooms(SDL_Renderer *renderer, SDL_Texture *roomTexture, TTF_Font *fon
         char roomStatusText[2]; // Adjust the size as needed
         snprintf(roomStatusText, sizeof(roomIdText), "%d", rooms[i].status);
 
-        SDL_Surface *roomStatusTextSurface = TTF_RenderText_Solid(TINY_FONT, roomStatusText, (SDL_Color){255, 255, 255, 255});
+        SDL_Surface *roomStatusTextSurface = TTF_RenderText_Solid(MINI_FONT, roomStatusText, (SDL_Color){255, 255, 255, 255});
         SDL_Texture *roomStatusTextTexture = SDL_CreateTextureFromSurface(renderer, roomStatusTextSurface);
         SDL_FreeSurface(roomStatusTextSurface);
 
         SDL_Rect roomStatusRect = {
-            roomRect.x+75,
-            roomRect.y+85,
+            roomRect.x+30,
+            roomRect.y+ 85,
             roomStatusTextSurface->w,
             roomStatusTextSurface->h
         };
 
         SDL_RenderCopy(renderer, roomStatusTextTexture, NULL, &roomStatusRect);
-        SDL_Texture *personTexture = IMG_LoadTexture(renderer, "images/person.jpg");
+        SDL_Texture *personTexture = IMG_LoadTexture(renderer, "images/person.png");
 
         SDL_Rect personRect = {
-            roomRect.x+15,
-            roomRect.y+90,
+            roomRect.x + 45,
+            roomRect.y + 85,
             15,15
         };
 
@@ -1331,7 +1433,8 @@ void* receiveThread(void* arg) {
     char buff[BUFF_SIZE];
     int bytes_received;
 
-    while (1) {
+    while (state == WAITING_OTHER || state == READY_TO_PLAY_DUAL || state == PLAY_DUAL_GAME) {
+
         bytes_received = recv(client_sock, buff, BUFF_SIZE - 1, 0);
 
         buff[bytes_received] = '\0';
@@ -1404,6 +1507,19 @@ void* receiveThread(void* arg) {
             } else {
                 dual_game_paused = 0;
             }
+        } else if (buff[0] == 0x14) {
+
+            isFirstUserInRoom = 1;
+
+            state = WAITING_OTHER;
+            friendId = 0;
+            // rooms[in_room_id].first_player_id = myId;
+            // rooms[in_room_id].second_player_id = 0;
+
+        } else if (buff[0] == 0x15) {
+
+            state = WAITING_OTHER;
+            friendId = 0;
         }
     }
 
@@ -1415,7 +1531,7 @@ void* receiveThread1(void* arg) {
     char buff[BUFF_SIZE];
     int bytes_received;
 
-    while (1) {
+    while (state == WAITING_OTHER || state == READY_TO_PLAY_DUAL || state == PLAY_DUAL_GAME) {
         bytes_received = recv(client_sock, buff, BUFF_SIZE - 1, 0);
 
         buff[bytes_received] = '\0';
@@ -1471,6 +1587,17 @@ void* receiveThread1(void* arg) {
             } else {
                 dual_game_pause = 0;
             }
+        } else if (buff[0] == 0x14) {
+            isFirstUserInRoom = 1;
+
+            state = WAITING_OTHER;
+            friendId = 0;
+            // rooms[in_room_id].first_player_id = myId;
+            // rooms[in_room_id].second_player_id = 0;
+        } else if (buff[0] == 0x15) {
+            
+            state = WAITING_OTHER;
+            friendId = 0;
         }
     }
 
@@ -1495,8 +1622,6 @@ void* receiveThread2(void* arg) {
             int rank;
 
             extractScoreMessage(buff, username, &score, &rank);
-
-            printf("top player %d: %s, %d\n", rank, username, score);
 
             strcpy(topPlayer[rank-1].username, username);
             topPlayer[rank-1].score = score;
