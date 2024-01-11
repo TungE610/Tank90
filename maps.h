@@ -551,6 +551,7 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                         single_1_enermies[j].blood --;
                         single_1_bullet[i].player_id = 0;
                         single_1_bullet[i].is_active = 0;
+                        hit = 1;
 
                         if (single_1_enermies[j].blood <= 0) {
                             single_scores ++;
@@ -570,9 +571,11 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                     state = GAME_OVER;
                 }
 
-                if (single_1_bulletRect[i].y > 440 || (single_map_1[(single_1_bulletRect[i].y)/40 + 2][round_integer_division(single_1_bulletRect[i].x-80, 40)] != 0 && single_1_bulletRect[i].y % 40 > 15)) {
-                    single_1_bullet[i].is_active = 0;
-                    single_1_bullet[i].player_id = 0;
+                if (hit == 0) {
+                    if (single_1_bulletRect[i].y > 440 || (single_map_1[(single_1_bulletRect[i].y)/40 + 2][round_integer_division(single_1_bulletRect[i].x-80, 40)] != 0 && single_1_bulletRect[i].y % 40 > 15)) {
+                        single_1_bullet[i].is_active = 0;
+                        single_1_bullet[i].player_id = 0;
+                    }
                 }
                 
                 if (single_1_bullet[i].is_active == 1) {
@@ -597,7 +600,7 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                         single_1_enermies[j].blood --;
                         single_1_bullet[i].player_id = 0;
                         single_1_bullet[i].is_active = 0;
-
+                        hit == 1;
                         if (single_1_enermies[j].blood <= 0) {
                             single_scores ++;
                             single_1_enermyTexture[j] = IMG_LoadTexture(renderer, "images/hitted.png");
@@ -616,10 +619,12 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                     state = GAME_OVER;
                 }
 
-                if (single_1_bulletRect[i].x > 520 || (single_map_1[round_integer_division(single_1_bulletRect[i].y,40)][(single_1_bulletRect[i].x-80)/40 + 2] != 0 && single_1_bulletRect[i].x % 40 > 15)) {
-                    single_1_bullet[i].is_active = 0;
-                    single_1_bullet[i].player_id = 0;
-                } 
+                if (hit == 0) {
+                    if (single_1_bulletRect[i].x > 520 || (single_map_1[round_integer_division(single_1_bulletRect[i].y,40)][(single_1_bulletRect[i].x-80)/40 + 2] != 0 && single_1_bulletRect[i].x % 40 > 15)) {
+                        single_1_bullet[i].is_active = 0;
+                        single_1_bullet[i].player_id = 0;
+                    } 
+                }
 
                 if (single_1_bullet[i].is_active == 1) {
                     single_1_bulletRect[i].x += 8;
@@ -644,7 +649,7 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                         single_1_enermies[j].blood --;
                         single_1_bullet[i].player_id = 0;
                         single_1_bullet[i].is_active = 0;
-
+                        hit == 1;
                         if (single_1_enermies[j].blood <= 0) {
                             single_scores ++;
                             single_1_enermyTexture[j] = IMG_LoadTexture(renderer, "images/hitted.png");
@@ -663,10 +668,12 @@ void renderBulletSingle1(SDL_Renderer *renderer) {
                     state = GAME_OVER;
                 }
 
-                if (single_1_bulletRect[i].x < 80 || (single_map_1[round_integer_division(single_1_bulletRect[i].y,40)][(single_1_bulletRect[i].x-80)/40 - 1] != 0 && single_1_bulletRect[i].x % 40 < 15)) {
-                    single_1_bullet[i].is_active = 0;
-                    single_1_bullet[i].player_id = 0;
-                } 
+                if (hit == 0) {
+                    if (single_1_bulletRect[i].x < 80 || (single_map_1[round_integer_division(single_1_bulletRect[i].y,40)][(single_1_bulletRect[i].x-80)/40 - 1] != 0 && single_1_bulletRect[i].x % 40 < 15)) {
+                        single_1_bullet[i].is_active = 0;
+                        single_1_bullet[i].player_id = 0;
+                    } 
+                }
                 if (single_1_bullet[i].is_active == 1) {
                     single_1_bulletRect[i].x -= 8;
                 }
@@ -798,6 +805,7 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
             SDL_RenderCopy(renderer, bulletTexture[i], NULL, &single_2_bulletRect[i]);
         }
         if (single_2_bullet[i].is_active == 1) {
+            int hit = 0;
             if (single_2_bullet[i].direction == UP) {
                 for (int j = 0; j < 5; j++) {
                     int alreadyRemoved = 0;
@@ -816,6 +824,7 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                             single_2_enermies[j].blood--;
                             if (single_2_enermies[j].blood <= 0) {
                                 single_scores++;
+                                hit = 1;
 
                                 single_2_enermyTexture[j] = IMG_LoadTexture(renderer, "images/hitted.png");
                                 SDL_RenderCopy(renderer, single_2_enermyTexture[j], NULL, &single_2_enermy_react[j]);
@@ -839,9 +848,11 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                         state = GAME_OVER;
                 }
 
-                if (single_2_bulletRect[i].y < 8 || (single_map_2[(single_2_bulletRect[i].y)/40 - 1][round_integer_division(single_2_bulletRect[i].x-80, 40)] != 0 && single_2_bulletRect[i].y % 40 < 15)) {
-                    single_2_bullet[i].is_active = 0;
-                    single_2_bullet[i].player_id = 0;
+                if (hit == 0) {
+                    if (single_2_bulletRect[i].y < 8 || (single_map_2[(single_2_bulletRect[i].y)/40 - 1][round_integer_division(single_2_bulletRect[i].x-80, 40)] != 0 && single_2_bulletRect[i].y % 40 < 15)) {
+                        single_2_bullet[i].is_active = 0;
+                        single_2_bullet[i].player_id = 0;
+                    }
                 }
 
                 if (single_2_bullet[i].is_active == 1) {
@@ -866,7 +877,7 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                         single_2_enermies[j].blood --;
                         single_2_bullet[i].player_id = 0;
                         single_2_bullet[i].is_active = 0;
-
+                        hit = 1;
                         if (single_2_enermies[j].blood <= 0) {
                             single_scores ++;
                             single_2_enermyTexture[j] = IMG_LoadTexture(renderer, "images/hitted.png");
@@ -885,9 +896,11 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                     state = GAME_OVER;
                 }
 
-                if (single_2_bulletRect[i].y > 440 || (single_map_2[(single_2_bulletRect[i].y)/40 + 2][round_integer_division(single_2_bulletRect[i].x-80, 40)] != 0 && single_2_bulletRect[i].y % 40 > 15)) {
-                    single_2_bullet[i].is_active = 0;
-                    single_2_bullet[i].player_id = 0;
+                if (hit == 0) {
+                    if (single_2_bulletRect[i].y > 440 || (single_map_2[(single_2_bulletRect[i].y)/40 + 2][round_integer_division(single_2_bulletRect[i].x-80, 40)] != 0 && single_2_bulletRect[i].y % 40 > 15)) {
+                        single_2_bullet[i].is_active = 0;
+                        single_2_bullet[i].player_id = 0;
+                    }
                 }
                 
                 if (single_2_bullet[i].is_active == 1) {
@@ -912,6 +925,7 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                         single_2_enermies[j].blood --;
                         single_2_bullet[i].player_id = 0;
                         single_2_bullet[i].is_active = 0;
+                        hit = 1;
 
                         if (single_2_enermies[j].blood <= 0) {
                             single_scores ++;
@@ -931,10 +945,12 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                     state = GAME_OVER;
                 }
 
-                if (single_2_bulletRect[i].x > 520 || (single_map_2[round_integer_division(single_2_bulletRect[i].y,40)][(single_2_bulletRect[i].x-80)/40 + 2] != 0 && single_2_bulletRect[i].x % 40 > 15)) {
-                    single_2_bullet[i].is_active = 0;
-                    single_2_bullet[i].player_id = 0;
-                } 
+                if (hit == 0) {
+                    if (single_2_bulletRect[i].x > 520 || (single_map_2[round_integer_division(single_2_bulletRect[i].y,40)][(single_2_bulletRect[i].x-80)/40 + 2] != 0 && single_2_bulletRect[i].x % 40 > 15)) {
+                        single_2_bullet[i].is_active = 0;
+                        single_2_bullet[i].player_id = 0;
+                    } 
+                }
 
                 if (single_2_bullet[i].is_active == 1) {
                     single_2_bulletRect[i].x += 8;
@@ -958,6 +974,7 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                         single_2_enermies[j].blood --;
                         single_2_bullet[i].player_id = 0;
                         single_2_bullet[i].is_active = 0;
+                        hit = 1;
 
                         if (single_2_enermies[j].blood <= 0) {
                             single_scores ++;
@@ -977,10 +994,13 @@ void renderBulletSingle2(SDL_Renderer *renderer) {
                     state = GAME_OVER;
                 }
 
-                if (single_2_bulletRect[i].x < 80 || (single_map_2[round_integer_division(single_2_bulletRect[i].y,40)][(single_2_bulletRect[i].x-80)/40 - 1] != 0 && single_2_bulletRect[i].x % 40 < 15)) {
-                    single_2_bullet[i].is_active = 0;
-                    single_2_bullet[i].player_id = 0;
-                } 
+                if (hit == 0) {
+                    if (single_2_bulletRect[i].x < 80 || (single_map_2[round_integer_division(single_2_bulletRect[i].y,40)][(single_2_bulletRect[i].x-80)/40 - 1] != 0 && single_2_bulletRect[i].x % 40 < 15)) {
+                        single_2_bullet[i].is_active = 0;
+                        single_2_bullet[i].player_id = 0;
+                    } 
+                }
+
                 if (single_2_bullet[i].is_active == 1) {
                     single_2_bulletRect[i].x -= 8;
                 }
@@ -1111,6 +1131,9 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
             SDL_RenderCopy(renderer, bulletTexture[i], NULL, &single_3_bulletRect[i]);
         }
         if (single_3_bullet[i].is_active == 1) {
+
+            int hit = 0;
+
             if (single_3_bullet[i].direction == UP) {
                 for (int j = 0; j < 6; j++) {
                     int alreadyRemoved = 0;
@@ -1129,6 +1152,7 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                             single_3_enermies[j].blood--;
                             if (single_3_enermies[j].blood <= 0) {
                                 single_scores++;
+                                hit = 1;
 
                                 single_3_enermyTexture[j] = IMG_LoadTexture(renderer, "images/hitted.png");
                                 SDL_RenderCopy(renderer, single_3_enermyTexture[j], NULL, &single_3_enermy_react[j]);
@@ -1152,9 +1176,11 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
 
                 }
 
-                if (single_3_bulletRect[i].y < 8 || (single_map_3[(single_3_bulletRect[i].y)/40 - 1][round_integer_division(single_3_bulletRect[i].x-80, 40)] != 0 && single_3_bulletRect[i].y % 40 < 15)) {
-                    single_3_bullet[i].is_active = 0;
-                    single_3_bullet[i].player_id = 0;
+                if (hit == 0) {
+                    if (single_3_bulletRect[i].y < 8 || (single_map_3[(single_3_bulletRect[i].y)/40 - 1][round_integer_division(single_3_bulletRect[i].x-80, 40)] != 0 && single_3_bulletRect[i].y % 40 < 15)) {
+                        single_3_bullet[i].is_active = 0;
+                        single_3_bullet[i].player_id = 0;
+                    }
                 }
 
                 if (single_3_bullet[i].is_active == 1) {
@@ -1179,6 +1205,7 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                         single_3_enermies[j].blood --;
                         single_3_bullet[i].player_id = 0;
                         single_3_bullet[i].is_active = 0;
+                        hit = 1;
 
                         if (single_3_enermies[j].blood <= 0) {
                             single_scores ++;
@@ -1198,9 +1225,11 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                     state = GAME_OVER;
                 }
 
-                if (single_3_bulletRect[i].y > 440 || (single_map_3[(single_3_bulletRect[i].y)/40 + 2][round_integer_division(single_3_bulletRect[i].x-80, 40)] != 0 && single_3_bulletRect[i].y % 40 > 15)) {
-                    single_3_bullet[i].is_active = 0;
-                    single_3_bullet[i].player_id = 0;
+                if ( hit == 0 ) {
+                    if (single_3_bulletRect[i].y > 440 || (single_map_3[(single_3_bulletRect[i].y)/40 + 2][round_integer_division(single_3_bulletRect[i].x-80, 40)] != 0 && single_3_bulletRect[i].y % 40 > 15)) {
+                        single_3_bullet[i].is_active = 0;
+                        single_3_bullet[i].player_id = 0;
+                    }
                 }
                 
                 if (single_3_bullet[i].is_active == 1) {
@@ -1225,6 +1254,7 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                         single_3_enermies[j].blood --;
                         single_3_bullet[i].player_id = 0;
                         single_3_bullet[i].is_active = 0;
+                        hit = 1;
 
                         if (single_3_enermies[j].blood <= 0) {
                             single_scores ++;
@@ -1244,10 +1274,13 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                     state = GAME_OVER;
                 }
 
-                if (single_3_bulletRect[i].x > 520 || (single_map_3[round_integer_division(single_3_bulletRect[i].y,40)][(single_3_bulletRect[i].x-80)/40 + 2] != 0 && single_3_bulletRect[i].x % 40 > 15)) {
-                    single_3_bullet[i].is_active = 0;
-                    single_3_bullet[i].player_id = 0;
-                } 
+                if (hit == 0) {
+                    if (single_3_bulletRect[i].x > 520 || (single_map_3[round_integer_division(single_3_bulletRect[i].y,40)][(single_3_bulletRect[i].x-80)/40 + 2] != 0 && single_3_bulletRect[i].x % 40 > 15)) {
+                        single_3_bullet[i].is_active = 0;
+                        single_3_bullet[i].player_id = 0;
+                    } 
+                }
+                
 
                 if (single_3_bullet[i].is_active == 1) {
                     single_3_bulletRect[i].x += 8;
@@ -1271,6 +1304,7 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                         single_3_enermies[j].blood --;
                         single_3_bullet[i].player_id = 0;
                         single_3_bullet[i].is_active = 0;
+                        hit = 1;
 
                         if (single_3_enermies[j].blood <= 0) {
                             single_scores ++;
@@ -1289,10 +1323,14 @@ void renderBulletSingle3(SDL_Renderer *renderer) {
                     single_scores-= 5;
                     state = GAME_OVER;
                 }
-                if (single_3_bulletRect[i].x < 80 || (single_map_3[round_integer_division(single_3_bulletRect[i].y,40)][(single_3_bulletRect[i].x-80)/40 - 1] != 0 && single_3_bulletRect[i].x % 40 < 15)) {
-                    single_3_bullet[i].is_active = 0;
-                    single_3_bullet[i].player_id = 0;
-                } 
+
+                if (hit == 0) {
+                    if (single_3_bulletRect[i].x < 80 || (single_map_3[round_integer_division(single_3_bulletRect[i].y,40)][(single_3_bulletRect[i].x-80)/40 - 1] != 0 && single_3_bulletRect[i].x % 40 < 15)) {
+                        single_3_bullet[i].is_active = 0;
+                        single_3_bullet[i].player_id = 0;
+                    } 
+                }
+                
                 if (single_3_bullet[i].is_active == 1) {
                     single_3_bulletRect[i].x -= 8;
                 }
