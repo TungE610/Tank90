@@ -5,8 +5,8 @@
 
 typedef struct
 {
-	char username[256];
-	char password[256];
+	char username[1024];
+	char password[1024];
 	int status;
 	int logged;
 	int id;
@@ -154,11 +154,10 @@ void appendAccountToFile(char username[], char password[], int id) {
 		perror("Data file not found");
 		return;
 	}
-
 	char hashedPassword[SHA256_DIGEST_LENGTH * 2 + 1];
     hashPassword(password, hashedPassword);
 
-	fprintf(fp, "\n%s %s 1 0 %d 0", username, hashedPassword, id); 					// new user's state is active
+	fprintf(fp, "%s %s 1 0 %d 0", username, hashedPassword, id); 					// new user's state is active
 
 	fclose(fp); 													// close file
 }
@@ -215,17 +214,17 @@ void userIsLoggin(singleLinkedList *list, char username[]) {
 	rewriteFile(list);									
 }
 
-void logoutUser(singleLinkedList *list, char username[]) {
+void logoutUser(singleLinkedList *list) {
 
 	//readDatatoList(list);
 	list->cur = list->root;
 
 	while (list->cur != NULL) {										//traverse till find out user which has username matching
 
-		if (strcmp(list->cur->element.username, username) == 0) {
+		//if (strcmp(list->cur->element.username, username) == 0) {
 			list->cur->element.logged = 0;
-			break;
-		}
+		// 	break;
+		// }
 
 		list->cur = list->cur->next;
 	}
@@ -258,8 +257,8 @@ int registerUser(singleLinkedList *list, char *username, char*password, int id) 
 	if (findAccount(list, username)) { 							// check if username existed in account file
 		return 0;
 	} else {
-		//readDatatoList(list);							// save new user infomation to file
 		appendAccountToFile(username, password, id); 	
+		//readDatatoList(list);							// save new user infomation to file
 		return 1;
 	}
 
