@@ -145,7 +145,8 @@ int main(){
             SDL_Rect loginBigTextRenderQuad = { 195, 100, loginBigTextSurface->w, loginBigTextSurface->h };
             SDL_Rect rankingBigTextRenderQuad = { 195, 100, rankingBigTextSurface->w, rankingBigTextSurface->h };
             SDL_Rect gameOverBigTextRenderQuad = { 150, 250, gameOverBigTextSurface->w, gameOverBigTextSurface->h };
-            SDL_Rect wonOverBigTextRenderQuad = { 240, 250, wonBigTextSurface->w, wonBigTextSurface->h };
+            SDL_Rect wonOverBigTextRenderQuad = { 240, 250, wonBigTextSurface->w, wonBigTextSurface->h };\
+            SDL_Rect pauseTextRenderQuad = {300, 300, pauseTextSurface->w, pauseTextSurface->h};
             SDL_Rect roomsBigTextRenderQuad = { 195, 100, roomsBigText->w, roomsBigText->h };
             SDL_Rect usernameRenderQuad = { 120, 200, usernameText->w, usernameText->h };
             SDL_Rect passwordRenderQuad = { 120, 250, passwordText->w, passwordText->h };
@@ -504,6 +505,10 @@ int main(){
                 SDL_Texture *scoreNumTextTexture = SDL_CreateTextureFromSurface(renderer, scoreNumTextSurface);
                 SDL_Rect scoreNumTextRenderQuad = { 610, 290, scoreNumTextSurface->w, scoreNumTextSurface->h };
                 SDL_RenderCopy(renderer, scoreNumTextTexture, NULL, &scoreNumTextRenderQuad);
+
+                if (dual_game_pause == 1 || dual_game_paused == 1) {
+                    SDL_RenderCopy(renderer, pauseTextTexture, NULL, &pauseTextRenderQuad);
+                }
 
             } 
             else if (state == WAITING_OTHER) {
