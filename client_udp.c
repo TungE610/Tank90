@@ -50,6 +50,8 @@ void renderRooms(SDL_Renderer *renderer, SDL_Texture *roomTexture, TTF_Font *fon
 void checkRooms();
 void* receiveThread(void* arg);
 void* receiveThread1(void* arg);
+void* receiveThread2(void* arg);
+
 void renderDualModeGame(SDL_Renderer *renderer, SDL_Texture *myTank, SDL_Texture *friendTank, SDL_Texture* bulletTexture[]);
 
 int main(){
@@ -71,9 +73,12 @@ int main(){
     int mouseX, mouseY;
     pthread_t tid;
     pthread_t pid;
+    pthread_t kid;
 
     int receiveThreadCreated1 = 0;
     int receiveThreadCreated2 = 0;
+    int receiveThreadCreated3 = 0;
+    
     
     sin_size = sizeof(server_addr);
     int player_id;
@@ -157,7 +162,14 @@ int main(){
             SDL_Rect dualModeRenderQuad = { 250, 300, dualModeText->w, dualModeText->h };
             SDL_Rect tankRectChooseMode = {200, 242, TANK_WIDTH, TANK_HEIGHT};
             SDL_Rect leaveRenderQuad = {30, 100, 40, 40};
-
+            SDL_Rect firstRenderQuad = {150, 185, 40, 40};
+            SDL_Rect secondRenderQuad = {150, 225, 40, 40};
+            SDL_Rect thirdRenderQuad = {150, 265, 40, 40};
+            SDL_Rect fourRenderQuad = {150, 305, 40, 40};
+            SDL_Rect fiveRenderQuad = {150, 345, 40, 40};
+            SDL_Rect sixRenderQuad = {150, 385, 40, 40};
+            SDL_Rect sevenRenderQuad = {150, 425, 40, 40};
+            SDL_Rect eightRenderQuad = {150, 465, 40, 40};
 
             initTextbox(&usernameLoginTextbox, 320, 195, 200, 30);
             initTextbox(&passwordLoginTextbox, 320, 245, 200, 30);
@@ -396,6 +408,10 @@ int main(){
                 SDL_Rect scoreNumTextRenderQuad = { 610, 290, scoreNumTextSurface->w, scoreNumTextSurface->h };
                 SDL_RenderCopy(renderer, scoreNumTextTexture, NULL, &scoreNumTextRenderQuad);
 
+                if (single_game_1_pause == 1) {
+                    SDL_RenderCopy(renderer, pauseTextTexture, NULL, &pauseTextRenderQuad);
+                }
+
             } else if (state == CHANGING_TO_SINGLE_MAP_2) {
                 SDL_RenderClear(renderer);
                 renderChangeMapScreen(renderer, 2);
@@ -422,6 +438,10 @@ int main(){
                 renderSingle2Enermies(renderer, single_2_enermies);
 
                 renderBulletSingle2(renderer);
+
+                if (single_game_2_pause == 1) {
+                    SDL_RenderCopy(renderer, pauseTextTexture, NULL, &pauseTextRenderQuad);
+                }
 
             } else if (state == CHANGING_TO_SINGLE_MAP_3) {
                 SDL_RenderClear(renderer);
@@ -451,6 +471,10 @@ int main(){
                 renderSingle3Enermies(renderer, single_3_enermies);
 
                 renderBulletSingle3(renderer);
+
+                if (single_game_3_pause == 1) {
+                    SDL_RenderCopy(renderer, pauseTextTexture, NULL, &pauseTextRenderQuad);
+                }
             }
             else if (state == CHOOSE_ROOM) {
                 SDL_RenderClear(renderer);
@@ -571,18 +595,43 @@ int main(){
 
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                 SDL_RenderCopy(renderer, rankingBigTextTexture, NULL, &rankingBigTextRenderQuad);
-                
-                // if (strlen(topPlayer[0].username) > 0) {
+                SDL_RenderCopy(renderer, firstTexture, NULL, &firstRenderQuad);
+                SDL_RenderCopy(renderer, secondTexture, NULL, &secondRenderQuad);
+                SDL_RenderCopy(renderer, thirdTexture, NULL, &thirdRenderQuad);
+                SDL_RenderCopy(renderer, fourTexture, NULL, &fourRenderQuad);
+                SDL_RenderCopy(renderer, fiveTexture, NULL, &fiveRenderQuad);
+                SDL_RenderCopy(renderer, sixTexture, NULL, &sixRenderQuad);
+                SDL_RenderCopy(renderer, sevenTexture, NULL, &sevenRenderQuad);
+                SDL_RenderCopy(renderer, eightTexture, NULL, &eightRenderQuad);
+                SDL_RenderCopy(renderer, leaveTexture, NULL, &leaveRenderQuad);
 
-                // for (int i = 0; i < 3; i ++) {
-                    // SDL_Surface *usernameSurface = TTF_RenderText_Solid(TINY_FONT, topPlayer[i].username, WHITE);
-                    // SDL_Texture *usernameTexture = SDL_CreateTextureFromSurface(renderer, usernameSurface);
-                    // SDL_Rect usernameRenderQuad = {280, 300 + (i+1) * 40, usernameSurface->w, usernameSurface->h};
+                if (strlen(topPlayer[0].username) > 0) {
+                    for (int i = 0; i < 8; i ++) {
+                        SDL_Surface *usernameSurface = TTF_RenderText_Solid(TINY_FONT, topPlayer[i].username, WHITE);
+                        SDL_Texture *usernameTexture = SDL_CreateTextureFromSurface(renderer, usernameSurface);
+                        SDL_Rect usernameRenderQuad = {250, 190 + (i) * 40, usernameSurface->w, usernameSurface->h};
 
-                    // SDL_RenderCopy(renderer, usernameTexture, NULL, &usernameRenderQuad);
-                    // for ()
-                // }
-                // }
+                        SDL_RenderCopy(renderer, usernameTexture, NULL, &usernameRenderQuad);
+
+                        char sscore[BUFF_SIZE];
+
+                        sprintf(sscore, "%d", topPlayer[i].score);
+
+                        SDL_Surface *scoreSurface = TTF_RenderText_Solid(TINY_FONT, sscore, WHITE);
+                        SDL_Texture *scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurface);
+                        SDL_Rect scoreRenderQuad = {500, 190 + (i) * 40, scoreSurface->w, scoreSurface->h};
+
+                        SDL_RenderCopy(renderer, scoreTexture, NULL, &scoreRenderQuad);
+                    }
+                }
+
+                if (pthread_create(&kid, NULL, receiveThread2, (void*)&client_sock) != 0) {
+                    perror("Error creating thread");
+                    return 1;
+                }
+
+                receiveThreadCreated3 = 1;  // Set the flag to indicate that the thread is created
+                pthread_detach(kid);
             } else if (state == GAME_OVER) {
                 SDL_RenderClear(renderer);
 
@@ -696,20 +745,28 @@ int main(){
                             case PLAY_SINGLE_MAP_1:
                                 switch (e.key.keysym.sym) {
                                     case SDLK_DOWN:
-                                        moveDown(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &single_controlRect, 8, 5, single_map_1);
-                                        myTank = meDown;
+                                        if (single_game_1_pause == 0) {
+                                            moveDown(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &single_controlRect, 8, 5, single_map_1);
+                                            myTank = meDown;
+                                        }
                                         break;
                                     case SDLK_UP:
-                                        moveUp(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &single_controlRect, 8, 5, single_map_1);
-                                        myTank = meUp;
+                                        if (single_game_1_pause == 0) {
+                                            moveUp(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &single_controlRect, 8, 5, single_map_1);
+                                            myTank = meUp;
+                                        }
                                         break;
                                     case SDLK_RIGHT:
-                                        moveRight(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &single_controlRect, 8, 5, single_map_1);
-                                        myTank = meRight;
+                                        if (single_game_1_pause == 0) {
+                                            moveRight(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &single_controlRect, 8, 5, single_map_1);
+                                            myTank = meRight;
+                                        }
                                         break;
                                     case SDLK_LEFT:
-                                        moveLeft(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &single_controlRect, 8 , 5, single_map_1);
-                                        myTank = meLeft;
+                                        if (single_game_1_pause == 0) {
+                                            moveLeft(&hozirontal_controller, &vertical_controller, &single_mode_postion_x, &single_mode_postion_y, &single_controlRect, 8 , 5, single_map_1);
+                                            myTank = meLeft;
+                                        }
                                         break;
                                     case SDLK_RCTRL:
                                         if (single_game_1_pause == 0) {
@@ -719,7 +776,9 @@ int main(){
                                         }
                                         break;
                                     case SDLK_RETURN:
-                                        singleShot(myTank, single_controlRect, meUp, meDown, meRight, meLeft, 1);
+                                        if (single_game_1_pause == 0) {
+                                            singleShot(myTank, single_controlRect, meUp, meDown, meRight, meLeft, 1);
+                                        }
                                         break;
                                 }
                             break;
@@ -733,23 +792,33 @@ int main(){
                                 case PLAY_SINGLE_MAP_2:
                                     switch (e.key.keysym.sym) {
                                         case SDLK_DOWN:
-                                            moveDown(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8, 5, single_map_2);
-                                            myTank = meDown;
+                                            if (single_game_2_pause == 0) {
+                                                moveDown(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8, 5, single_map_2);
+                                                myTank = meDown;
+                                            }
                                             break;
                                         case SDLK_UP:
-                                            moveUp(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8, 5, single_map_2);
-                                            myTank = meUp;
+                                            if (single_game_2_pause == 0) {
+                                                moveUp(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8, 5, single_map_2);
+                                                myTank = meUp;
+                                            }
                                             break;
                                         case SDLK_RIGHT:
-                                            moveRight(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8, 5, single_map_2);
-                                            myTank = meRight;
+                                            if (single_game_2_pause == 0) {
+                                                moveRight(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8, 5, single_map_2);
+                                                myTank = meRight;
+                                            }
                                             break;
                                         case SDLK_LEFT:
-                                            moveLeft(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8 , 5, single_map_2);
-                                            myTank = meLeft;
+                                            if (single_game_2_pause == 0) {
+                                                moveLeft(&hozirontal_controller_2, &vertical_controller_2, &single_mode_postion_x_2, &single_mode_postion_y_2, &single_controlRect_2, 8 , 5, single_map_2);
+                                                myTank = meLeft;
+                                            }
                                             break;
                                         case SDLK_RETURN:
-                                            singleShot2(myTank, single_controlRect_2, meUp, meDown, meRight, meLeft, 1);
+                                            if (single_game_2_pause == 0) {
+                                                singleShot2(myTank, single_controlRect_2, meUp, meDown, meRight, meLeft, 1);
+                                            }
                                             break;
                                         case SDLK_RCTRL:
                                             if (single_game_2_pause == 0) {
@@ -770,23 +839,33 @@ int main(){
                                 case PLAY_SINGLE_MAP_3:
                                     switch (e.key.keysym.sym) {
                                         case SDLK_DOWN:
-                                            moveDown(&hozirontal_controller_3, &vertical_controller_3, &single_mode_postion_x_3, &single_mode_postion_y_3, &single_controlRect_3, 8, 5, single_map_3);
-                                            myTank = meDown;
+                                            if (single_game_3_pause == 0) {
+                                                moveDown(&hozirontal_controller_3, &vertical_controller_3, &single_mode_postion_x_3, &single_mode_postion_y_3, &single_controlRect_3, 8, 5, single_map_3);
+                                                myTank = meDown;
+                                            }
                                             break;
                                         case SDLK_UP:
-                                            moveUp(&hozirontal_controller_3, &vertical_controller_3, &single_mode_postion_x_3, &single_mode_postion_y_3, &single_controlRect_3, 8, 5, single_map_3);
-                                            myTank = meUp;
+                                            if (single_game_3_pause == 0) {
+                                                moveUp(&hozirontal_controller_3, &vertical_controller_3, &single_mode_postion_x_3, &single_mode_postion_y_3, &single_controlRect_3, 8, 5, single_map_3);
+                                                myTank = meUp;
+                                            }
                                             break;
                                         case SDLK_RIGHT:
-                                            moveRight(&hozirontal_controller_3, &vertical_controller_3, &single_mode_postion_x_3, &single_mode_postion_y_3, &single_controlRect_3, 8, 5, single_map_3);
-                                            myTank = meRight;
+                                            if (single_game_3_pause == 0) {
+                                                moveRight(&hozirontal_controller_3, &vertical_controller_3, &single_mode_postion_x_3, &single_mode_postion_y_3, &single_controlRect_3, 8, 5, single_map_3);
+                                                myTank = meRight;
+                                            }
                                             break;
                                         case SDLK_LEFT:
-                                            moveLeft(&hozirontal_controller_3, &vertical_controller_3, &single_mode_postion_x_3, &single_mode_postion_y_3, &single_controlRect_3, 8 , 5, single_map_3);
-                                            myTank = meLeft;
+                                            if (single_game_3_pause == 0) {
+                                                moveLeft(&hozirontal_controller_3, &vertical_controller_3, &single_mode_postion_x_3, &single_mode_postion_y_3, &single_controlRect_3, 8 , 5, single_map_3);
+                                                myTank = meLeft;
+                                            }                    
                                             break;
                                         case SDLK_RETURN:
-                                            singleShot3(myTank, single_controlRect_3, meUp, meDown, meRight, meLeft, 1);
+                                            if (single_game_3_pause == 0) {                                        
+                                                singleShot3(myTank, single_controlRect_3, meUp, meDown, meRight, meLeft, 1);
+                                            }
                                             break;
                                         case SDLK_RCTRL:
                                             if (single_game_3_pause == 0) {
@@ -1111,13 +1190,13 @@ int main(){
 
                             if (mouseX > 600 && mouseX < 680 && mouseY > 450 && mouseY < 530 ) {
 
+                                state = SEEING_RANK;
+
                                 char seeRankingMessage[2];
 
                                 snprintf(seeRankingMessage, sizeof(seeRankingMessage), "%c", 0x0e);
 
                                 bytes_sent = send(client_sock, seeRankingMessage, strlen(seeRankingMessage), 0);
-
-                                state = SEEING_RANK;
                             }
 
                         }else if (state == READY_TO_PLAY_DUAL) {
@@ -1140,6 +1219,13 @@ int main(){
                             if (mouseX > 30 && mouseX < 70 && mouseY > 100 && mouseY < 140) {
                                 
                                
+                            }
+                        } else if (state == SEEING_RANK) {
+                            SDL_GetMouseState(&mouseX, &mouseY);
+
+                            if (mouseX > 30 && mouseX < 70 && mouseY > 100 && mouseY < 140) {
+                                
+                                state = CHOOSE_MODE;
                             }
                         }
                     }
@@ -1311,7 +1397,7 @@ void* receiveThread(void* arg) {
 
             strcpy(topPlayer[rank-1].username, username);
             topPlayer[rank-1].score = score;
-            
+
         } else if (buff[0] == 0x11) {
             if (dual_game_paused == 0) {
                 dual_game_paused = 1;
@@ -1386,6 +1472,38 @@ void* receiveThread1(void* arg) {
                 dual_game_pause = 0;
             }
         }
+    }
+
+    pthread_exit(NULL);
+}
+
+
+void* receiveThread2(void* arg) {
+    int client_sock = *((int*)arg);
+    char buff[BUFF_SIZE];
+    int bytes_received, bytes_sent;
+
+    while (state == SEEING_RANK) {
+		memset(buff ,'\0', BUFF_SIZE);        
+        bytes_received = recv(client_sock, buff, BUFF_SIZE - 1, 0);
+
+        buff[bytes_received] = '\0';
+
+        if (buff[0] == 0x0f){
+            char username[BUFF_SIZE];
+            int score;
+            int rank;
+
+            extractScoreMessage(buff, username, &score, &rank);
+
+            printf("top player %d: %s, %d\n", rank, username, score);
+
+            strcpy(topPlayer[rank-1].username, username);
+            topPlayer[rank-1].score = score;
+        }
+
+        bytes_sent = send(client_sock, "ok", strlen("ok"), 0);
+
     }
 
     pthread_exit(NULL);
