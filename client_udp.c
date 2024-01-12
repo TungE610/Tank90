@@ -638,13 +638,6 @@ int main(){
                     }
                 }
 
-                if (pthread_create(&kid, NULL, receiveThread2, (void*)&client_sock) != 0) {
-                    perror("Error creating thread");
-                    return 1;
-                }
-
-                receiveThreadCreated3 = 1;  // Set the flag to indicate that the thread is created
-                pthread_detach(kid);
             } else if (state == GAME_OVER) {
                 SDL_RenderClear(renderer);
 
@@ -724,7 +717,6 @@ int main(){
                                                 state = PLAY_SINGLE_MAP_1;
                                             } else {
                                                 printf("run here\n");
-                                                
 
                                                 char chooseRoomMessage[BUFF_SIZE];
 
@@ -732,7 +724,12 @@ int main(){
 
                                                 bytes_sent = send(client_sock, chooseRoomMessage, strlen(chooseRoomMessage), 0);
 
+                                                state = CHOOSE_ROOM;
+
+		                                        memset(buff ,'\0', BUFF_SIZE);        
+
                                                 bytes_received =recv(client_sock, buff, sizeof(buff), 0);
+
                                                 buff[bytes_received] = '\0';
 
                                                 int waitingRoomNum = atoi(buff);
@@ -748,7 +745,13 @@ int main(){
                                                     foundRoomState ++;
 
                                                     for (int i = 1; i <= waitingRoomNum; i ++) {
+                                                        memset(buff ,'\0', BUFF_SIZE);        
+
                                                         bytes_received =recv(client_sock, buff, sizeof(buff), 0);
+
+                                                        buff[bytes_received] = '\0';
+
+                                                        printf("room state receive: %s\n", buff);
 
                                                         int id, state,  first_player_id, second_player_id;
                                                         extractAndChangeValues(buff, &id, &state, &first_player_id, &second_player_id);
@@ -759,7 +762,6 @@ int main(){
                                                     }
                                                 }
 
-                                                state = CHOOSE_ROOM;
                                             }
                                             break;
                                 }
@@ -1268,6 +1270,14 @@ int main(){
                                 snprintf(seeRankingMessage, sizeof(seeRankingMessage), "%c", 0x0e);
 
                                 bytes_sent = send(client_sock, seeRankingMessage, strlen(seeRankingMessage), 0);
+
+                                if (pthread_create(&kid, NULL, receiveThread2, (void*)&client_sock) != 0) {
+                                    perror("Error creating thread");
+                                    return 1;
+                                }
+
+                                receiveThreadCreated3 = 1;  // Set the flag to indicate that the thread is created
+                                pthread_detach(kid);
                             }
 
                         }else if (state == READY_TO_PLAY_DUAL) {
@@ -1287,8 +1297,16 @@ int main(){
 
                             if (mouseX > 30 && mouseX < 70 && mouseY > 100 && mouseY < 140) {
                                 
-                                state = CHOOSE_ROOM;
-                                
+                                if (receiveThreadCreated1 == 1) {
+                                    pthread_cancel(tid);
+                                    receiveThreadCreated1 = 0;
+
+                                } else if (receiveThreadCreated2 == 1){
+                                    pthread_cancel(pid);
+                                    receiveThreadCreated2 = 0;
+                                    notToFirst = 0;
+                                }
+
                                 rooms[in_room_id].status = 1;
                                 
                                 isFirstUserInRoom = 0;
@@ -1301,12 +1319,16 @@ int main(){
                                 bytes_sent = send(client_sock, leaveRoomMessage, strlen(leaveRoomMessage), 0);
 
                                 in_room_id = 0;
+
+                                state = CHOOSE_ROOM;
                             }
                         } else if (state == WAITING_OTHER) {
                             SDL_GetMouseState(&mouseX, &mouseY);
 
                             if (mouseX > 30 && mouseX < 70 && mouseY > 100 && mouseY < 140) {
+                                pthread_cancel(tid);
                                 state = CHOOSE_ROOM;
+                                receiveThreadCreated1 = 0;
 
                                 isFirstUserInRoom = 0;
                                 rooms[in_room_id].status = 0;
@@ -1326,6 +1348,8 @@ int main(){
                             if (mouseX > 30 && mouseX < 70 && mouseY > 100 && mouseY < 140) {
                                 
                                 state = CHOOSE_MODE;
+
+                                pthread_cancel(kid);
                             }
                         }
                     }
@@ -1433,11 +1457,12 @@ void* receiveThread(void* arg) {
     char buff[BUFF_SIZE];
     int bytes_received;
 
-    while (state == WAITING_OTHER || state == READY_TO_PLAY_DUAL || state == PLAY_DUAL_GAME) {
+    while (1) {
 
         bytes_received = recv(client_sock, buff, BUFF_SIZE - 1, 0);
 
         buff[bytes_received] = '\0';
+        printf("still come here\n");
 
         if (buff[0] == 0x0a) { // ready to play
 
@@ -1531,12 +1556,18 @@ void* receiveThread1(void* arg) {
     char buff[BUFF_SIZE];
     int bytes_received;
 
-    while (state == WAITING_OTHER || state == READY_TO_PLAY_DUAL || state == PLAY_DUAL_GAME) {
+    while (1) {
         bytes_received = recv(client_sock, buff, BUFF_SIZE - 1, 0);
 
         buff[bytes_received] = '\0';
 
         if (buff[0] == 0x0a) { // ready to play
+            int friend_id;
+
+            sscanf(buff + 1, "%d", &friend_id); // Skip the first byte (0x05) and read the integer.
+
+            friendId = friend_id;
+
             readyToStart = 1;
             state = READY_TO_PLAY_DUAL;
 
@@ -1580,7 +1611,11 @@ void* receiveThread1(void* arg) {
                 }
             }
         } else if (buff[0] == 0x0c) {
-            dualShot_positive(myTank, dual_controlRect, meUp, meDown, meRight, meLeft, 1);
+            if (notToFirst == 0) {
+                dualShot_positive(myTank, dual_controlRect, meUp, meDown, meRight, meLeft, 1);
+            } else {
+                dualShotFriend_positive(friendTank, dual_friendRect, friendUp, friendDown, friendRight, friendLeft, 1);
+            }
         } else if (buff[0] == 0x11) {
             if (dual_game_pause == 0) {
                 dual_game_pause = 1;
@@ -1592,6 +1627,8 @@ void* receiveThread1(void* arg) {
 
             state = WAITING_OTHER;
             friendId = 0;
+
+            notToFirst = 1;
             // rooms[in_room_id].first_player_id = myId;
             // rooms[in_room_id].second_player_id = 0;
         } else if (buff[0] == 0x15) {

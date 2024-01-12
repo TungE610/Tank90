@@ -21,6 +21,7 @@ int topN = 8;
 int single_game_1_pause = 0;
 int single_game_2_pause = 0;
 int single_game_3_pause = 0;
+int notToFirst = 0;
 
 int dual_game_pause = 0;
 int dual_game_paused = 0;
