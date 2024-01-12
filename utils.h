@@ -12,33 +12,27 @@
 #include <SDL2/SDL.h>
 #include "maps.h"
 
-void extractUsernameAndPassword(unsigned char *message, char **username, char **password) {
+void extractUsernameAndPassword(const char *message, char *username, char *password) {
+    // Find the position of the '*' character in the message
+    const char *delimiter = strchr(message, '*');
 
+    if (delimiter != NULL) {
+        // Calculate the length of the username and password parts
+        size_t usernameLength = delimiter - message;
+        size_t passwordLength = strlen(delimiter + 1);
 
-    // Find the position of the '*' separator
-    unsigned char *separator = strchr((char *)message + 1, '*');
+        // Copy the username and password parts into the provided buffers
+        strncpy(username, message, usernameLength);
+        strncpy(password, delimiter + 1, passwordLength);
 
-    if (separator == NULL) {
-        fprintf(stderr, "Invalid message format. Missing separator '*'.\n");
-        *username = NULL;
-        *password = NULL;
-        return;
+        // Null-terminate the strings
+        username[usernameLength] = '\0';
+        password[passwordLength] = '\0';
+    } else {
+        // Handle the case where no '*' character is found in the message
+        strcpy(username, "");
+        strcpy(password, "");
     }
-
-    // Calculate the lengths of the username and password
-    size_t usernameLength = separator - (message + 1);
-    size_t passwordLength = strlen((char *)separator + 1);
-
-    // Allocate memory for username and password
-    *username = (char *)malloc(usernameLength + 1);
-    *password = (char *)malloc(passwordLength + 1);
-
-    // Copy username and password
-    memcpy(*username, message + 2, usernameLength-1);
-    (*username)[usernameLength] = '\0';
-
-    memcpy(*password, separator + 2, passwordLength-1);
-    (*password)[passwordLength] = '\0';
 }
 
 void initTextbox(Textbox *textbox, int x, int y, int w, int h) {
